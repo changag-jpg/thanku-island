@@ -988,7 +988,7 @@
             <div v-else class="emoji-big">{{ drawResult.emoji }}</div>
             <div class="gacha-partner-label">New Partner</div>
             <div class="gacha-partner-name">{{ drawResult.name }}</div>
-            <button @click="finishDraw" class="btn-primary">歡迎入住 🎉</button>
+            <button @click="finishDraw" class="btn-primary">收入倉庫 🎒</button>
         </div>
     </div>
 
@@ -1627,21 +1627,54 @@ createApp({
         );
 
         // ===== 物品位置統一取得（裝飾品用 item.x/y，動物用 animalStates） =====
+        // 說明：item.x/y 和 animalStates.x/y 是「初始 cam 下的螢幕 %」
+        // cam 移動後，物品要跟著 cam 偏移，才能留在島上正確位置
+        const getCamOffset = () => {
+            const el = document.getElementById('island-container');
+            if (!el || !window.islandEngine) return { dx: 0, dy: 0 };
+            const W = el.clientWidth, H = el.clientHeight;
+            const cam = window.islandEngine.cam;
+            // cam.x/y 是世界座標偏移，要換算成容器的 %
+            // 初始 cam 時物品在 item.x%, item.y%
+            // cam 移動 dx 個世界單位，對應螢幕 dx/W*100 %
+            return {
+                dx: -(cam.x / W) * 100,
+                dy: -(cam.y / H) * 100
+            };
+        };
+
+        // cam 初始值（autoCenter 後的值），用於計算相對偏移
+        const camBase = reactive({ x: 0, y: 0 });
+        const camTick = ref(0); // 每次 cam 移動就 +1，觸發 Vue re-render
+        const updateCamBase = () => {
+            const cam = window.islandEngine?.cam;
+            if (cam) { camBase.x = cam.x; camBase.y = cam.y; }
+        };
+
         const getPos = (item, index) => {
+            void camTick.value; // 讀取 camTick 讓 Vue 追蹤依賴，cam 移動時觸發重算
+            // 基礎位置（存儲值）
+            let bx, by;
             if (item.type === 'animal') {
-                return { x: animalStates.value[item.id]?.x ?? 20, y: animalStates.value[item.id]?.y ?? 25 };
+                bx = animalStates.value[item.id]?.x ?? 20;
+                by = animalStates.value[item.id]?.y ?? 25;
+            } else if (item.x !== undefined && item.y !== undefined) {
+                bx = item.x; by = item.y;
+            } else {
+                const cols = 3, col = index % cols, row = Math.floor(index / cols) % 3;
+                const baseX = [15, 42, 65], baseY = [15, 38, 60];
+                const jitter = (index * 7919) % 10 - 5;
+                bx = baseX[col] + jitter; by = baseY[row] + jitter;
             }
-            // 裝飾品：優先用存在 item 上的自由座標，否則用格子預設
-            if (item.x !== undefined && item.y !== undefined) {
-                return { x: item.x, y: item.y };
-            }
-            const cols = 3;
-            const col  = index % cols;
-            const row  = Math.floor(index / cols) % 3;
-            const baseX = [15, 42, 65];
-            const baseY = [15, 38, 60];
-            const jitter = (index * 7919) % 10 - 5;
-            return { x: baseX[col] + jitter, y: baseY[row] + jitter };
+
+            // 加上 cam 偏移，讓物品跟著島嶼移動
+            const el = document.getElementById('island-container');
+            if (!el || !window.islandEngine) return { x: bx, y: by };
+            const W = el.clientWidth, H = el.clientHeight;
+            const cam = window.islandEngine.cam;
+            const ddx = ((camBase.x - cam.x) / W) * 100;
+            const ddy = ((camBase.y - cam.y) / H) * 100;
+            return { x: bx + ddx, y: by + ddy };
         };
 
         // ===== 拖曳系統 =====
@@ -1740,6 +1773,7 @@ createApp({
             if (cam) {
                 cam.x = homePan.value.camX - (src.clientX - homePan.value.cx);
                 cam.y = homePan.value.camY - (src.clientY - homePan.value.cy);
+                camTick.value++; // 觸發 Vue 重算 getPos，讓物品跟著移動
             }
         };
         const onIslandMouseUp = (e) => {
@@ -2164,7 +2198,7 @@ createApp({
             }
             isDrawing.value  = false;
             drawResult.value = null;
-            switchTab('home');
+            // 留在感恩商鋪頁面，不跳轉
         };
 
         // ===== 卡池預覽 =====
@@ -2197,7 +2231,10 @@ createApp({
             initAnimalStates();
             roamInterval = setInterval(moveAnimals, 4500);
             // 初始化島嶼 canvas（用 setTimeout 確保 DOM ready）
-            setTimeout(() => window.initIslandCanvas?.(), 100);
+            setTimeout(() => {
+                window.initIslandCanvas?.();
+                setTimeout(() => updateCamBase(), 300); // canvas 置中後才記錄 camBase
+            }, 100);
         });
         onUnmounted(() => {
             if (roamInterval) clearInterval(roamInterval);
@@ -2217,7 +2254,7 @@ createApp({
             buyItem: () => {}, triggerGacha, finishDraw, handleImageError, forceReset,
             sortedLetters, getPos,
             isDragging, onDragStart, onDragMove, onDragEnd, dragState,
-            onIslandMouseDown, onIslandMouseMove, onIslandMouseUp, centerHomeIsland,
+            onIslandMouseDown, onIslandMouseMove, onIslandMouseUp, centerHomeIsland, camTick,
             poolPreview, poolRarityFilter, openPool, closePool,
             filteredPoolItems, calcRate,
             isEditMode, toggleEditMode, warehouseCollapsed, warehouseItems, groupedWarehouse,
@@ -2241,6 +2278,7 @@ createApp({
 /* ── 常數 ── */
 const CELL=6, HW=28, HH=14, HALF_W=28, HALF_H=14, DEPTH=26, HLIFT=8, MAX_HL=3;
 const STORAGE_KEY='thankuIslandTiles';
+const SK=STORAGE_KEY; // alias
 const TK=(tx,ty)=>`${tx},${ty}`;
 function iso(c,r,z=0){return{x:(c-r)*HW,y:(c+r)*HH-z};}
 function nbrs(tx,ty){return[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>({tx:tx+a,ty:ty+b}));}
@@ -2580,7 +2618,7 @@ window.islandEngine={
     const tx=Math.floor(gc/CELL), ty=Math.floor(gr/CELL);
     return tiles.has(TK(tx,ty));
   },
-};;
+};
 window.islandEditorEngine={
   addTile(){
     // 確保 tiles 有資料
