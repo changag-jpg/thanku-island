@@ -1,0 +1,2737 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>感恩小島 - ThankU Island</title>
+
+    <!-- Vue 3 (可換成本機版本) -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- FontAwesome (圖示) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts：M PLUS Rounded 1c 圓潤可愛字型 -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== CSS 變數 — Livly 奶油粉綠風格 ===== */
+        :root {
+            --bg:          #FBF8F2;   /* 奶油白主背景 */
+            --surface:     #FFFFFF;
+            --surface-2:   #F5F0E8;   /* 奶油米色次要表面 */
+            --border:      #E8DFD0;   /* 溫暖米色邊框 */
+            --border-soft: #F0E8DC;
+            --text:        #3D3530;   /* 深棕主文字 */
+            --text-sub:    #9B8E84;   /* 暖灰副文字 */
+            --primary:     #7BAE8A;   /* 粉綠主色 */
+            --primary-h:   #639A76;   /* 粉綠 hover */
+            --primary-lt:  #EAF5EC;   /* 粉綠淺底 */
+            --accent:      #E8A87C;   /* 暖橙點綴 */
+            --accent-lt:   #FDF0E6;
+            --alert:       #E88080;   /* 粉紅警示 */
+            --alert-lt:    #FDEAEA;
+            --yellow:      #F5D87A;   /* 星黃（傳說） */
+            --blue:        #8AB8D4;   /* 天藍（稀有） */
+            --radius-sm:   12px;
+            --radius:      16px;
+            --radius-lg:   24px;
+            --radius-pill: 999px;
+            --shadow-sm:   0 2px 8px rgba(100,80,60,0.08);
+            --shadow:      0 4px 16px rgba(100,80,60,0.1);
+            --shadow-lg:   0 8px 32px rgba(100,80,60,0.12);
+        }
+
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #E8DDD0;
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+            font-family: "M PLUS Rounded 1c", "Noto Sans TC", sans-serif;
+            color: var(--text);
+            -webkit-tap-highlight-color: transparent;
+        }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        input, textarea { font-family: inherit; }
+        [v-cloak] { display: none; }
+
+        /* ===== 整體框架：左側導航 + 右側內容 ===== */
+        .app {
+            background: var(--bg);
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: row;
+            position: relative; overflow: hidden;
+        }
+
+        /* ===== 左側導航 ===== */
+        .sidebar {
+            width: 210px; flex-shrink: 0;
+            background: linear-gradient(180deg, #EFF8F1 0%, #E6F2E8 100%);
+            border-right: 2px solid var(--border);
+            display: flex; flex-direction: column;
+            height: 100vh; z-index: 30;
+        }
+        .sidebar-logo {
+            padding: 26px 20px 18px;
+            border-bottom: 2px solid var(--border);
+        }
+        .sidebar-logo-title {
+            font-size: 17px; font-weight: 800; color: var(--primary-h);
+        }
+        .sidebar-logo-sub {
+            font-size: 10px; color: var(--text-sub);
+            font-weight: 700; letter-spacing: 0.06em; margin-top: 3px;
+        }
+        .sidebar-nav {
+            flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px;
+        }
+        .nav-btn {
+            width: 100%; display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: var(--radius);
+            font-size: 13px; font-weight: 700; color: var(--text-sub);
+            transition: all 0.18s; text-align: left;
+        }
+        .nav-btn:hover:not(.active) { background: rgba(123,174,138,0.15); color: var(--primary-h); transform: translateX(2px); }
+        .nav-btn.active {
+            background: var(--primary); color: #fff;
+            box-shadow: 0 4px 12px rgba(123,174,138,0.4);
+        }
+        .nav-btn i { width: 18px; text-align: center; font-size: 15px; }
+        .nav-label { font-size: 13px; font-weight: 700; }
+
+        .sidebar-bottom {
+            padding: 10px 10px;
+            border-top: 2px solid var(--border);
+        }
+        .inbox-btn {
+            width: 100%; display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: var(--radius);
+            font-size: 13px; font-weight: 700; color: var(--text-sub);
+            transition: all 0.18s; position: relative;
+        }
+        .inbox-btn:hover { background: rgba(123,174,138,0.15); color: var(--primary-h); }
+        .inbox-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(123,174,138,0.4); }
+        .badge-dot {
+            position: absolute; top: 8px; left: 22px;
+            width: 9px; height: 9px;
+            background: var(--alert); border-radius: 50%;
+            border: 2px solid var(--surface);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        /* 未讀抖動氣泡 */
+        .unread-bubble {
+            position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%);
+            background: #FFE8E8; border: 2px solid #F5A0A0;
+            color: #C05050; font-size: 9px; font-weight: 800;
+            padding: 3px 8px; border-radius: 999px;
+            white-space: nowrap; pointer-events: none;
+            box-shadow: 0 2px 8px rgba(200,80,80,0.18);
+            animation: bubble-shake 1.2s ease-in-out infinite;
+        }
+        .unread-bubble::after {
+            content: '';
+            position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: #F5A0A0;
+        }
+        @keyframes bubble-shake {
+            0%,100% { transform: translateX(-50%) rotate(0deg); }
+            15%  { transform: translateX(-50%) rotate(-6deg); }
+            30%  { transform: translateX(-50%) rotate(6deg); }
+            45%  { transform: translateX(-50%) rotate(-4deg); }
+            60%  { transform: translateX(-50%) rotate(4deg); }
+            75%  { transform: translateX(-50%) rotate(-2deg); }
+        }
+
+        .sidebar-user {
+            padding: 14px 18px 20px;
+            border-top: 2px solid var(--border);
+            background: rgba(255,255,255,0.55);
+        }
+        .sidebar-avatar {
+            width: 40px; height: 40px;
+            background: var(--primary);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 800; border-radius: var(--radius);
+            margin-bottom: 8px;
+            box-shadow: 0 4px 10px rgba(123,174,138,0.35);
+        }
+        .sidebar-user-name { font-size: 14px; font-weight: 800; color: var(--text); }
+        .sidebar-user-level {
+            display: inline-block; font-size: 10px; font-weight: 800;
+            color: var(--primary-h); background: var(--primary-lt);
+            padding: 2px 10px; border-radius: var(--radius-pill); margin-top: 3px;
+        }
+        .sidebar-stats { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+        .sidebar-stat {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,255,255,0.6);
+            padding: 4px 10px; border-radius: var(--radius-sm);
+        }
+        .sidebar-stat-label { font-size: 10px; color: var(--text-sub); font-weight: 700; }
+        .sidebar-stat-val { font-size: 13px; font-weight: 800; color: var(--text); }
+        .sidebar-stat-val i { font-size: 11px; margin-right: 3px; color: var(--accent); }
+        .icon-primary { color: var(--primary) !important; }
+
+        /* ===== 右側主內容 ===== */
+        .content-area {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; height: 100vh;
+            background: var(--bg);
+        }
+
+        /* 頂部標題列 */
+        .topbar {
+            height: 58px; flex-shrink: 0;
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            display: flex; align-items: center;
+            padding: 0 36px;
+            z-index: 20;
+            box-shadow: var(--shadow-sm);
+        }
+        .topbar-title { font-size: 17px; font-weight: 800; color: var(--text); }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .topbar-btn {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 800; padding: 7px 16px;
+            border-radius: var(--radius-pill);
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text-sub); cursor: pointer; transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .topbar-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+        .topbar-btn.active { background: var(--primary); color: #fff; border-color: var(--primary-h); box-shadow: 0 3px 10px rgba(123,174,138,0.35); }
+
+        /* 主要捲動區 */
+        .main {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: 32px 40px 48px;
+            background: var(--bg);
+        }
+        .main::-webkit-scrollbar { width: 6px; }
+        .main::-webkit-scrollbar-track { background: transparent; }
+        .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-pill); }
+
+        .stats-row { display: none; }
+        .divider-v { display: none; }
+
+        /* ===== Section Title ===== */
+        .section-title {
+            font-size: 20px; font-weight: 800; color: var(--text);
+            margin-bottom: 20px;
+        }
+        .section-title-row {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        .section-sub { font-size: 13px; color: var(--text-sub); font-weight: 400; }
+
+        /* ===== Island（全寬大島） ===== */
+        .island-wrap { width: 100%; position: relative; }
+        .island-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+        .island-flat {
+            width: 100%;
+            height: calc(100vh - 58px - 52px - 64px);
+            min-height: 400px;
+            background: #b3ddff;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 40px rgba(100,80,60,0.15), 0 3px 10px rgba(100,80,60,0.08);
+            border: 3px solid rgba(255,255,255,0.7);
+            position: relative; display: flex; justify-content: center; align-items: center;
+            animation: float-island 6s ease-in-out infinite; overflow: hidden;
+            cursor: grab;
+        }
+        .island-flat:active { cursor: grabbing; }
+        @keyframes float-island {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-7px); }
+        }
+        .island-empty {
+            font-size: 13px; font-weight: 700; color: rgba(61,53,48,0.5);
+            background: rgba(255,255,255,0.8); padding: 8px 20px;
+            border-radius: var(--radius-pill); backdrop-filter: blur(6px);
+            border: 2px solid rgba(255,255,255,0.9);
+        }
+        .float-item { position: absolute; transition: transform 0.2s ease; }
+        .float-item:hover { transform: scale(1.12) translateY(-6px); z-index: 50 !important; }
+        .float-item.is-dragging { transform: scale(1.15); cursor: grabbing; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
+        .float-item:not(.is-dragging) { cursor: grab; }
+        .animal-roam { transition: left 4s ease-in-out, top 4s ease-in-out; }
+        .float-item img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.12)); }
+        .float-item .emoji-icon { font-size: 56px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); line-height: 1; }
+
+        /* 置中按鈕 */
+        .island-center-btn {
+            position: absolute; bottom: 16px; right: 16px; z-index: 20;
+            width: 38px; height: 38px; border-radius: 50%;
+            background: rgba(255,255,255,0.88); backdrop-filter: blur(8px);
+            border: 2px solid rgba(255,255,255,0.9);
+            box-shadow: 0 3px 12px rgba(100,80,60,0.15);
+            cursor: pointer; color: var(--text-sub); font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.18s;
+        }
+        .island-center-btn:hover { color: var(--primary); border-color: var(--primary); background: rgba(255,255,255,0.98); }
+
+        /* ===== Shop ===== */
+        .gacha-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .gacha-card {
+            border: 2px solid var(--border);
+            background: var(--surface);
+            padding: 28px; border-radius: var(--radius-lg);
+            position: relative; overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .gacha-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+        .gacha-bg { position: absolute; right: -8px; bottom: -8px; font-size: 88px; opacity: 0.07; pointer-events: none; }
+        .gacha-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+        .gacha-desc { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-bottom: 20px; line-height: 1.7; }
+        .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        .btn-primary {
+            background: var(--primary); color: #fff;
+            padding: 11px 24px; font-size: 13px; font-weight: 800;
+            border-radius: var(--radius-pill); transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 12px rgba(123,174,138,0.35);
+        }
+        .btn-primary:hover { background: var(--primary-h); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(123,174,138,0.4); }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn-outline {
+            border: 2px solid var(--primary); color: var(--primary-h);
+            padding: 11px 24px; font-size: 13px; font-weight: 800;
+            border-radius: var(--radius-pill); transition: all 0.2s; background: none;
+        }
+        .btn-outline:hover { background: var(--primary-lt); transform: translateY(-1px); }
+        .btn-outline:active { transform: scale(0.97); }
+        .cost-badge { font-size: 11px; font-weight: 800; background: rgba(0,0,0,0.18); padding: 2px 8px; border-radius: var(--radius-pill); }
+
+        /* 底部 nav → 桌面版隱藏 */
+        .bottom-nav { display: none; }
+
+        /* 稀有度標籤 */
+        .rarity-badge {
+            display: inline-block; font-size: 10px; font-weight: 800;
+            padding: 3px 10px; border-radius: var(--radius-pill); margin-bottom: 6px;
+            letter-spacing: 0.04em;
+        }
+        .rarity-common  { background: var(--border); color: var(--text-sub); }
+        .rarity-rare    { background: #D6EDF7; color: #2A7DAD; }
+        .rarity-legend  { background: #FEF3D0; color: #B07A00; }
+
+        /* 商店物品格 */
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .shop-item {
+            border: 1px solid var(--border); background: var(--surface);
+            padding: 16px; border-radius: var(--radius);
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .shop-item:hover { border-color: var(--primary); }
+        .shop-item-icon { height: 64px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .shop-item-icon img { max-width: 56px; max-height: 56px; object-fit: contain; }
+        .shop-item-icon .emoji-icon { font-size: 36px; }
+        .shop-item-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .shop-item-price { font-size: 12px; color: var(--primary); font-weight: 700; }
+
+        /* ===== Write ===== */
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; font-size: 12px; font-weight: 800; color: var(--text-sub); letter-spacing: 0.04em; margin-bottom: 8px; }
+        .form-input {
+            width: 100%; max-width: 640px;
+            background: var(--surface); border: 2px solid var(--border);
+            padding: 12px 16px; font-size: 14px; font-weight: 500;
+            outline: none; border-radius: var(--radius); transition: border-color 0.2s; color: var(--text);
+        }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(123,174,138,0.12); }
+        select.form-input { appearance: none; -webkit-appearance: none; cursor: pointer; }
+        textarea.form-input { resize: vertical; }
+        .qty-row { display: flex; align-items: center; gap: 8px; max-width: 240px; }
+        .qty-btn {
+            width: 42px; height: 42px; border: 2px solid var(--border);
+            background: var(--surface); border-radius: var(--radius);
+            color: var(--text-sub); font-size: 13px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+        }
+        .qty-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+        .qty-display {
+            flex: 1; height: 42px; border: 2px solid var(--border);
+            background: var(--surface); border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 800; color: var(--text);
+        }
+        .btn-dark {
+            background: var(--text); color: #fff;
+            padding: 13px 36px; font-size: 14px; font-weight: 800;
+            border-radius: var(--radius-pill); transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(61,53,48,0.2);
+        }
+        .btn-dark:hover { background: #1a1210; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(61,53,48,0.25); }
+        .btn-dark:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; box-shadow: none; transform: none; }
+
+        /* ===== Wall / Inbox ===== */
+        .letters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 16px; }
+        .letter-card {
+            border: 2px solid var(--border); background: var(--surface);
+            padding: 20px; border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); transition: box-shadow 0.2s;
+        }
+        .letter-card:hover { box-shadow: var(--shadow); }
+        .letter-card.unread { border-color: var(--primary); background: var(--primary-lt); }
+        .letter-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .letter-from { font-size: 13px; font-weight: 800; color: var(--text); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .letter-arrow { font-size: 10px; color: var(--text-sub); }
+        .letter-time { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-top: 2px; }
+        .letter-multi-badge { font-size: 10px; font-weight: 800; color: var(--accent); border: 2px solid var(--accent); padding: 1px 8px; border-radius: var(--radius-pill); }
+        .letter-body { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.8; margin-bottom: 12px; white-space: pre-wrap; }
+        .letter-footer { display: flex; justify-content: flex-end; padding-top: 10px; border-top: 2px solid var(--border-soft); }
+        .like-btn { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-sub); transition: all 0.15s; padding: 5px 12px; border-radius: var(--radius-pill); }
+        .like-btn:hover { background: var(--alert-lt); color: var(--alert); }
+        .like-btn.liked { color: var(--alert); }
+        .like-btn:active { transform: scale(0.93); }
+        .reward-row { display: flex; gap: 16px; font-size: 12px; font-weight: 800; color: var(--primary-h); margin-top: 8px; }
+        .reward-row .reward-coins { color: var(--accent); }
+        .new-badge { background: var(--primary); color: #fff; font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: var(--radius-pill); }
+
+        .empty-state { text-align: center; padding: 80px 0; color: var(--text-sub); font-size: 14px; font-weight: 700; }
+
+        /* ===== Write 頁 ===== */
+        .write-hero { text-align:center; padding: 32px 0 24px; }
+        .write-hero-icon { font-size: 48px; margin-bottom: 8px; }
+        .write-hero-title { font-size: 22px; font-weight: 800; color: var(--text); }
+        .write-hero-sub { font-size: 13px; color: var(--text-sub); margin-top: 6px; font-weight: 600; }
+        .write-card {
+            background: var(--surface); border: 2px solid var(--border);
+            border-radius: var(--radius-lg); padding: 28px 32px;
+            box-shadow: var(--shadow-sm); max-width: 600px; margin: 0 auto;
+        }
+        .cards-left { font-size: 11px; color: var(--text-sub); font-weight: 600; }
+        .recipient-wrap { position: relative; display: flex; gap: 0; }
+        .recipient-wrap .form-input { flex: 1; border-radius: var(--radius) 0 0 var(--radius); border-right: none; }
+        .recipient-arrow {
+            padding: 0 14px; background: var(--surface-2); border: 2px solid var(--border);
+            border-left: none; border-radius: 0 var(--radius) var(--radius) 0;
+            cursor: pointer; color: var(--text-sub); transition: all 0.15s;
+        }
+        .recipient-arrow:hover { background: var(--primary-lt); color: var(--primary); }
+        .suggestion-list {
+            position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
+            background: var(--surface); border: 2px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .suggestion-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px; cursor: pointer; transition: background 0.12s;
+        }
+        .suggestion-item:hover { background: var(--primary-lt); }
+        .suggestion-avatar {
+            width: 32px; height: 32px; background: var(--primary);
+            color: #fff; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; flex-shrink: 0;
+        }
+        .suggestion-name { font-size: 13px; font-weight: 800; color: var(--text); }
+        .suggestion-email { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+        .send-btn {
+            width: 100%; padding: 14px; border-radius: var(--radius-pill);
+            background: var(--primary); color: #fff; border: none;
+            font-size: 14px; font-weight: 800; cursor: pointer;
+            transition: all 0.18s; display: flex; align-items: center;
+            justify-content: center; gap: 8px; margin-top: 8px;
+            box-shadow: 0 4px 14px rgba(123,174,138,0.4);
+        }
+        .send-btn:hover:not(:disabled) { background: var(--primary-h); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(123,174,138,0.5); }
+        .send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ===== Wall 佈告欄 ===== */
+        .wall-hero { text-align:center; padding: 24px 0 20px; }
+        .wall-hero-deco { font-size: 20px; margin-bottom: 4px; letter-spacing: 6px; }
+        .wall-hero-title { font-size: 22px; font-weight: 800; color: var(--text); }
+        .wall-hero-sub { font-size: 13px; color: var(--text-sub); margin-top: 4px; font-weight: 600; }
+        .wall-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+        .wall-card {
+            background: var(--surface); border: 2px solid var(--border);
+            border-radius: var(--radius-lg); padding: 20px;
+            box-shadow: 0 3px 12px rgba(100,80,60,0.07);
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+        .wall-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(100,80,60,0.12); }
+        .wall-card-top { margin-bottom: 12px; }
+        .wall-avatars { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .wall-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800;
+        }
+        .wall-avatar.from { background: var(--primary-lt); color: var(--primary-h); border: 2px solid var(--primary); }
+        .wall-avatar.to   { background: #FFF0E8; color: var(--accent); border: 2px solid var(--accent); }
+        .wall-arrow { font-size: 18px; }
+        .wall-names { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.5; }
+        .wall-from-name { color: var(--primary-h); font-weight: 800; }
+        .wall-name-sep { color: var(--text-sub); font-weight: 600; }
+        .wall-to-name { color: var(--accent); font-weight: 800; }
+        .wall-time { font-size: 10px; color: var(--text-sub); margin-top: 3px; }
+        .wall-msg {
+            font-size: 13px; color: var(--text); line-height: 1.7;
+            background: var(--surface-2); border-radius: var(--radius);
+            padding: 12px 14px; margin-bottom: 12px;
+            border-left: 3px solid var(--primary);
+        }
+        .wall-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+        .wall-card-cost { font-size: 11px; color: var(--accent); font-weight: 800; margin-right: auto; }
+        .wall-like {
+            display: flex; align-items: center; gap: 5px;
+            padding: 5px 12px; border-radius: var(--radius-pill);
+            border: 2px solid var(--border); background: var(--surface);
+            font-size: 12px; font-weight: 700; color: var(--text-sub);
+            cursor: pointer; transition: all 0.15s;
+        }
+        .wall-like:hover { border-color: #E88; color: #E55; background: #FFF0F0; }
+        .wall-like.liked { background: #FFE8E8; color: #D04040; border-color: #F0A0A0; }
+
+        /* ===== Sea群島 ===== */
+        .sea-hero { text-align:center; padding: 24px 0 20px; }
+        .sea-hero-icon { font-size: 48px; margin-bottom: 6px; animation: float-island 4s ease-in-out infinite; }
+        .sea-hero-title { font-size: 22px; font-weight: 800; color: var(--text); }
+        .sea-hero-sub { font-size: 13px; color: var(--text-sub); margin-top: 4px; font-weight: 600; }
+        .sea-list { display: flex; flex-direction: column; gap: 12px; max-width: 640px; margin: 0 auto; }
+        .sea-item {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--surface); border: 2px solid var(--border);
+            border-radius: var(--radius-lg); padding: 16px 20px;
+            box-shadow: 0 3px 10px rgba(100,80,60,0.06);
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+        .sea-item:hover { transform: translateX(4px); box-shadow: 0 6px 18px rgba(100,80,60,0.1); }
+        .sea-rank-badge {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .sea-rank-badge.rank-1 { background: linear-gradient(135deg,#FFE066,#FFAA00); }
+        .sea-rank-badge.rank-2 { background: linear-gradient(135deg,#E8E8E8,#B8B8B8); }
+        .sea-rank-badge.rank-3 { background: linear-gradient(135deg,#FFD0A0,#C87040); }
+        .sea-rank-badge.rank-4 { background: var(--surface-2); font-size:13px; font-weight:800; color:var(--text-sub); }
+        .sea-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--primary-lt); border: 2px solid var(--primary);
+            color: var(--primary-h); font-size: 18px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .sea-info { flex: 1; }
+        .sea-name { font-size: 15px; font-weight: 800; color: var(--text); }
+        .sea-energy { font-size: 11px; color: var(--text-sub); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+        .sea-energy i { color: var(--primary); }
+        .sea-island-tag { background: var(--primary-lt); color: var(--primary-h); padding: 1px 8px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 800; }
+        .sea-visit-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: var(--radius-pill);
+            background: var(--primary-lt); color: var(--primary-h);
+            border: 2px solid var(--primary); font-size: 12px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s; white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .sea-visit-btn:hover { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(123,174,138,0.4); }
+
+        /* 編輯模式：物品操作按鈕組 */
+        .item-edit-btns {
+            position: absolute; top: -12px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 4px; z-index: 10; white-space: nowrap;
+        }
+        .flip-btn, .remove-btn, .scale-btn, .layer-btn {
+            width: 24px; height: 24px; border-radius: 50%;
+            font-size: 8px; border: 2px solid #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.15s; flex-shrink: 0;
+        }
+        .flip-btn        { background: var(--primary); color: #fff; }
+        .flip-btn:hover  { transform: scale(1.2); }
+        .scale-btn       { background: #7AABAB; color: #fff; }
+        .scale-btn:hover { transform: scale(1.2); }
+        .layer-btn       { background: var(--accent); color: #fff; }
+        .layer-btn:hover { transform: scale(1.2); }
+        .layer-btn.active { background: #D4844A; }
+        .remove-btn      { background: var(--alert); color: #fff; }
+        .remove-btn:hover { transform: scale(1.2); }
+
+        .edit-highlight > div { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 6px; }
+
+        /* 圖層面板 */
+        .layer-panel {
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .layer-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 14px; border-bottom: 2px solid var(--border-soft);
+            background: rgba(234,245,236,0.8);
+        }
+        .layer-panel-title { font-size: 13px; font-weight: 800; color: var(--text); }
+        .layer-controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; padding: 10px 12px; border-bottom: 2px solid var(--border-soft); }
+        .layer-ctrl-btn {
+            font-size: 11px; font-weight: 800; color: var(--text-sub);
+            border: 2px solid var(--border); border-radius: var(--radius-sm);
+            padding: 6px 4px; text-align: center; cursor: pointer;
+            background: var(--surface); transition: all 0.15s;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+        }
+        .layer-ctrl-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+        .layer-ctrl-btn i { font-size: 12px; }
+        .layer-list { max-height: 160px; overflow-y: auto; }
+        .layer-list::-webkit-scrollbar { display: none; }
+        .layer-list-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 14px; border-bottom: 1px solid var(--border-soft);
+            cursor: pointer; transition: background 0.12s;
+        }
+        .layer-list-item:last-child { border-bottom: none; }
+        .layer-list-item:hover { background: var(--primary-lt); }
+        .layer-list-item.active { background: var(--primary-lt); }
+        .layer-list-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .layer-list-name { flex: 1; font-size: 12px; font-weight: 700; color: var(--text); }
+        .layer-list-num { font-size: 11px; font-weight: 800; color: var(--primary-h); background: var(--primary-lt); border-radius: var(--radius-pill); padding: 1px 8px; }
+
+        /* 數量 badge */
+        .qty-badge {
+            position: absolute; top: -4px; right: -4px;
+            min-width: 18px; height: 18px; border-radius: var(--radius-pill);
+            background: var(--primary); color: #fff;
+            font-size: 10px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; border: 2px solid var(--surface);
+        }
+
+        /* 編輯按鈕（疊在島上） */
+        .edit-btn {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 800; padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            border: 2px solid rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(8px);
+            color: var(--text-sub); cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 3px 10px rgba(100,80,60,0.1);
+        }
+        .edit-btn:hover { background: rgba(255,255,255,0.96); color: var(--primary-h); }
+        .edit-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 14px rgba(123,174,138,0.4); }
+
+        /* ══ 島嶼地形編輯器 Tab ══ */
+        .island-tab {
+            display: flex !important; flex-direction: row;
+            height: calc(100vh - 58px); overflow: hidden;
+            padding: 0 !important;
+        }
+
+        /* 左側工具欄（桌機） */
+        .island-sidebar {
+            width: 152px; flex-shrink: 0;
+            background: rgba(255,255,255,0.93);
+            border-right: 2px solid var(--border);
+            display: flex; flex-direction: column;
+            overflow-y: auto; padding: 12px 10px 20px; gap: 6px;
+        }
+        .island-sidebar::-webkit-scrollbar { width: 3px; }
+        .island-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .is-panel { display: flex; flex-direction: column; gap: 3px; }
+        .is-sec { font-size: 9px; font-weight: 800; color: var(--sub); letter-spacing: 0.1em; margin: 8px 0 4px; }
+        .is-sec:first-child { margin-top: 0; }
+        .is-mode-btn {
+            width: 100%; padding: 9px; border-radius: 12px;
+            font-size: 11px; font-weight: 800; cursor: pointer;
+            border: 2px solid var(--primary); background: var(--primary-lt); color: #3A7A50;
+            transition: all 0.15s;
+        }
+        .is-mode-btn.on { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(91,154,112,0.4); }
+        .is-btn {
+            width: 100%; display: flex; align-items: center; gap: 7px;
+            padding: 7px 9px; border-radius: 10px;
+            font-size: 11px; font-weight: 700; color: var(--text);
+            border: 2px solid transparent; background: transparent;
+            cursor: pointer; transition: all 0.13s; text-align: left;
+        }
+        .is-btn:hover { background: #F0EAE0; }
+        .is-btn.active { background: var(--primary); color: #fff; border-color: var(--green-d,#5A9A70); box-shadow: 0 2px 8px rgba(88,168,112,0.35); }
+        .is-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+        .is-name { font-size: 11px; font-weight: 800; display: block; }
+        .is-sub  { font-size: 9px; opacity: 0.65; display: block; }
+        .is-sz-row { display: flex; gap: 4px; }
+        .is-sz {
+            flex: 1; padding: 5px 0; border-radius: 7px;
+            font-size: 10px; font-weight: 800;
+            border: 2px solid var(--border); background: #fff;
+            cursor: pointer; color: var(--text); transition: all 0.13s;
+        }
+        .is-sz.active { background: var(--primary); color: #fff; border-color: var(--green-d,#5A9A70); }
+        .is-act {
+            width: 100%; padding: 7px 9px; border-radius: 10px;
+            font-size: 10px; font-weight: 800; cursor: pointer;
+            border: 2px solid var(--border); background: var(--surface);
+            color: var(--text); transition: all 0.13s; margin-bottom: 2px;
+        }
+        .is-act.add    { border-color: var(--primary); color: #2A7A50; background: var(--primary-lt); }
+        .is-act.add:hover { background: var(--primary); color: #fff; }
+        .is-act.center { border-color: #D4A840; color: #8A6820; background: #FFF6E0; }
+        .is-act.center:hover { background: #D4A840; color: #fff; }
+        .is-act.reset  { border-color: var(--alert); color: #A04030; background: var(--alert-lt); }
+        .is-act.reset:hover { background: var(--alert); color: #fff; }
+        .is-legend { display: flex; flex-direction: column; gap: 4px; }
+        .is-leg { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #8A7A6A; }
+        .is-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+        /* Canvas 主區域 */
+        .island-canvas-area {
+            flex: 1; position: relative; overflow: hidden;
+            background: #b3ddff;
+            min-height: 300px;
+        }
+        #island-editor-canvas {
+            display: block;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            touch-action: none;
+        }
+        .island-edit-badge {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            background: rgba(123,174,138,0.92); color: #fff;
+            font-size: 10px; font-weight: 800; padding: 4px 14px;
+            border-radius: 999px; pointer-events: none;
+        }
+        .island-hint-bar {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            background: rgba(61,53,48,0.72); color: #fff;
+            font-size: 11px; font-weight: 700; padding: 5px 16px;
+            border-radius: 999px; pointer-events: none; white-space: nowrap;
+        }
+
+        /* 手機底部工具欄 */
+        .island-mobile-bar { display: none; }
+
+        @media (max-width: 767px) {
+            .island-tab { flex-direction: column !important; height: calc(100dvh - 44px - 56px) !important; }
+            .island-sidebar { display: none; }
+            .island-mobile-bar {
+                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+                height: 56px; z-index: 100; background: rgba(255,255,255,0.97);
+                border-top: 2px solid var(--border); align-items: center; padding: 0 8px; gap: 4px;
+            }
+            .imb-scroll {
+                display: flex; align-items: center; gap: 3px;
+                overflow-x: auto; flex: 1; padding: 4px 0;
+            }
+            .imb-scroll::-webkit-scrollbar { display: none; }
+            .imb-sep { width: 1.5px; height: 24px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
+            .imb-btn {
+                flex-shrink: 0; width: 42px; height: 42px; border-radius: 11px;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                font-size: 16px; cursor: pointer; border: 2px solid transparent; background: transparent;
+                transition: all 0.13s; gap: 1px;
+            }
+            .imb-btn.active, .imb-btn.on { background: var(--primary); border-color: var(--green-d,#5A9A70); }
+            .imb-lbl { font-size: 8px; font-weight: 800; color: var(--sub); line-height: 1; }
+            .imb-btn.active .imb-lbl, .imb-btn.on .imb-lbl { color: #fff; }
+            .imb-sz-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+            .imb-sz-lbl { font-size: 8px; font-weight: 800; color: var(--sub); }
+            .imb-sz-row { display: flex; gap: 3px; }
+            .imb-sz {
+                width: 22px; height: 22px; border-radius: 6px; font-size: 9px; font-weight: 800;
+                border: 1.5px solid var(--border); background: #fff; cursor: pointer; color: var(--text);
+                display: flex; align-items: center; justify-content: center; transition: all 0.13s;
+            }
+            .imb-sz.active { background: var(--primary); color: #fff; border-color: var(--green-d,#5A9A70); }
+            .imb-acts { display: flex; gap: 4px; flex-shrink: 0; padding-left: 6px; border-left: 1.5px solid var(--border); }
+            .imb-act {
+                width: 36px; height: 36px; border-radius: 9px; font-size: 14px;
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer; border: 2px solid; transition: all 0.13s;
+            }
+            .imb-act.add    { background: var(--primary-lt); border-color: var(--primary); }
+            .imb-act.center { background: #FFF6E0; border-color: #D4A840; }
+            .imb-act.reset  { background: var(--alert-lt); border-color: var(--alert); }
+        }
+
+        /* 倉庫（疊在小島底部，毛玻璃） */
+        .warehouse {
+            position: absolute; bottom: 16px; left: 16px;
+            width: calc(100% - 32px);
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            overflow: hidden; z-index: 15;
+            box-shadow: 0 4px 20px rgba(100,80,60,0.1);
+        }
+        .warehouse-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 14px; border-bottom: 2px solid rgba(230,220,210,0.6);
+            background: rgba(234,245,236,0.7);
+        }
+        .warehouse-title { font-size: 12px; font-weight: 800; color: var(--text); }
+        .warehouse-sub   { font-size: 11px; font-weight: 700; color: var(--text-sub); }
+        .warehouse-empty { padding: 16px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-sub); }
+        .warehouse-grid {
+            display: grid; grid-template-columns: repeat(10, 1fr);
+            gap: 1px; background: rgba(230,220,210,0.4);
+            max-height: 100px; overflow-y: auto;
+        }
+        .warehouse-grid::-webkit-scrollbar { display: none; }
+        .warehouse-item {
+            background: rgba(255,255,255,0.92); padding: 8px 4px;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            cursor: pointer; transition: background 0.15s; position: relative;
+        }
+        .warehouse-item:hover { background: var(--primary-lt); }
+        }
+        .warehouse-item:hover { background: #F0F4F1; }
+        .warehouse-item-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .warehouse-item-icon img { width: 36px; height: 36px; object-fit: contain; }
+        .warehouse-item-name { font-size: 9px; color: var(--text); text-align: center; font-weight: 500; line-height: 1.2; }
+        .warehouse-item-type { font-size: 9px; }
+
+
+        /* 能量顯示列 */
+        /* 能量顯示列 */
+        .energy-bar {
+            font-size: 13px; font-weight: 700; color: var(--text-sub);
+            margin-bottom: 16px; padding: 12px 18px;
+            background: var(--surface); border: 2px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .energy-bar strong { color: var(--primary-h); font-weight: 800; }
+
+        .gacha-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .pool-preview-btn {
+            font-size: 11px; font-weight: 800; color: var(--primary-h);
+            border: 2px solid var(--primary); padding: 5px 12px;
+            border-radius: var(--radius-pill); white-space: nowrap; flex-shrink: 0;
+            transition: all 0.2s; background: none; cursor: pointer;
+        }
+        .pool-preview-btn:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
+
+        /* 卡池預覽彈窗 */
+        .pool-overlay {
+            position: absolute; inset: 0; z-index: 200;
+            background: rgba(61,53,48,0.45);
+            backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pool-modal {
+            width: 480px; background: var(--bg);
+            border-radius: var(--radius-lg);
+            padding: 24px 24px 32px;
+            max-height: 70vh; display: flex; flex-direction: column;
+            animation: popReveal 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--border);
+        }
+        .pool-modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px;
+        }
+        .pool-modal-title { font-size: 16px; font-weight: 800; color: var(--text); }
+        .pool-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--border); color: var(--text-sub);
+            font-size: 12px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: none; transition: all 0.15s;
+        }
+        .pool-close:hover { background: var(--alert); color: #fff; }
+
+        .rarity-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+        .rarity-tab {
+            font-size: 11px; font-weight: 800; padding: 5px 14px;
+            border-radius: var(--radius-pill); border: 2px solid var(--border);
+            background: var(--surface); color: var(--text-sub);
+            cursor: pointer; transition: all 0.15s;
+        }
+        .rarity-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 3px 8px rgba(123,174,138,0.3); }
+
+        .pool-list { overflow-y: auto; flex: 1; }
+        .pool-list::-webkit-scrollbar { display: none; }
+        .pool-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 0; border-bottom: 2px solid var(--border-soft);
+        }
+        .pool-item:last-child { border-bottom: none; }
+        .pool-item-icon {
+            width: 46px; height: 46px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--surface-2); border-radius: var(--radius);
+            border: 2px solid var(--border);
+        }
+        .pool-item-icon img { width: 34px; height: 34px; object-fit: contain; }
+        .pool-item-info { flex: 1; }
+        .pool-item-name { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+        .pool-item-rate { font-size: 13px; font-weight: 800; color: var(--primary-h); min-width: 48px; text-align: right; }
+
+        /* 抽卡動畫 */
+        .gacha-overlay {
+            position: absolute; inset: 0; z-index: 100;
+            background: rgba(251,248,242,0.96);
+            backdrop-filter: blur(8px);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .gacha-shake { font-size: 88px; animation: boxShake 0.55s ease-in-out infinite; margin-bottom: 24px; }
+        .gacha-loading-text { font-size: 12px; font-weight: 800; color: var(--text-sub); letter-spacing: 0.2em; }
+        @keyframes boxShake {
+            0%,100% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(-12deg) scale(1.12); }
+            40% { transform: rotate(12deg) scale(1.12); }
+            60% { transform: rotate(-12deg) scale(1.12); }
+            80% { transform: rotate(12deg) scale(1.12); }
+        }
+        .gacha-result { display: flex; flex-direction: column; align-items: center; animation: popReveal 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+        .gacha-result img { width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.12)); margin-bottom: 20px; }
+        .gacha-result .emoji-big { font-size: 100px; line-height: 1; margin-bottom: 20px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); }
+        .gacha-partner-label { font-size: 11px; color: var(--primary-h); font-weight: 800; letter-spacing: 0.14em; margin-bottom: 6px; }
+        .gacha-partner-name { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 32px; }
+        @keyframes popReveal {
+            0%   { transform: scale(0.3) translateY(40px); opacity: 0; }
+            60%  { transform: scale(1.08) translateY(-8px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* Error screen */
+        .error-screen {
+            position: absolute; inset: 0; z-index: 100;
+            background: var(--bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 32px; text-align: center;
+        }
+
+        /* Fade transition */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+        .tab-content { padding-bottom: 8px; }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak class="app">
+
+    <!-- 錯誤畫面 -->
+    <div v-if="errorMsg" class="error-screen">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">系統通知</h3>
+        <p style="font-size:13px;color:var(--text-sub);margin-bottom:32px;">{{ errorMsg }}</p>
+        <button @click="forceReset" class="btn-dark" style="width:auto;padding:12px 32px;">清除資料並重新啟動</button>
+    </div>
+
+    <!-- 抽卡動畫 -->
+    <div v-if="isDrawing" class="gacha-overlay">
+        <div v-if="!drawResult">
+            <div class="gacha-shake">📦</div>
+            <div class="gacha-loading-text">Recruiting...</div>
+        </div>
+        <div v-else class="gacha-result">
+            <div :class="'rarity-badge rarity-' + drawResult.rarity" style="margin-bottom:12px;">
+                {{ drawResult.rarity === 'legend' ? '⭐ 傳說' : drawResult.rarity === 'rare' ? '💎 稀有' : '普通' }}
+            </div>
+            <img v-if="drawResult.imgUrl" :src="drawResult.imgUrl" @error="handleImageError(drawResult)" :alt="drawResult.name">
+            <div v-else class="emoji-big">{{ drawResult.emoji }}</div>
+            <div class="gacha-partner-label">New Partner</div>
+            <div class="gacha-partner-name">{{ drawResult.name }}</div>
+            <button @click="finishDraw" class="btn-primary">歡迎入住 🎉</button>
+        </div>
+    </div>
+
+    <!-- 左側導航 -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-title">🏝 感恩小島</div>
+            <div class="sidebar-logo-sub">ThankU Island</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button @click="switchTab('home')"   class="nav-btn" :class="{ active: currentTab === 'home' }">
+                <i class="fa-solid fa-house"></i><span class="nav-label">我的小島</span>
+            </button>
+            <button @click="switchTab('write')"  class="nav-btn" :class="{ active: currentTab === 'write' }">
+                <i class="fa-solid fa-pen"></i><span class="nav-label">寄出感謝</span>
+            </button>
+            <button @click="switchTab('shop')"   class="nav-btn" :class="{ active: currentTab === 'shop' }">
+                <i class="fa-solid fa-store"></i><span class="nav-label">感恩商鋪</span>
+            </button>
+            <button @click="switchTab('wall')"   class="nav-btn" :class="{ active: currentTab === 'wall' }">
+                <i class="fa-regular fa-comments"></i><span class="nav-label">佈告欄</span>
+            </button>
+            <button @click="switchTab('rank')"   class="nav-btn" :class="{ active: currentTab === 'rank' }">
+                <i class="fa-solid fa-list-ol"></i><span class="nav-label">Sea群島</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button @click="switchTab('inbox')" class="inbox-btn" :class="{ active: currentTab === 'inbox' }">
+                <i class="fa-regular fa-envelope"></i>
+                <span class="nav-label">我的信箱</span>
+                <div v-if="unreadCount > 0" class="badge-dot"></div>
+            </button>
+            <div v-if="unreadCount > 0 && currentTab !== 'inbox'" style="position:relative;margin-top:4px;text-align:center;">
+                <div class="unread-bubble">有人發來感謝！🎉</div>
+            </div>
+        </div>
+
+        <div class="sidebar-user" v-if="currentUser">
+            <div class="sidebar-avatar">{{ getDisplayInitial(currentUserId) }}</div>
+            <div class="sidebar-user-name">{{ currentUser.name }}</div>
+            <div class="sidebar-user-level">Level {{ currentUser.level || 1 }}</div>
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <span class="sidebar-stat-label">Coins</span>
+                    <span class="sidebar-stat-val"><i class="fa-solid fa-coins"></i>{{ currentUser.shells }}</span>
+                </div>
+                <div class="sidebar-stat">
+                    <span class="sidebar-stat-label">Energy</span>
+                    <span class="sidebar-stat-val"><i class="fa-solid fa-bolt"></i>{{ currentUser.energy }}</span>
+                </div>
+                <div class="sidebar-stat">
+                    <span class="sidebar-stat-label">Cards</span>
+                    <span class="sidebar-stat-val"><i class="fa-regular fa-paper-plane icon-primary"></i>{{ currentUser.cards }}</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右側內容區 -->
+    <div class="content-area">
+        <!-- 頂部標題列 -->
+        <div class="topbar">
+            <span class="topbar-title">
+                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : '收件匣' }}
+            </span>
+            <div v-if="currentTab === 'home'" class="topbar-actions">
+                <button @click="toggleEditMode" class="topbar-btn" :class="{ active: isEditMode }">
+                    <i :class="isEditMode ? 'fa-solid fa-check' : 'fa-solid fa-pen-to-square'"></i>
+                    {{ isEditMode ? '完成編輯' : '編輯營地' }}
+                </button>
+                <button @click="switchTab('island')" class="topbar-btn">
+                    <i class="fa-solid fa-mountain-sun"></i>
+                    編輯小島
+                </button>
+            </div>
+        </div>
+
+        <!-- 主要捲動區 -->
+        <main id="main-content" class="main">
+            <transition name="fade" mode="out-in">
+
+            <!-- Home -->
+            <div v-if="currentTab === 'home'" key="home" class="tab-content">
+                <div class="island-wrap">
+                    <!-- 小島（全寬） -->
+                    <div class="island-flat" id="island-container"
+                         @mousemove="onIslandMouseMove" @mouseup="onIslandMouseUp" @mouseleave="onIslandMouseUp"
+                         @touchmove.prevent="onIslandMouseMove" @touchend="onIslandMouseUp"
+                         @mousedown="onIslandMouseDown" @touchstart.prevent="onIslandMouseDown">
+                    <!-- 小島 Canvas（地形底層） -->
+                    <canvas id="island-canvas"
+                        style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:var(--radius-lg);">
+                    </canvas>
+
+                    <div v-if="displayIslandItems.length === 0 && !isEditMode" class="island-empty">目前沒有任何擺設，進入編輯模式從倉庫放置物品</div>
+
+                        <div v-for="(item, index) in displayIslandItems" :key="item.id || index"
+                             class="float-item"
+                             :class="{
+                                 'animal-roam': item.type === 'animal' && !isDragging(item.id) && !isEditMode,
+                                 'is-dragging': isDragging(item.id),
+                                 'edit-highlight': isEditMode && selectedLayerItem?.id === item.id
+                             }"
+                             :style="{
+                                 left:   getPos(item, index).x + '%',
+                                 top:    getPos(item, index).y + '%',
+                                 zIndex: isDragging(item.id) ? 999 : getItemZIndex(item, index)
+                             }"
+                             @mousedown.prevent="!isEditMode && onDragStart($event, item)"
+                             @touchstart.prevent="!isEditMode && onDragStart($event, item)">
+                            <div :style="{
+                                transform: getFlip(item) + ' scale(' + (item.scale || 1) + ')',
+                                transition: isDragging(item.id) ? 'none' : 'transform 0.3s ease',
+                                transformOrigin: 'center bottom'
+                            }">
+                                <img v-if="item.imgUrl" :src="item.imgUrl" @error="handleImageError(item)" :alt="item.name">
+                                <span v-else class="emoji-icon">{{ item.emoji }}</span>
+                            </div>
+                            <div v-if="isEditMode" class="item-edit-btns">
+                                <button @click.stop="toggleFlip(item)" class="flip-btn" title="左右鏡射"><i class="fa-solid fa-right-left"></i></button>
+                                <button v-if="item.type === 'decor'" @click.stop="scaleItem(item, -0.15)" class="scale-btn" title="縮小"><i class="fa-solid fa-minus"></i></button>
+                                <button v-if="item.type === 'decor'" @click.stop="scaleItem(item, 0.15)"  class="scale-btn" title="放大"><i class="fa-solid fa-plus"></i></button>
+                                <button @click.stop="selectLayerItem(item)" class="layer-btn" :class="{ active: selectedLayerItem?.id === item.id }" title="圖層"><i class="fa-solid fa-layer-group"></i></button>
+                                <button @click.stop="removeFromIsland(item)" class="remove-btn"><i class="fa-solid fa-minus"></i></button>
+                            </div>
+                        </div>
+
+
+
+                        <!-- 置中按鈕（右下角） -->
+                        <button class="island-center-btn" @click="centerHomeIsland" title="置中">
+                            <i class="fa-solid fa-crosshairs"></i>
+                        </button>
+
+                        <!-- 圖層面板（疊在島上，編輯+選中時顯示） -->
+                        <div v-if="isEditMode && selectedLayerItem" class="layer-panel" style="position:absolute;top:60px;left:16px;width:260px;z-index:20;">
+                            <div class="layer-panel-header">
+                                <span class="layer-panel-title">圖層：{{ selectedLayerItem.name }}</span>
+                                <button @click="selectedLayerItem = null" class="pool-close">✕</button>
+                            </div>
+                            <div class="layer-controls">
+                                <button @click="moveLayer(selectedLayerItem, 'top')"    class="layer-ctrl-btn"><i class="fa-solid fa-angles-up"></i> 最前</button>
+                                <button @click="moveLayer(selectedLayerItem, 'up')"     class="layer-ctrl-btn"><i class="fa-solid fa-angle-up"></i> 往前</button>
+                                <button @click="moveLayer(selectedLayerItem, 'down')"   class="layer-ctrl-btn"><i class="fa-solid fa-angle-down"></i> 往後</button>
+                                <button @click="moveLayer(selectedLayerItem, 'bottom')" class="layer-ctrl-btn"><i class="fa-solid fa-angles-down"></i> 最後</button>
+                            </div>
+                            <div class="layer-list">
+                                <div v-for="(item, idx) in [...displayIslandItems].reverse()" :key="item.id"
+                                     class="layer-list-item" :class="{ active: selectedLayerItem?.id === item.id }"
+                                     @click="selectedLayerItem = item">
+                                    <span class="layer-list-icon">
+                                        <img v-if="item.imgUrl" :src="item.imgUrl" @error="handleImageError(item)" style="width:20px;height:20px;object-fit:contain;">
+                                        <span v-else style="font-size:16px;">{{ item.emoji }}</span>
+                                    </span>
+                                    <span class="layer-list-name">{{ item.name }}</span>
+                                    <span class="layer-list-num">{{ displayIslandItems.length - idx }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 倉庫（疊在島底部，編輯模式才顯示） -->
+                        <div v-if="isEditMode" class="warehouse">
+                            <div class="warehouse-header">
+                                <span class="warehouse-title">倉庫</span>
+                                <span class="warehouse-sub">點擊物品放上小島</span>
+                            </div>
+                            <div v-if="warehouseItems.length === 0" class="warehouse-empty">倉庫是空的，去抽卡吧！</div>
+                            <div v-else class="warehouse-grid">
+                                <div v-for="group in groupedWarehouse" :key="group.key"
+                                     @click="placeOnIsland(group.items[0])" class="warehouse-item">
+                                    <div class="warehouse-item-icon" style="position:relative;">
+                                        <img v-if="group.items[0].imgUrl" :src="group.items[0].imgUrl" @error="handleImageError(group.items[0])" :alt="group.items[0].name">
+                                        <span v-else class="emoji-icon" style="font-size:24px;">{{ group.items[0].emoji }}</span>
+                                        <span v-if="group.count > 1" class="qty-badge">{{ group.count }}</span>
+                                    </div>
+                                    <div class="warehouse-item-name">{{ group.items[0].name }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 島嶼地形編輯器 Tab -->
+            <div v-else-if="currentTab === 'island'" key="island" class="tab-content island-tab">
+
+                <!-- 桌機：左側工具欄 -->
+                <div class="island-sidebar">
+                    <div class="is-panel">
+                        <div class="is-sec">模式</div>
+                        <button class="is-mode-btn" :class="{on: islandEditMode}" @click="islandEditMode=!islandEditMode">
+                            {{ islandEditMode ? '👁️ 插畫預覽' : '✏️ 進入編輯' }}
+                        </button>
+                    </div>
+                    <div class="is-panel" v-show="islandEditMode">
+                        <div class="is-sec">視角</div>
+                        <button v-for="t in islandTools" :key="t.id"
+                            class="is-btn" :class="{active: islandTool===t.id}"
+                            :data-tool="t.id" @click="islandTool=t.id">
+                            <span class="is-icon">{{ t.icon }}</span>
+                            <span><span class="is-name">{{ t.label }}</span><span class="is-sub">{{ t.sub }}</span></span>
+                        </button>
+                        <div class="is-sec" style="margin-top:8px;">筆刷大小</div>
+                        <div class="is-sz-row">
+                            <button v-for="s in [1,2,3]" :key="s"
+                                class="is-sz" :class="{active: islandBrush===s}"
+                                @click="islandBrush=s">{{ s }}</button>
+                        </div>
+                    </div>
+                    <div class="is-panel">
+                        <div class="is-sec">操作</div>
+                        <button class="is-act add"    @click="islandAddTile">＋ 新增地塊</button>
+                        <button class="is-act center" @click="islandCenterView">🎯 回到中心</button>
+                        <button class="is-act reset"  @click="islandReset">↺ 重置</button>
+                    </div>
+                    <div class="is-panel">
+                        <div class="is-sec">圖例</div>
+                        <div class="is-legend">
+                            <div class="is-leg"><div class="is-dot" style="background:#6ac678"></div>草地</div>
+                            <div class="is-leg"><div class="is-dot" style="background:#66a4ff"></div>湖水</div>
+                            <div class="is-leg"><div class="is-dot" style="background:#79db84"></div>高地</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas 主區域 -->
+                <div class="island-canvas-area">
+                    <canvas id="island-editor-canvas" :style="{cursor: islandEditMode && islandTool!=='pan' ? 'crosshair' : 'grab'}"></canvas>
+                    <div v-if="islandEditMode" class="island-edit-badge">✏️ 編輯模式</div>
+                    <div class="island-hint-bar">{{ islandEditorHint }}</div>
+                </div>
+
+                <!-- 手機底部工具欄 -->
+                <div class="island-mobile-bar">
+                    <div class="imb-scroll">
+                        <button class="imb-btn" :class="{on: islandEditMode}" @click="islandEditMode=!islandEditMode">
+                            {{ islandEditMode ? '👁️' : '✏️' }}<span class="imb-lbl">{{ islandEditMode ? '預覽' : '編輯' }}</span>
+                        </button>
+                        <div class="imb-sep"></div>
+                        <button v-for="t in islandTools" :key="t.id"
+                            class="imb-btn" :class="{active: islandTool===t.id}"
+                            :data-tool="t.id" @click="islandTool=t.id">
+                            {{ t.icon }}<span class="imb-lbl">{{ t.label }}</span>
+                        </button>
+                        <div class="imb-sep"></div>
+                        <div class="imb-sz-wrap">
+                            <div class="imb-sz-lbl">筆刷</div>
+                            <div class="imb-sz-row">
+                                <button v-for="s in [1,2,3]" :key="s"
+                                    class="imb-sz" :class="{active: islandBrush===s}"
+                                    @click="islandBrush=s">{{ s }}</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="imb-acts">
+                        <button class="imb-act add"    @click="islandAddTile">＋</button>
+                        <button class="imb-act center" @click="islandCenterView">🎯</button>
+                        <button class="imb-act reset"  @click="islandReset">↺</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop -->
+            <div v-else-if="currentTab === 'shop'" key="shop" class="tab-content">
+                <div class="energy-bar" style="margin-bottom:24px;">
+                    <i class="fa-solid fa-bolt"></i> 目前能量：<strong>{{ currentUser?.energy || 0 }}</strong>
+                </div>
+                <div class="gacha-grid">
+
+                <!-- 寵物抽卡 -->
+                <div class="gacha-card">
+                    <div class="gacha-card-header">
+                        <div>
+                            <div class="gacha-title">🐾 動物夥伴招募</div>
+                            <div class="gacha-desc">招募可愛動物來到你的營地</div>
+                        </div>
+                        <button @click="openPool('pet')" class="pool-preview-btn">卡池一覽</button>
+                    </div>
+                    <div class="btn-row">
+                        <button @click="triggerGacha('pet', false)" class="btn-primary" :disabled="(currentUser?.energy || 0) < 500">
+                            招募 <span class="cost-badge">-500 ⚡</span>
+                        </button>
+                        <button @click="triggerGacha('pet', true)" class="btn-outline">免費測試</button>
+                    </div>
+                    <div class="gacha-bg">🦊</div>
+                </div>
+
+                <!-- 裝飾品抽卡 -->
+                <div class="gacha-card">
+                    <div class="gacha-card-header">
+                        <div>
+                            <div class="gacha-title">🏕️ 裝飾品探索</div>
+                            <div class="gacha-desc">隨機獲得營地裝飾物品</div>
+                        </div>
+                        <button @click="openPool('decor')" class="pool-preview-btn">卡池一覽</button>
+                    </div>
+                    <div class="btn-row">
+                        <button @click="triggerGacha('decor', false)" class="btn-primary" :disabled="(currentUser?.energy || 0) < 300">
+                            探索 <span class="cost-badge">-300 ⚡</span>
+                        </button>
+                        <button @click="triggerGacha('decor', true)" class="btn-outline">免費測試</button>
+                    </div>
+                    <div class="gacha-bg">🌳</div>
+                </div>
+
+                <!-- 卡池預覽彈窗 -->
+                <div v-if="poolPreview" class="pool-overlay" @click.self="closePool">
+                    <div class="pool-modal">
+                        <div class="pool-modal-header">
+                            <span class="pool-modal-title">{{ poolPreview === 'pet' ? '🐾 動物夥伴卡池' : '🏕️ 裝飾品卡池' }}</span>
+                            <button @click="closePool" class="pool-close">✕</button>
+                        </div>
+
+                        <!-- 稀有度篩選 -->
+                        <div class="rarity-tabs">
+                            <button v-for="r in ['all','common','rare','legend']" :key="r"
+                                @click="poolRarityFilter = r"
+                                class="rarity-tab"
+                                :class="{ active: poolRarityFilter === r }">
+                                {{ r === 'all' ? '全部' : r === 'common' ? '普通' : r === 'rare' ? '💎 稀有' : '⭐ 傳說' }}
+                            </button>
+                        </div>
+
+                        <div class="pool-list">
+                            <div v-for="item in filteredPoolItems" :key="item.id || item.name" class="pool-item">
+                                <div class="pool-item-icon">
+                                    <img v-if="item.imgUrl" :src="item.imgUrl" @error="handleImageError(item)" :alt="item.name">
+                                    <span v-else class="emoji-icon" style="font-size:28px;">{{ item.emoji }}</span>
+                                </div>
+                                <div class="pool-item-info">
+                                    <div class="pool-item-name">{{ item.name }}</div>
+                                    <div :class="'rarity-badge rarity-' + item.rarity">
+                                        {{ item.rarity === 'legend' ? '⭐ 傳說' : item.rarity === 'rare' ? '💎 稀有' : '普通' }}
+                                    </div>
+                                </div>
+                                <div class="pool-item-rate">{{ calcRate(item, poolPreview) }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div><!-- /gacha-grid -->
+            </div>
+
+            <!-- Write -->
+            <div v-else-if="currentTab === 'write'" key="write" class="tab-content">
+                <div class="write-hero">
+                    <div class="write-hero-icon">💌</div>
+                    <h2 class="write-hero-title">寄出感謝</h2>
+                    <p class="write-hero-sub">把感謝化作能量，送給讓你感動的人 🌿</p>
+                </div>
+
+                <div class="write-card">
+                    <div class="form-group">
+                        <label class="form-label">✉️ 收件人</label>
+                        <div class="recipient-wrap">
+                            <input
+                                v-model="recipientInput"
+                                @input="onRecipientInput"
+                                @focus="showSuggestions=true"
+                                @blur="hideSuggestions"
+                                class="form-input"
+                                placeholder="輸入名稱或信箱..."
+                                autocomplete="off"
+                            />
+                            <button class="recipient-arrow" @click.prevent="showSuggestions=!showSuggestions">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                            <div v-if="showSuggestions && filteredSuggestions.length" class="suggestion-list">
+                                <div v-for="u in filteredSuggestions" :key="u.id"
+                                     class="suggestion-item"
+                                     @mousedown.prevent="selectRecipient(u)">
+                                    <span class="suggestion-avatar">{{ u.name[0] }}</span>
+                                    <div>
+                                        <div class="suggestion-name">{{ u.name }}</div>
+                                        <div class="suggestion-email">{{ u.email }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🌟 感謝卡數量 <span class="cards-left">（剩餘 {{ currentUser?.cards || 0 }} 張）</span></label>
+                        <div class="qty-row">
+                            <button @click="adjustCardCost(-1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
+                            <div class="qty-display">{{ letterForm.cost }}</div>
+                            <button @click="adjustCardCost(1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📝 感謝訊息</label>
+                        <textarea v-model="letterForm.content" rows="5" class="form-input" placeholder="說說你想感謝的事...✨"></textarea>
+                    </div>
+
+                    <button @click="sendLetter"
+                        :disabled="!letterForm.toId || !letterForm.content.trim() || (currentUser?.cards || 0) < letterForm.cost"
+                        class="send-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        送出感謝 (消耗 {{ letterForm.cost }} 張卡)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Wall 佈告欄 -->
+            <div v-else-if="currentTab === 'wall'" key="wall" class="tab-content">
+                <div class="wall-hero">
+                    <div class="wall-hero-deco">🌸 ✨ 🌿</div>
+                    <h2 class="wall-hero-title">佈告欄</h2>
+                    <p class="wall-hero-sub">大家的感謝都在這裡 🏝️</p>
+                </div>
+                <div v-if="sortedLetters.length === 0" class="empty-state">
+                    <div style="font-size:48px;margin-bottom:12px;">🌊</div>
+                    <div>還沒有任何感謝訊息</div>
+                    <div style="font-size:12px;margin-top:6px;color:var(--text-sub)">成為第一個傳遞感謝的人吧！</div>
+                </div>
+                <div v-else class="wall-grid">
+                    <div v-for="letter in sortedLetters" :key="letter.id" class="wall-card">
+                        <div class="wall-card-top">
+                            <div class="wall-avatars">
+                                <div class="wall-avatar from">{{ getDisplayName(letter.from)[0] }}</div>
+                                <div class="wall-arrow">💌</div>
+                                <div class="wall-avatar to">{{ getDisplayName(letter.to)[0] }}</div>
+                            </div>
+                            <div class="wall-names">
+                                <span class="wall-from-name">{{ getDisplayName(letter.from) }}</span>
+                                <span class="wall-name-sep"> 感謝了 </span>
+                                <span class="wall-to-name">{{ getDisplayName(letter.to) }}</span>
+                            </div>
+                            <div class="wall-time">{{ formatDate(letter.timestamp) }}</div>
+                        </div>
+                        <div class="wall-msg">{{ letter.content }}</div>
+                        <div class="wall-footer">
+                            <div v-if="letter.cardCost > 1" class="wall-card-cost">
+                                <i class="fa-regular fa-star"></i> ×{{ letter.cardCost }}
+                            </div>
+                            <button @click="toggleLike(letter)" class="wall-like" :class="{ liked: isLiked(letter) }">
+                                <i :class="isLiked(letter) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                                <span>{{ (letter.likes||[]).length || '' }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sea 群島排行 -->
+            <div v-else-if="currentTab === 'rank'" key="rank" class="tab-content">
+                <div class="sea-hero">
+                    <div class="sea-hero-icon">🏝️</div>
+                    <h2 class="sea-hero-title">Sea 群島</h2>
+                    <p class="sea-hero-sub">獲得最多感謝的人們 ✨</p>
+                </div>
+                <div class="sea-list">
+                    <div v-for="(user, index) in leaderboard" :key="user.id" class="sea-item">
+                        <div class="sea-rank-badge" :class="['rank-'+Math.min(index+1,4)]">
+                            {{ index===0 ? '🥇' : index===1 ? '🥈' : index===2 ? '🥉' : String(index+1).padStart(2,'0') }}
+                        </div>
+                        <div class="sea-avatar">{{ user.name[0] }}</div>
+                        <div class="sea-info">
+                            <div class="sea-name">{{ user.name }}</div>
+                            <div class="sea-energy">
+                                <i class="fa-solid fa-bolt"></i> {{ user.energy }} 能量
+                                <span class="sea-island-tag">🏝️ 的小島</span>
+                            </div>
+                        </div>
+                        <button class="sea-visit-btn" title="前往參觀">
+                            <i class="fa-solid fa-ship"></i>
+                            <span>前往參觀</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inbox -->
+            <div v-else-if="currentTab === 'inbox'" key="inbox" class="tab-content">
+                <h2 class="section-title">📬 我的信箱</h2>
+                <div v-if="myLetters.length === 0" class="empty-state">信箱目前是空的。</div>
+                <div v-else class="letters-grid">
+                <div v-for="letter in myLetters" :key="letter.id"
+                     @click="markAsRead(letter)"
+                     class="letter-card" :class="{ unread: !letter.read }">
+                    <div class="letter-header">
+                        <div>
+                            <div class="letter-from">
+                                From: {{ getDisplayName(letter.from) }}
+                                <span v-if="!letter.read" class="new-badge">New</span>
+                            </div>
+                            <div class="letter-time">{{ formatDate(letter.timestamp) }}</div>
+                        </div>
+                    </div>
+                    <div class="letter-body">{{ letter.content }}</div>
+                    <div class="reward-row">
+                        <span><i class="fa-solid fa-bolt"></i> +{{ (letter.cardCost || 1) * 100 }}</span>
+                        <span class="reward-coins"><i class="fa-solid fa-coins"></i> 獲得隨機獎勵</span>
+                    </div>
+                </div>
+                </div><!-- /letters-grid -->
+            </div>
+
+        </transition>
+        </main>
+    </div><!-- /content-area -->
+
+    <!-- Bottom Nav（保留 HTML 但 CSS 隱藏） -->
+    <nav class="bottom-nav"></nav>
+</div>
+
+<script>
+const { createApp, ref, computed, reactive, watch, onMounted, onUnmounted, nextTick } = Vue;
+
+createApp({
+    setup() {
+
+        // ===== 資料定義 =====
+        const defaultUsers = [
+            { id: 'u1', name: 'Alice', email: 'alice@company.com', level: 5, shells: 120, energy: 1500, cards: 3, island: [], warehouse: [] },
+            { id: 'u2', name: 'Bob',   email: 'bob@company.com',   level: 3, shells: 50,  energy: 200,  cards: 3, island: [], warehouse: [] },
+            { id: 'u3', name: 'Carol', email: 'carol@company.com', level: 2, shells: 20,  energy: 150,  cards: 3, island: [], warehouse: [] },
+        ];
+
+        const shopItems = [
+            // 🌿 植物類
+            { id: 't1', name: '橡木樹',   emoji: '🌳', rarity: 'common', weight: 40, type: 'decor', imgUrl: 'assets/items/tree_oak.png' },
+            { id: 't2', name: '雪松',     emoji: '🌲', rarity: 'common', weight: 40, type: 'decor', imgUrl: 'assets/items/tree_pine.png' },
+            { id: 't3', name: '櫻花樹',   emoji: '🌸', rarity: 'rare',   weight: 25, type: 'decor', imgUrl: 'assets/items/tree_sakura.png' },
+            { id: 'f1', name: '向日葵',   emoji: '🌻', rarity: 'common', weight: 35, type: 'decor', imgUrl: 'assets/items/flower_sunflower.png' },
+            { id: 'f2', name: '雛菊',     emoji: '🌼', rarity: 'common', weight: 35, type: 'decor', imgUrl: 'assets/items/flower_daisy.png' },
+            { id: 'f4', name: '蘑菇',     emoji: '🍄', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/plant_mushroom.png' },
+            // 🏕️ 建築類
+            { id: 'd1', name: '露營帳篷', emoji: '⛺', rarity: 'rare',   weight: 20, type: 'decor', imgUrl: 'assets/items/build_tent.png' },
+            { id: 'd4', name: '許願池',   emoji: '⛲', rarity: 'legend', weight: 8,  type: 'decor', imgUrl: 'assets/items/build_fountain.png' },
+            // 🪑 擺設類
+            { id: 's2', name: '野餐組合', emoji: '🧺', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_picnic.png' },
+            { id: 's3', name: '木製長椅', emoji: '🪑', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_bench.png' },
+            { id: 's4', name: '篝火堆',   emoji: '🔥', rarity: 'rare',   weight: 18, type: 'decor', imgUrl: 'assets/items/deco_campfire.png' },
+            { id: 's5', name: '石燈籠',   emoji: '🏮', rarity: 'rare',   weight: 15, type: 'decor', imgUrl: 'assets/items/deco_lantern.png' },
+            { id: 's6', name: '鯉魚旗',   emoji: '🎏', rarity: 'rare',   weight: 16, type: 'decor', imgUrl: 'assets/items/deco_koinobori.png' },
+            { id: 's7', name: '野餐布',         emoji: '🟩', rarity: 'common', weight: 35, type: 'decor', imgUrl: 'assets/items/deco_picnic_mat.png' },
+            { id: 's8', name: '野餐籃',         emoji: '🧺', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_picnic_basket.png' },
+            { id: 's9', name: '野餐摺疊椅',     emoji: '🪑', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_folding_chair.png' },
+            { id: 's10', name: '陽傘',           emoji: '☂️', rarity: 'rare',   weight: 20, type: 'decor', imgUrl: 'assets/items/deco_parasol.png' },
+            { id: 's11', name: '風車',           emoji: '🌀', rarity: 'common', weight: 32, type: 'decor', imgUrl: 'assets/items/deco_windmill.png' },
+            { id: 's12', name: '三明治',         emoji: '🥪', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_sandwich.png' },
+            { id: 's13', name: '木製長桌',       emoji: '🪵', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_wood_table.png' },
+            { id: 's14', name: '木製圓椅',       emoji: '🪑', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_wood_stool.png' },
+            { id: 's15', name: '木製圓桌',       emoji: '🪵', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_wood_round_table.png' },
+        ];
+
+        // 抽卡池：10 種寵物，三階稀有度
+        const gachaPool = [
+            // 普通 (Common)
+            { name: '倉鼠',       emoji: '🐹', rarity: 'common', weight: 40, imgUrl: 'assets/pets/pet_hamster.png' },
+            { name: '白兔',       emoji: '🐇', rarity: 'common', weight: 40, imgUrl: 'assets/pets/pet_rabbit.png' },
+            { name: '柴犬',       emoji: '🐕', rarity: 'common', weight: 35, imgUrl: 'assets/pets/pet_shiba.png' },
+            { name: '小雞',       emoji: '🐥', rarity: 'common', weight: 35, imgUrl: 'assets/pets/pet_chick.png' },
+            // 稀有 (Rare)
+            { name: '英國短毛貓', emoji: '🐈', rarity: 'rare',   weight: 25, imgUrl: 'assets/pets/pet_british_shorthair.png' },
+            { name: '企鵝',       emoji: '🐧', rarity: 'rare',   weight: 25, imgUrl: 'assets/pets/pet_penguin.png' },
+            { name: '狐狸',       emoji: '🦊', rarity: 'rare',   weight: 20, imgUrl: 'assets/pets/pet_fox.png' },
+            // 傳說 (Legend)
+            { name: '獨角獸',     emoji: '🦄', rarity: 'legend', weight: 8,  imgUrl: 'assets/pets/pet_unicorn.png' },
+            { name: '水手',       emoji: '⚓', rarity: 'legend', weight: 7,  imgUrl: 'assets/pets/pet_sailor.png' },
+            { name: '小馬',       emoji: '🐴', rarity: 'legend', weight: 5,  imgUrl: 'assets/pets/pet_pony.png' },
+        ];
+
+        // ===== 狀態 =====
+        const users         = ref(JSON.parse(JSON.stringify(defaultUsers)));
+        const letters       = ref([]);
+        const currentUserId = ref('u1');
+        const currentTab    = ref('home');
+        const visitingId    = ref(null);
+        const errorMsg      = ref('');
+        const isDrawing     = ref(false);
+        const drawResult    = ref(null);
+        const animalStates  = ref({});
+        const letterForm    = reactive({ toId: '', content: '', cost: 1 });
+
+        // ── 收件人建議清單 ──
+        const recipientInput   = ref('');
+        const showSuggestions  = ref(false);
+        const filteredSuggestions = computed(()=>{
+            const q = recipientInput.value.trim().toLowerCase();
+            if(!q) return otherUsers.value;
+            return otherUsers.value.filter(u=>
+                u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+            );
+        });
+        const onRecipientInput = () => { showSuggestions.value = true; letterForm.toId = ''; };
+        const selectRecipient  = (u) => { recipientInput.value = `${u.name} (${u.email})`; letterForm.toId = u.id; showSuggestions.value = false; };
+        const hideSuggestions  = () => { setTimeout(()=>{ showSuggestions.value = false; }, 150); };
+        let roamInterval    = null;
+
+        // ===== Computed =====
+        const currentUser = computed(() =>
+            users.value.find(u => u.id === currentUserId.value) || users.value[0]
+        );
+        const otherUsers = computed(() =>
+            users.value.filter(u => u.id !== currentUserId.value)
+        );
+        const sortedLetters = computed(() =>
+            [...letters.value].sort((a, b) => b.timestamp - a.timestamp)
+        );
+        const myLetters = computed(() =>
+            letters.value.filter(l => l.to === currentUserId.value)
+                         .sort((a, b) => b.timestamp - a.timestamp)
+        );
+        const unreadCount = computed(() =>
+            myLetters.value.filter(l => !l.read).length
+        );
+        const displayIslandItems = computed(() => {
+            const id = visitingId.value || currentUserId.value;
+            return (users.value.find(u => u.id === id) || {}).island || [];
+        });
+        const leaderboard = computed(() =>
+            [...users.value].sort((a, b) => b.energy - a.energy)
+        );
+
+        // ===== 物品位置統一取得（裝飾品用 item.x/y，動物用 animalStates） =====
+        const getPos = (item, index) => {
+            if (item.type === 'animal') {
+                return { x: animalStates.value[item.id]?.x ?? 20, y: animalStates.value[item.id]?.y ?? 25 };
+            }
+            // 裝飾品：優先用存在 item 上的自由座標，否則用格子預設
+            if (item.x !== undefined && item.y !== undefined) {
+                return { x: item.x, y: item.y };
+            }
+            const cols = 3;
+            const col  = index % cols;
+            const row  = Math.floor(index / cols) % 3;
+            const baseX = [15, 42, 65];
+            const baseY = [15, 38, 60];
+            const jitter = (index * 7919) % 10 - 5;
+            return { x: baseX[col] + jitter, y: baseY[row] + jitter };
+        };
+
+        // ===== 拖曳系統 =====
+        const dragState = ref(null); // { item, startMouseX, startMouseY, startPosX, startPosY }
+
+        const isDragging = (itemId) => dragState.value?.item?.id === itemId;
+
+        const onDragStart = (e, item) => {
+            const touch   = e.touches ? e.touches[0] : e;
+            const index   = displayIslandItems.value.indexOf(item);
+            const curPos  = getPos(item, index);
+            dragState.value = {
+                item,
+                startMouseX: touch.clientX,
+                startMouseY: touch.clientY,
+                startPosX:   curPos.x,
+                startPosY:   curPos.y,
+            };
+        };
+
+        const onDragMove = (e) => {
+            if (!dragState.value) return;
+            const touch = e.touches ? e.touches[0] : e;
+            const container = document.getElementById('island-container');
+            if (!container) return;
+
+            const rect    = container.getBoundingClientRect();
+            const dx      = touch.clientX - dragState.value.startMouseX;
+            const dy      = touch.clientY - dragState.value.startMouseY;
+            // 轉成百分比（相對小島容器寬高）
+            const dxPct   = (dx / rect.width)  * 100;
+            const dyPct   = (dy / rect.height) * 100;
+
+            // 邊界限制：0%~90%
+            const newX = Math.min(90, Math.max(0, dragState.value.startPosX + dxPct));
+            const newY = Math.min(85, Math.max(0, dragState.value.startPosY + dyPct));
+
+            const item = dragState.value.item;
+            if (item.type === 'animal') {
+                if (animalStates.value[item.id]) {
+                    animalStates.value[item.id].x = newX;
+                    animalStates.value[item.id].y = newY;
+                }
+            } else {
+                item.x = newX;
+                item.y = newY;
+            }
+        };
+
+        const onDragEnd = () => {
+            if (!dragState.value) return;
+            dragState.value = null;
+            saveData();
+        };
+
+        // ── Home canvas pan（拖曳移動視角） ──
+        const homePan = ref(null);
+        const onIslandMouseDown = (e) => {
+            if (isEditMode.value) return;
+            const target = e.target || e.srcElement;
+            if (target.closest('.float-item,.warehouse,.layer-panel,.island-center-btn')) return;
+            const src = e.touches ? e.touches[0] : e;
+            const cam = window.islandEngine?.cam || {x:0,y:0};
+            homePan.value = { cx: src.clientX, cy: src.clientY, camX: cam.x, camY: cam.y };
+        };
+        const onIslandMouseMove = (e) => {
+            if (dragState.value) { onDragMove(e); return; }
+            if (!homePan.value) return;
+            const src = e.touches ? e.touches[0] : e;
+            const cam = window.islandEngine?.cam;
+            if (cam) {
+                cam.x = homePan.value.camX - (src.clientX - homePan.value.cx);
+                cam.y = homePan.value.camY - (src.clientY - homePan.value.cy);
+            }
+        };
+        const onIslandMouseUp = (e) => {
+            if (dragState.value) { onDragEnd(e); }
+            homePan.value = null;
+        };
+        const centerHomeIsland = () => { window.islandEngine?.center(); };
+
+        // ===== 動物漫步 =====
+        const initAnimalStates = () => {
+            displayIslandItems.value.forEach((item) => {
+                if (item.type === 'animal' && !animalStates.value[item.id]) {
+                    animalStates.value[item.id] = {
+                        x: 15 + Math.random() * 55,
+                        y: 15 + Math.random() * 45,
+                        flip: Math.random() > 0.5
+                    };
+                }
+            });
+        };
+        const moveAnimals = () => {
+            if (currentTab.value !== 'home') return;
+            displayIslandItems.value.forEach(item => {
+                if (item.type === 'animal' && animalStates.value[item.id]) {
+                    if (Math.random() > 0.35) {
+                        const oldX = animalStates.value[item.id].x;
+                        const newX = 12 + Math.random() * 60;
+                        const newY = 10 + Math.random() * 50;
+                        animalStates.value[item.id].x    = newX;
+                        animalStates.value[item.id].y    = newY;
+                        animalStates.value[item.id].flip = newX > oldX;
+                    }
+                }
+            });
+        };
+
+        // ===== 資料持久化 =====
+        const saveData = () => {
+            localStorage.setItem('thankuIslandData', JSON.stringify({ users: users.value, letters: letters.value }));
+        };
+        const initData = () => {
+            try {
+                const raw = localStorage.getItem('thankuIslandData');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.users?.length) {
+                        users.value = parsed.users.map(u => ({
+                            ...u, warehouse: u.warehouse || []
+                        }));
+                        letters.value = (parsed.letters || []).map(l => ({ ...l, read: l.read ?? true }));
+                    }
+                }
+            } catch(e) {
+                errorMsg.value = '資料解析失敗，請清除後重試。';
+            }
+            // 若沒有任何感謝訊息，加入示意資料讓佈告欄看起來溫馨
+            if (letters.value.length === 0) {
+                const now = Date.now();
+                letters.value = [
+                    { id: now-5000, from:'u2', to:'u1', content:'謝謝 Alice 上週幫我 review 程式碼，給了很多寶貴建議，讓我成長了很多！🌟', timestamp: now-5000, cardCost:2, likes:['u1','u3'], read:true },
+                    { id: now-4000, from:'u1', to:'u3', content:'Carol 每次都記得大家的生日，還幫忙訂蛋糕，這份細心真的讓我好感動 🎂', timestamp: now-4000, cardCost:1, likes:['u2'], read:true },
+                    { id: now-3000, from:'u3', to:'u2', content:'Bob 在那個關鍵時刻頂住了，帶著整個團隊把 bug 解掉，超強的！感謝你 💪', timestamp: now-3000, cardCost:1, likes:['u1'], read:true },
+                    { id: now-2000, from:'u1', to:'u2', content:'謝謝你總是願意聽我說話，每次遇到困難你都在，感覺很幸運有這樣的同事 🌿', timestamp: now-2000, cardCost:1, likes:[], read:true },
+                    { id: now-1000, from:'u2', to:'u3', content:'謝謝 Carol 這次主動接下簡報準備，做得超級精彩，客戶都說讚！✨', timestamp: now-1000, cardCost:1, likes:['u1','u2'], read:true },
+                ];
+                saveData();
+            }
+        };
+        const forceReset = () => {
+            localStorage.removeItem('thankuIslandData');
+            location.reload();
+        };
+
+        // ===== 輔助函式 =====
+        const getUserById = (id) => users.value.find(u => u.id === id) || { name: '未知', island: [] };
+        const getDisplayName = (id) => {
+            const u = users.value.find(u => u.id === id);
+            if (u) return u.name;
+            if (id?.includes('@')) return id.split('@')[0];
+            return '神秘人';
+        };
+        const getDisplayInitial = (id) => getDisplayName(id).charAt(0).toUpperCase();
+        const formatDate = (ts) => {
+            const diff = Math.floor((Date.now() - ts) / 60000);
+            if (diff < 1)    return 'Just now';
+            if (diff < 60)   return `${diff}m ago`;
+            if (diff < 1440) return `${Math.floor(diff/60)}h ago`;
+            return new Date(ts).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+        };
+
+        // ===== 操作函式 =====
+        const switchUser = (id) => {
+            currentUserId.value = id;
+            visitingId.value    = null;
+            letterForm.toId     = '';
+        };
+        const visitUser  = (id) => { visitingId.value = id; switchTab('home'); };
+        const stopVisiting = ()  => { visitingId.value = null; };
+        const switchTab  = (tab) => {
+            const prev = currentTab.value;
+            currentTab.value = tab;
+            nextTick(() => {
+                document.getElementById('main-content')?.scrollTo(0, 0);
+                if(tab==='home')   window.initIslandCanvas?.();
+                if(tab==='island') window.initIslandEditorCanvas?.();
+                if(prev==='island' && tab!=='island'){
+                    window.islandEngine?.save();
+                    setTimeout(()=>window.initIslandCanvas?.(), 50);
+                }
+            });
+        };
+
+        const adjustCardCost = (d) => {
+            const next = letterForm.cost + d;
+            if (next < 1 || next > (currentUser.value?.cards || 0)) return;
+            letterForm.cost = next;
+        };
+
+        const sendLetter = () => {
+            if (!letterForm.toId || !letterForm.content.trim()) { alert('請填寫收件人與訊息。'); return; }
+            const sender   = users.value.find(u => u.id === currentUserId.value);
+            const receiver = users.value.find(u => u.id === letterForm.toId);
+            const cost     = letterForm.cost;
+            if (sender.cards < cost) return;
+
+            sender.cards -= cost;
+            if (receiver) {
+                const bonus = (Math.floor(Math.random() * 450) + 50) * cost;
+                receiver.shells += bonus;
+                receiver.energy += 100 * cost;
+            }
+
+            letters.value.push({
+                id: Date.now(), from: sender.id, to: letterForm.toId,
+                content: letterForm.content, timestamp: Date.now(),
+                cardCost: cost, likes: [], read: false
+            });
+
+            saveData();
+            letterForm.content = '';
+            letterForm.toId    = '';
+            letterForm.cost    = 1;
+            recipientInput.value = '';
+            switchTab('wall');
+        };
+
+        const markAsRead = (letter) => {
+            if (!letter.read) { letter.read = true; saveData(); }
+        };
+
+        const toggleLike = (letter) => {
+            if (!letter.likes) letter.likes = [];
+            const idx = letter.likes.indexOf(currentUserId.value);
+            if (idx === -1) letter.likes.push(currentUserId.value);
+            else letter.likes.splice(idx, 1);
+            saveData();
+        };
+        const isLiked = (letter) => (letter.likes || []).includes(currentUserId.value);
+
+        const buyItem = (item) => {
+            if ((currentUser.value?.energy || 0) < item.price) { alert('能量不足。'); return; }
+            currentUser.value.energy -= item.price;
+            currentUser.value.island.push({ id: Date.now(), name: item.name, emoji: item.emoji, imgUrl: item.imgUrl || null, type: item.type });
+            saveData();
+            switchTab('home');
+        };
+
+        // ===== 抽卡系統 =====
+        const drawType = ref('pet');
+
+        // 取得物品的鏡射 transform
+        // 動物：優先用 animalStates 的 flip（漫步自動翻轉），再疊加手動 flipX
+        // 裝飾品：只用 item.flipX
+        const getFlip = (item) => {
+            let flip = item.flipX || false;
+            if (item.type === 'animal' && animalStates.value[item.id]) {
+                // 動物漫步的 flip 與手動 flipX 做 XOR
+                const roamFlip = animalStates.value[item.id].flip || false;
+                flip = roamFlip !== (item.flipX || false);
+            }
+            return flip ? 'scaleX(-1)' : 'scaleX(1)';
+        };
+
+        // 切換手動鏡射
+        const toggleFlip = (item) => {
+            item.flipX = !(item.flipX || false);
+            saveData();
+        };
+        const isEditMode = ref(false);
+        const toggleEditMode = () => { isEditMode.value = !isEditMode.value; };
+
+        // ── 地形編輯器 ──
+        const showIslandEditor = ref(false);
+        const islandTool = ref('pan');
+        const islandBrush = ref(1);
+        const islandEditMode = ref(false);
+
+        const islandTools = [
+            { id:'pan',      icon:'✋', label:'移動', sub:'拖曳平移' },
+            { id:'expand',   icon:'🟩', label:'擴張', sub:'塗抹增加' },
+            { id:'shrink',   icon:'🟫', label:'縮減', sub:'塗抹移除' },
+            { id:'grass',    icon:'🌿', label:'草地', sub:'平地' },
+            { id:'water',    icon:'💧', label:'湖水', sub:'草地→湖' },
+            { id:'highland', icon:'⛰️', label:'高地', sub:'草地→丘' },
+        ];
+
+        const islandEditorHint = computed(()=>{
+            if(!islandEditMode.value) return '拖曳可平移視角';
+            const map = {
+                pan:'拖曳平移視角',
+                expand:'在島嶼旁塗抹擴張陸地',
+                shrink:'塗抹縮減陸地',
+                grass:'塗草地（恢復平地）',
+                water:'在草地上塗湖水',
+                highland:'在草地上塗高地（最多3層，再點加層）',
+            };
+            return map[islandTool.value] || '';
+        });
+
+        const openIslandEditor = () => { switchTab('island'); };
+        const closeIslandEditor = () => { switchTab('home'); };
+        const islandAddTile = () => window.islandEditorEngine?.addTile();
+        const islandCenterView = () => window.islandEditorEngine?.center();
+        const islandReset = () => { if(confirm('確定重置地形嗎？')) window.islandEditorEngine?.reset(); };
+
+        // 倉庫物品上島
+        const placeOnIsland = (item) => {
+            const user = currentUser.value;
+            const idx  = user.warehouse.findIndex(w => w.id === item.id);
+            if (idx === -1) return;
+            user.warehouse.splice(idx, 1);
+            user.island.push(item);
+            saveData();
+        };
+
+        // 島上物品下架回倉庫
+        const removeFromIsland = (item) => {
+            const user = currentUser.value;
+            const idx  = user.island.findIndex(i => i.id === item.id);
+            if (idx === -1) return;
+            user.island.splice(idx, 1);
+            user.warehouse.push(item);
+            saveData();
+        };
+
+        const warehouseItems = computed(() => currentUser.value?.warehouse || []);
+
+        // 倉庫：相同名稱合併顯示數量
+        const groupedWarehouse = computed(() => {
+            const map = new Map();
+            warehouseItems.value.forEach(item => {
+                const key = item.name;
+                if (!map.has(key)) map.set(key, { key, items: [], count: 0 });
+                map.get(key).items.push(item);
+                map.get(key).count++;
+            });
+            return Array.from(map.values());
+        });
+
+        // ===== 縮放 =====
+        const scaleItem = (item, delta) => {
+            const cur = item.scale || 1;
+            item.scale = Math.min(2.5, Math.max(0.3, Math.round((cur + delta) * 100) / 100));
+            saveData();
+        };
+
+        // ===== 圖層系統 =====
+        const selectedLayerItem = ref(null);
+
+        const selectLayerItem = (item) => {
+            selectedLayerItem.value = selectedLayerItem.value?.id === item.id ? null : item;
+        };
+
+        // 取得物品的 zIndex：優先用 item.layerOrder，否則用 index
+        const getItemZIndex = (item, index) => {
+            if (isDragging(item.id)) return 999;
+            if (item.layerOrder !== undefined) return item.layerOrder;
+            if (item.type === 'animal') return 50 + Math.floor(getPos(item, index).y);
+            return index + 1;
+        };
+
+        const moveLayer = (item, dir) => {
+            const island = currentUser.value.island;
+            const idx = island.findIndex(i => i.id === item.id);
+            if (idx === -1) return;
+
+            // 先確保所有物品都有 layerOrder
+            island.forEach((it, i) => { if (it.layerOrder === undefined) it.layerOrder = i + 1; });
+
+            const orders = island.map(i => i.layerOrder).sort((a, b) => a - b);
+            const min = orders[0], max = orders[orders.length - 1];
+            const cur = item.layerOrder;
+
+            if (dir === 'top')    item.layerOrder = max + 1;
+            if (dir === 'bottom') item.layerOrder = min - 1;
+            if (dir === 'up') {
+                // 找出比自己大一格的物品，互換
+                const above = island.filter(i => i.id !== item.id && i.layerOrder > cur)
+                                    .sort((a, b) => a.layerOrder - b.layerOrder)[0];
+                if (above) { const tmp = above.layerOrder; above.layerOrder = cur; item.layerOrder = tmp; }
+            }
+            if (dir === 'down') {
+                const below = island.filter(i => i.id !== item.id && i.layerOrder < cur)
+                                    .sort((a, b) => b.layerOrder - a.layerOrder)[0];
+                if (below) { const tmp = below.layerOrder; below.layerOrder = cur; item.layerOrder = tmp; }
+            }
+            saveData();
+        };
+
+        // 加權隨機（通用）
+        const weightedRandom = (pool) => {
+            const total = pool.reduce((s, g) => s + g.weight, 0);
+            let r = Math.random() * total;
+            for (const g of pool) { r -= g.weight; if (r <= 0) return g; }
+            return pool[0];
+        };
+
+        const triggerGacha = (type = 'pet', isTest = false) => {
+            const cost = type === 'pet' ? 500 : 300;
+            if (!isTest && (currentUser.value?.energy || 0) < cost) {
+                alert(`能量不足 (需要 ${cost} ⚡)`); return;
+            }
+            if (!isTest) currentUser.value.energy -= cost;
+            drawType.value   = type;
+            isDrawing.value  = true;
+            drawResult.value = null;
+
+            let pool = type === 'pet' ? gachaPool : shopItems;
+
+            // 寵物：排除已擁有（島上 + 倉庫）的種類
+            if (type === 'pet') {
+                const user = currentUser.value;
+                const owned = new Set([
+                    ...(user.island    || []).filter(i => i.type === 'animal').map(i => i.name),
+                    ...(user.warehouse || []).filter(i => i.type === 'animal').map(i => i.name),
+                ]);
+                const available = pool.filter(p => !owned.has(p.name));
+                // 若全部都有了，就不限制（讓全收藏玩家還是能抽）
+                if (available.length > 0) pool = available;
+            }
+
+            setTimeout(() => { drawResult.value = weightedRandom(pool); }, 1800);
+        };
+
+        const finishDraw = () => {
+            if (drawResult.value) {
+                if (!currentUser.value.warehouse) currentUser.value.warehouse = [];
+                currentUser.value.warehouse.push({
+                    id: Date.now(),
+                    name:   drawResult.value.name,
+                    emoji:  drawResult.value.emoji,
+                    imgUrl: drawResult.value.imgUrl || null,
+                    type:   drawType.value === 'pet' ? 'animal' : 'decor'
+                });
+                saveData();
+            }
+            isDrawing.value  = false;
+            drawResult.value = null;
+            switchTab('home');
+        };
+
+        // ===== 卡池預覽 =====
+        const poolPreview       = ref(null);   // 'pet' | 'decor' | null
+        const poolRarityFilter  = ref('all');
+
+        const openPool  = (type) => { poolPreview.value = type; poolRarityFilter.value = 'all'; };
+        const closePool = ()     => { poolPreview.value = null; };
+
+        const filteredPoolItems = computed(() => {
+            const pool = poolPreview.value === 'pet' ? gachaPool : shopItems;
+            if (poolRarityFilter.value === 'all') return pool;
+            return pool.filter(i => i.rarity === poolRarityFilter.value);
+        });
+
+        const calcRate = (item, type) => {
+            const pool  = type === 'pet' ? gachaPool : shopItems;
+            const total = pool.reduce((s, g) => s + g.weight, 0);
+            return ((item.weight / total) * 100).toFixed(1);
+        };
+
+        const handleImageError = (item) => { item.imgUrl = null; };
+
+        // ===== Watchers =====
+        watch(displayIslandItems, initAnimalStates, { deep: true });
+        watch([users, letters], saveData, { deep: true });
+
+        onMounted(() => {
+            initData();
+            initAnimalStates();
+            roamInterval = setInterval(moveAnimals, 4500);
+            // 初始化島嶼 canvas（用 setTimeout 確保 DOM ready）
+            setTimeout(() => window.initIslandCanvas?.(), 100);
+        });
+        onUnmounted(() => {
+            if (roamInterval) clearInterval(roamInterval);
+            if (islandAnimFrame) cancelAnimationFrame(islandAnimFrame);
+        });
+
+        return {
+            users, currentUserId, currentUser, otherUsers,
+            currentTab, letterForm, shopItems, displayIslandItems,
+            visitingId, leaderboard, errorMsg, isDrawing, drawResult,
+            animalStates, myLetters, unreadCount,
+            getUserById, getDisplayName, getDisplayInitial, formatDate,
+            switchUser, visitUser, stopVisiting, switchTab,
+            sendLetter, adjustCardCost, markAsRead, toggleLike, isLiked,
+            recipientInput, showSuggestions, filteredSuggestions,
+            onRecipientInput, selectRecipient, hideSuggestions,
+            buyItem: () => {}, triggerGacha, finishDraw, handleImageError, forceReset,
+            sortedLetters, getPos,
+            isDragging, onDragStart, onDragMove, onDragEnd, dragState,
+            onIslandMouseDown, onIslandMouseMove, onIslandMouseUp, centerHomeIsland,
+            poolPreview, poolRarityFilter, openPool, closePool,
+            filteredPoolItems, calcRate,
+            isEditMode, toggleEditMode, warehouseItems, groupedWarehouse,
+            placeOnIsland, removeFromIsland,
+            getFlip, toggleFlip,
+            scaleItem,
+            selectedLayerItem, selectLayerItem, moveLayer, getItemZIndex,
+            showIslandEditor, openIslandEditor, closeIslandEditor,
+            islandTool, islandBrush, islandTools, islandEditorHint,
+            islandAddTile, islandCenterView, islandReset, islandEditMode
+        };
+    }
+}).mount('#app');
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════
+   島嶼地形引擎 v3 — 單一引擎，雙 canvas 共用 tiles
+═══════════════════════════════════════════════ */
+(function(){
+/* ── 常數 ── */
+const CELL=6,HALF_W=28,HALF_H=14,TILE_DEPTH=26,HIGHLAND_RAISE=8,MAX_HL=3;
+const STORAGE_KEY='thankuIslandTiles';
+const TK=(tx,ty)=>`${tx},${ty}`;
+function iso(c,r,z=0){return{x:(c-r)*HALF_W,y:(c+r)*HALF_H-z};}
+function tileNbrs(tx,ty){return[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>({tx:tx+a,ty:ty+b}));}
+
+/* ── 視覺資料 ── */
+const SIDE_L='#b87848',SIDE_R='#c88a58';
+const OCEAN_FILL='#b3ddff',OCEAN_STROKE='#3bc8ff';
+const GRASS_MAP={'0,0':{fill:'#6ac678'},'0,1':{fill:'#69c477'},'1,0':{fill:'#69c477'},'0,2':{fill:'#68c376'},'1,1':{fill:'#68c376'},'2,0':{fill:'#68c376'},'0,3':{fill:'#67c175'},'1,2':{fill:'#67c175'},'2,1':{fill:'#67c175'},'3,0':{fill:'#67c175'},'0,4':{fill:'#67c075'},'1,3':{fill:'#67c075'},'2,2':{fill:'#67c075'},'3,1':{fill:'#67c075'},'4,0':{fill:'#67c075'},'0,5':{fill:'#66be74'},'1,4':{fill:'#66be74'},'2,3':{fill:'#66be74'},'3,2':{fill:'#66be74'},'4,1':{fill:'#66be74'},'5,0':{fill:'#66be74'},'1,5':{fill:'#65bd73'},'2,4':{fill:'#65bd73'},'3,3':{fill:'#65bd73'},'4,2':{fill:'#65bd73'},'5,1':{fill:'#65bd73'},'2,5':{fill:'#64bb72'},'3,4':{fill:'#64bb72'},'4,3':{fill:'#64bb72'},'5,2':{fill:'#64bb72'},'3,5':{fill:'#63ba71'},'4,4':{fill:'#63ba71'},'5,3':{fill:'#63ba71'},'4,5':{fill:'#63b870'},'5,4':{fill:'#63b870'},'5,5':{fill:'#62b76f'}};
+const WATER_TPL=[{fill:'#66a4ff',pts:[[0,0],[28,14],[0,28],[-28,14]]},{fill:'#b87848',pts:[[0,0],[-28,14],[-23.75,16.13],[0,4.25]]},{fill:'#c88a58',pts:[[0,4.25],[23.75,16.13],[28,14],[0,0]]}];
+const HIGHLAND_TPL=[{fill:'#79db84',pts:[[0,0],[28,14],[0,28],[-28,14]]},{fill:'#b87848',pts:[[0,28],[-28,14],[-28,22.51],[0,36.51]]},{fill:'#c88a58',pts:[[0,36.51],[28,22.51],[28,14],[0,28]]}];
+
+/* ── 共用 tiles ── */
+const tiles=new Map();
+
+function loadTiles(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      tiles.clear();
+      JSON.parse(raw).forEach(({tx,ty,cells})=>tiles.set(TK(tx,ty),{tx,ty,cells:new Uint8Array(cells)}));
+    }
+  }catch(e){}
+  if(tiles.size===0) tiles.set(TK(0,0),{tx:0,ty:0,cells:new Uint8Array(CELL*CELL)});
+}
+function saveTiles(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify([...tiles.values()].map(({tx,ty,cells})=>({tx,ty,cells:Array.from(cells)}))));
+}
+
+/* ── 渲染工具 ── */
+function drawShape(ctx,s,ox,oy){
+  ctx.beginPath();
+  s.pts.forEach(([dx,dy],i)=>i===0?ctx.moveTo(ox+dx,oy+dy):ctx.lineTo(ox+dx,oy+dy));
+  ctx.closePath();
+  if(s.fill&&s.fill!=='none'){ctx.fillStyle=s.fill;ctx.fill();}
+}
+
+function renderFrame(ctx,canvas,cam,editMode){
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  // 海面
+  ctx.fillStyle=OCEAN_FILL; ctx.fillRect(0,0,w,h);
+  ctx.save();
+  ctx.strokeStyle=OCEAN_STROKE;ctx.globalAlpha=0.22;ctx.lineWidth=1.5;
+  for(let i=0;i<4;i++){
+    const y=40+i*65+Math.sin(wave*0.6+i)*5;
+    ctx.beginPath();
+    for(let x=0;x<w+60;x+=55){const yy=y+Math.sin(wave*0.9+x*0.03+i)*5;x===0?ctx.moveTo(x,yy):ctx.quadraticCurveTo(x-27,yy-5,x,yy);}
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 地塊
+  function tileOrigin(tx,ty){
+    const b=iso(tx*CELL,ty*CELL);
+    return{x:b.x-cam.x+w/2, y:b.y-cam.y+h/2};
+  }
+  [...tiles.values()].sort((a,b)=>(a.tx+a.ty)-(b.tx+b.ty)).forEach(tile=>{
+    const{tx,ty,cells}=tile, o=tileOrigin(tx,ty), ox=o.x, oy=o.y;
+    ctx.save();
+    const C1=iso(CELL,0),C2=iso(CELL,CELL),C3=iso(0,CELL);
+    const hF=tiles.has(TK(tx,ty+1)),hL=tiles.has(TK(tx-1,ty));
+    if(!hF){ctx.beginPath();ctx.moveTo(ox+C1.x,oy+C1.y);ctx.lineTo(ox+C2.x,oy+C2.y);ctx.lineTo(ox+C2.x,oy+C2.y+TILE_DEPTH);ctx.lineTo(ox+C1.x,oy+C1.y+TILE_DEPTH);ctx.closePath();ctx.fillStyle=SIDE_R;ctx.fill();}
+    if(!hL){ctx.beginPath();ctx.moveTo(ox+C3.x,oy+C3.y);ctx.lineTo(ox+C2.x,oy+C2.y);ctx.lineTo(ox+C2.x,oy+C2.y+TILE_DEPTH);ctx.lineTo(ox+C3.x,oy+C3.y+TILE_DEPTH);ctx.closePath();ctx.fillStyle=SIDE_L;ctx.fill();}
+    if(!hF&&!hL){
+      ctx.beginPath();ctx.moveTo(ox+C2.x,oy+C2.y);ctx.lineTo(ox+C2.x,oy+C2.y+TILE_DEPTH);ctx.lineTo(ox+C3.x,oy+C3.y+TILE_DEPTH);ctx.closePath();ctx.fillStyle='#9A6030';ctx.fill();
+      ctx.beginPath();ctx.moveTo(ox+C2.x,oy+C2.y);ctx.lineTo(ox+C2.x,oy+C2.y+TILE_DEPTH);ctx.lineTo(ox+C1.x,oy+C1.y+TILE_DEPTH);ctx.closePath();ctx.fillStyle='#9A6030';ctx.fill();
+    }
+    for(let sum=0;sum<CELL*2-1;sum++){
+      for(let col=0;col<CELL;col++){
+        const row=sum-col; if(row<0||row>=CELL)continue;
+        const ci=cells[row*CELL+col],hl=ci>=2?ci-1:0,rz=hl*HIGHLAND_RAISE;
+        const P=iso(col,row,rz),R=iso(col+1,row,rz),S=iso(col+1,row+1,rz),Q=iso(col,row+1,rz);
+        const tx2=ox+P.x,ty2=oy+P.y;
+        if(ci===0){
+          const g=GRASS_MAP[`${col},${row}`]||GRASS_MAP['5,5'];
+          ctx.beginPath();ctx.moveTo(ox+P.x,oy+P.y);ctx.lineTo(ox+R.x,oy+R.y);ctx.lineTo(ox+S.x,oy+S.y);ctx.lineTo(ox+Q.x,oy+Q.y);ctx.closePath();ctx.fillStyle=g.fill;ctx.fill();
+        } else if(ci===1){
+          WATER_TPL.forEach(s=>drawShape(ctx,s,tx2,ty2));
+        } else if(ci>=2){
+          for(let l=0;l<ci-1;l++){const lP=iso(col,row,l*HIGHLAND_RAISE);HIGHLAND_TPL.forEach(s=>drawShape(ctx,s,ox+lP.x,oy+lP.y));}
+        }
+        if(editMode){
+          ctx.beginPath();ctx.moveTo(ox+P.x,oy+P.y);ctx.lineTo(ox+R.x,oy+R.y);ctx.lineTo(ox+S.x,oy+S.y);ctx.lineTo(ox+Q.x,oy+Q.y);ctx.closePath();
+          ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=0.6;ctx.stroke();
+        }
+      }
+    }
+    if(editMode){
+      const C0=iso(0,0);
+      ctx.beginPath();[C0,C1,C2,C3].forEach((c,i)=>i===0?ctx.moveTo(ox+c.x,oy+c.y):ctx.lineTo(ox+c.x,oy+c.y));
+      ctx.closePath();ctx.strokeStyle='rgba(255,255,255,0.4)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+    }
+    ctx.restore();
+  });
+}
+
+/* ── 波浪動畫 ── */
+let wave=0;
+
+/* ════════════════════
+   Home canvas（純預覽）
+════════════════════ */
+let homeCanvas=null, homeCtx=null, homeCam={x:0,y:0}, homeRaf=null;
+
+function centerCam(cam, canvas){
+  const keys=[...tiles.keys()]; if(!keys.length)return;
+  let sx=0,sy=0;
+  keys.forEach(k=>{const[tx,ty]=k.split(',').map(Number);const b=iso(tx*CELL,ty*CELL);sx+=b.x+(HALF_W*CELL)/2;sy+=b.y+(HALF_H*CELL)/2;});
+  cam.x=sx/keys.length; cam.y=sy/keys.length-(canvas.height*0.08);
+}
+
+function homeLoop(){
+  if(!homeCanvas||!homeCtx){homeRaf=requestAnimationFrame(homeLoop);wave+=0.033;return;}
+  renderFrame(homeCtx,homeCanvas,homeCam,false);
+  wave+=0.033;
+  homeRaf=requestAnimationFrame(homeLoop);
+}
+
+window.initIslandCanvas=function(){
+  requestAnimationFrame(()=>{
+    const c=document.getElementById('island-canvas');
+    if(!c){setTimeout(window.initIslandCanvas,100);return;}
+    const p=c.parentElement;
+    if(!p||p.clientWidth===0){setTimeout(window.initIslandCanvas,100);return;}
+    homeCanvas=c; homeCtx=c.getContext('2d');
+    c.width=p.clientWidth; c.height=p.clientHeight||p.offsetHeight||400;
+    loadTiles();
+    centerCam(homeCam,homeCanvas);
+    if(homeRaf)cancelAnimationFrame(homeRaf);
+    // home loop 用獨立 wave 計時
+    let homeWave=0;
+    function hLoop(){
+      if(!homeCanvas||!homeCtx){homeRaf=requestAnimationFrame(hLoop);return;}
+      homeCanvas.width=homeCanvas.parentElement.clientWidth||homeCanvas.width;
+      homeCanvas.height=homeCanvas.parentElement.clientHeight||homeCanvas.height;
+      renderFrame(homeCtx,homeCanvas,homeCam,false);
+      homeWave+=0.033;
+      homeRaf=requestAnimationFrame(hLoop);
+    }
+    // patch wave for home
+    const origRender=(ctx,canvas,cam,em)=>{
+      // use local homeWave
+      const savedWave=wave;
+      renderFrame(ctx,canvas,cam,em);
+      wave=savedWave;
+    };
+    homeRaf=requestAnimationFrame(hLoop);
+    if(window._homeRO)window._homeRO.disconnect();
+    window._homeRO=new ResizeObserver(()=>{
+      if(!homeCanvas||!homeCanvas.parentElement)return;
+      homeCanvas.width=homeCanvas.parentElement.clientWidth;
+      homeCanvas.height=homeCanvas.parentElement.clientHeight||400;
+      centerCam(homeCam,homeCanvas);
+    });
+    window._homeRO.observe(p);
+  });
+};
+
+/* ════════════════════
+   Editor canvas（互動編輯）
+════════════════════ */
+let edCanvas=null, edCtx=null, edCam={x:0,y:0}, edRaf=null;
+let edWave=0;
+let panStart=null, camSnap=null, isPainting=false, hover=null;
+
+function edGetTool(){
+  const a=document.querySelector('.is-btn.active[data-tool],.imb-btn.active[data-tool]');
+  return a?.dataset?.tool||'pan';
+}
+function edGetBrush(){
+  const a=document.querySelector('.is-sz.active,.imb-sz.active');
+  return a?parseInt(a.textContent)||1:1;
+}
+function edIsEditing(){
+  return !!document.querySelector('.is-mode-btn.on,.imb-btn.on');
+}
+function edBrushCells(col,row){
+  const r=edGetBrush()-1,cells=[];
+  for(let dr=-r;dr<=r;dr++) for(let dc=-r;dc<=r;dc++) cells.push({c:col+dc,r:row+dr});
+  return cells;
+}
+
+function inDiamond(px,py,cx,cy,hw,hh){return Math.abs(px-cx)/hw+Math.abs(py-cy)/hh<=1;}
+
+function edHitTile(sx,sy){
+  const sorted=[...tiles.values()].sort((a,b)=>(b.tx+b.ty)-(a.tx+a.ty));
+  for(const t of sorted){
+    const b=iso(t.tx*CELL,t.ty*CELL);
+    const ox=b.x-edCam.x+edCanvas.width/2, oy=b.y-edCam.y+edCanvas.height/2;
+    const cx=ox+iso(CELL/2,CELL/2).x, cy=oy+iso(CELL/2,CELL/2).y;
+    if(inDiamond(sx,sy,cx,cy,HALF_W*CELL,HALF_H*CELL)) return t;
+  }
+  return null;
+}
+function edHitCell(sx,sy,tile){
+  const b=iso(tile.tx*CELL,tile.ty*CELL);
+  const ox=b.x-edCam.x+edCanvas.width/2, oy=b.y-edCam.y+edCanvas.height/2;
+  for(let col=0;col<CELL;col++) for(let row=0;row<CELL;row++){
+    const ci=tile.cells[row*CELL+col],hl=ci>=2?ci-1:0,rz=hl*HIGHLAND_RAISE;
+    const P=iso(col,row,rz),R=iso(col+1,row,rz),S=iso(col+1,row+1,rz),Q=iso(col,row+1,rz);
+    const cx=ox+(P.x+R.x+S.x+Q.x)/4, cy=oy+(P.y+R.y+S.y+Q.y)/4;
+    if(inDiamond(sx,sy,cx,cy,HALF_W,HALF_H)) return{col,row};
+  }
+  return null;
+}
+function adjLand(tx,ty){return tileNbrs(tx,ty).some(n=>tiles.has(TK(n.tx,n.ty)));}
+
+function edApply(tile,col,row,tool){
+  edBrushCells(col,row).forEach(({c,r})=>{
+    if(c<0||c>=CELL||r<0||r>=CELL)return;
+    const cur=tile.cells[r*CELL+c];
+    if(tool==='grass') tile.cells[r*CELL+c]=0;
+    else if(tool==='water'  && cur===0) tile.cells[r*CELL+c]=1;
+    else if(tool==='highland'){
+      if(cur===0) tile.cells[r*CELL+c]=2;
+      else if(cur>=2 && cur<1+MAX_HL) tile.cells[r*CELL+c]=cur+1;
+    }
+  });
+}
+
+function edGetPos(e){
+  const rect=edCanvas.getBoundingClientRect();
+  const sx=edCanvas.width/rect.width, sy=edCanvas.height/rect.height;
+  const src=e.touches?e.touches[0]:(e.changedTouches||[e])[0];
+  return{x:(src.clientX-rect.left)*sx, y:(src.clientY-rect.top)*sy, cx:src.clientX, cy:src.clientY};
+}
+
+function edDrawHover(){
+  if(!hover)return;
+  const{tile,col,row}=hover;
+  const b=iso(tile.tx*CELL,tile.ty*CELL);
+  const ox=b.x-edCam.x+edCanvas.width/2, oy=b.y-edCam.y+edCanvas.height/2;
+  edBrushCells(col,row).forEach(({c,r})=>{
+    if(c<0||c>=CELL||r<0||r>=CELL)return;
+    const ci=tile.cells[r*CELL+c],hl=ci>=2?ci-1:0,rz=hl*HIGHLAND_RAISE;
+    const P=iso(c,r,rz),R=iso(c+1,r,rz),S=iso(c+1,r+1,rz),Q=iso(c,r+1,rz);
+    edCtx.beginPath();edCtx.moveTo(ox+P.x,oy+P.y);edCtx.lineTo(ox+R.x,oy+R.y);edCtx.lineTo(ox+S.x,oy+S.y);edCtx.lineTo(ox+Q.x,oy+Q.y);edCtx.closePath();
+    edCtx.fillStyle='rgba(255,255,255,0.3)';edCtx.fill();
+  });
+}
+
+function edOnDown(e){
+  e.preventDefault(); const p=edGetPos(e);
+  const editing=edIsEditing();
+  const tool=editing?edGetTool():'pan';
+  if(tool==='pan'||!editing){panStart={cx:p.cx,cy:p.cy};camSnap={x:edCam.x,y:edCam.y};edCanvas.style.cursor='grabbing';return;}
+  isPainting=true;
+  const tile=edHitTile(p.x,p.y);
+  if(tile){
+    if(tool==='shrink'){tiles.delete(TK(tile.tx,tile.ty));saveTiles();isPainting=false;return;}
+    const cell=edHitCell(p.x,p.y,tile);
+    if(cell) edApply(tile,cell.col,cell.row,tool);
+  } else if(tool==='expand'){
+    const wx=p.x-edCanvas.width/2+edCam.x, wy=p.y-edCanvas.height/2+edCam.y;
+    const diff=wx/HALF_W, sum=wy/HALF_H;
+    const tx=Math.floor((diff+sum)/2/CELL), ty=Math.floor((sum-diff)/2/CELL);
+    const k=TK(tx,ty);
+    if(!tiles.has(k)&&(tiles.size===0||adjLand(tx,ty))){
+      tiles.set(k,{tx,ty,cells:new Uint8Array(CELL*CELL)});saveTiles();
+    }
+  }
+}
+function edOnMove(e){
+  e.preventDefault(); const p=edGetPos(e); hover=null;
+  if(panStart){
+    const rect=edCanvas.getBoundingClientRect();
+    edCam.x=camSnap.x-(p.cx-panStart.cx)*(edCanvas.width/rect.width);
+    edCam.y=camSnap.y-(p.cy-panStart.cy)*(edCanvas.height/rect.height);
+    return;
+  }
+  if(isPainting){
+    const tile=edHitTile(p.x,p.y);
+    if(tile){const cell=edHitCell(p.x,p.y,tile);if(cell)edApply(tile,cell.col,cell.row,edGetTool());}
+    return;
+  }
+  if(edIsEditing()){
+    const tile=edHitTile(p.x,p.y);
+    if(tile){const cell=edHitCell(p.x,p.y,tile);if(cell)hover={tile,col:cell.col,row:cell.row};}
+  }
+}
+function edOnUp(){
+  if(panStart){panStart=null;camSnap=null;edCanvas.style.cursor='grab';}
+  if(isPainting){saveTiles();isPainting=false;}
+}
+function edOnLeave(){panStart=null;isPainting=false;hover=null;}
+
+window.initIslandEditorCanvas=function(){
+  requestAnimationFrame(()=>{
+    const c=document.getElementById('island-editor-canvas');
+    if(!c){setTimeout(window.initIslandEditorCanvas,100);return;}
+    const p=c.parentElement;
+    if(!p||p.clientWidth===0){setTimeout(window.initIslandEditorCanvas,100);return;}
+    edCanvas=c; edCtx=c.getContext('2d');
+    c.width=p.clientWidth; c.height=p.clientHeight||p.offsetHeight||500;
+    loadTiles();  // 每次進入都重讀
+    centerCam(edCam,edCanvas);
+    // 移除舊事件
+    c.removeEventListener('pointerdown',edOnDown);
+    c.removeEventListener('pointermove',edOnMove);
+    c.removeEventListener('pointerup',  edOnUp);
+    c.removeEventListener('pointerleave',edOnLeave);
+    c.addEventListener('pointerdown', edOnDown,  {passive:false});
+    c.addEventListener('pointermove', edOnMove,  {passive:false});
+    c.addEventListener('pointerup',   edOnUp);
+    c.addEventListener('pointerleave',edOnLeave);
+    if(edRaf)cancelAnimationFrame(edRaf);
+    function edLoop(){
+      if(!edCanvas||!edCtx){edRaf=requestAnimationFrame(edLoop);return;}
+      renderFrame(edCtx,edCanvas,edCam,edIsEditing());
+      if(edIsEditing()) edDrawHover();
+      edWave+=0.033; wave=edWave;
+      edRaf=requestAnimationFrame(edLoop);
+    }
+    edRaf=requestAnimationFrame(edLoop);
+    if(window._edRO)window._edRO.disconnect();
+    window._edRO=new ResizeObserver(entries=>{
+      for(const e of entries){
+        const{width,height}=e.contentRect;
+        if(width>0&&height>0){edCanvas.width=width;edCanvas.height=height;centerCam(edCam,edCanvas);}
+      }
+    });
+    window._edRO.observe(p);
+  });
+};
+
+/* ── 對外 API ── */
+window.islandEngine={
+  save(){saveTiles();},
+  center(){if(homeCanvas)centerCam(homeCam,homeCanvas);},
+};
+window.islandEditorEngine={
+  addTile(){
+    const cands=new Set();
+    tiles.forEach(t=>tileNbrs(t.tx,t.ty).forEach(n=>{if(!tiles.has(TK(n.tx,n.ty)))cands.add(TK(n.tx,n.ty));}));
+    if(!cands.size)return;
+    let best=null,bs=-Infinity;
+    cands.forEach(k=>{const[tx,ty]=k.split(',').map(Number);const s=tx+ty;if(s>bs){bs=s;best={tx,ty};}});
+    if(best){tiles.set(TK(best.tx,best.ty),{tx:best.tx,ty:best.ty,cells:new Uint8Array(CELL*CELL)});saveTiles();}
+  },
+  center(){if(edCanvas)centerCam(edCam,edCanvas);},
+  reset(){tiles.clear();tiles.set(TK(0,0),{tx:0,ty:0,cells:new Uint8Array(CELL*CELL)});saveTiles();if(edCanvas)centerCam(edCam,edCanvas);},
+};
+})();
+</script>
+</body>
+</html
+<script>
+/* ═══════════════════════════════════════════════
+   ThankU Island — 地形引擎 v4
+   單一模組，兩個 canvas 共用同一份 tiles
+═══════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+/* ── 等距常數 ── */
+const CELL=6, HW=28, HH=14, DEPTH=26, HLIFT=8, MAX_HL=3;
+const SK='thankuIslandTiles';
+const TK=(x,y)=>`${x},${y}`;
+function iso(c,r,z=0){ return {x:(c-r)*HW, y:(c+r)*HH-z}; }
+function nbrs(tx,ty){ return [[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>({tx:tx+a,ty:ty+b})); }
+
+/* ── SVG 視覺資料 ── */
+const SL='#b87848', SR='#c88a58', OF='#b3ddff', OS='#3bc8ff';
+const GM={'0,0':'#6ac678','0,1':'#69c477','1,0':'#69c477','0,2':'#68c376','1,1':'#68c376','2,0':'#68c376','0,3':'#67c175','1,2':'#67c175','2,1':'#67c175','3,0':'#67c175','0,4':'#67c075','1,3':'#67c075','2,2':'#67c075','3,1':'#67c075','4,0':'#67c075','0,5':'#66be74','1,4':'#66be74','2,3':'#66be74','3,2':'#66be74','4,1':'#66be74','5,0':'#66be74','1,5':'#65bd73','2,4':'#65bd73','3,3':'#65bd73','4,2':'#65bd73','5,1':'#65bd73','2,5':'#64bb72','3,4':'#64bb72','4,3':'#64bb72','5,2':'#64bb72','3,5':'#63ba71','4,4':'#63ba71','5,3':'#63ba71','4,5':'#63b870','5,4':'#63b870','5,5':'#62b76f'};
+const WT=[{f:'#66a4ff',p:[[0,0],[28,14],[0,28],[-28,14]]},{f:'#b87848',p:[[0,0],[-28,14],[-23.75,16.13],[0,4.25]]},{f:'#c88a58',p:[[0,4.25],[23.75,16.13],[28,14],[0,0]]}];
+const HT=[{f:'#79db84',p:[[0,0],[28,14],[0,28],[-28,14]]},{f:'#b87848',p:[[0,28],[-28,14],[-28,22.51],[0,36.51]]},{f:'#c88a58',p:[[0,36.51],[28,22.51],[28,14],[0,28]]}];
+
+/* ── 共用資料 ── */
+const tiles = new Map();
+let wave = 0;
+
+function load(){
+  try{
+    const raw=localStorage.getItem(SK);
+    if(raw){ tiles.clear(); JSON.parse(raw).forEach(({tx,ty,cells})=>tiles.set(TK(tx,ty),{tx,ty,cells:new Uint8Array(cells)})); }
+  }catch(e){}
+  if(!tiles.size) tiles.set(TK(0,0),{tx:0,ty:0,cells:new Uint8Array(CELL*CELL)});
+}
+function save(){
+  localStorage.setItem(SK,JSON.stringify([...tiles.values()].map(({tx,ty,cells})=>({tx,ty,cells:Array.from(cells)}))));
+}
+
+/* ── 共用渲染 ── */
+function poly(ctx, pts, ox, oy, fill){
+  ctx.beginPath(); pts.forEach(([dx,dy],i)=>i===0?ctx.moveTo(ox+dx,oy+dy):ctx.lineTo(ox+dx,oy+dy)); ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+}
+
+function drawScene(ctx, W, H, camX, camY, editMode){
+  // 背景
+  ctx.fillStyle=OF; ctx.fillRect(0,0,W,H);
+  ctx.save(); ctx.strokeStyle=OS; ctx.globalAlpha=0.22; ctx.lineWidth=1.5;
+  for(let i=0;i<4;i++){
+    const y=40+i*65+Math.sin(wave*0.6+i)*5;
+    ctx.beginPath();
+    for(let x=0;x<=W+60;x+=55){ const yy=y+Math.sin(wave*0.9+x*0.03+i)*5; x===0?ctx.moveTo(x,yy):ctx.quadraticCurveTo(x-27,yy-5,x,yy); }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 地塊（後→前）
+  function origin(tx,ty){ const b=iso(tx*CELL,ty*CELL); return {x:b.x-camX+W/2, y:b.y-camY+H/2}; }
+  [...tiles.values()].sort((a,b)=>(a.tx+a.ty)-(b.tx+b.ty)).forEach(({tx,ty,cells})=>{
+    const {x:ox,y:oy}=origin(tx,ty);
+    ctx.save();
+    const C1=iso(CELL,0),C2=iso(CELL,CELL),C3=iso(0,CELL);
+    const hF=tiles.has(TK(tx,ty+1)), hL=tiles.has(TK(tx-1,ty));
+    if(!hF){ poly(ctx,[[C1.x,C1.y],[C2.x,C2.y],[C2.x,C2.y+DEPTH],[C1.x,C1.y+DEPTH]],ox,oy,SR); }
+    if(!hL){ poly(ctx,[[C3.x,C3.y],[C2.x,C2.y],[C2.x,C2.y+DEPTH],[C3.x,C3.y+DEPTH]],ox,oy,SL); }
+    if(!hF&&!hL){
+      poly(ctx,[[C2.x,C2.y],[C2.x,C2.y+DEPTH],[C3.x,C3.y+DEPTH]],ox,oy,'#9A6030');
+      poly(ctx,[[C2.x,C2.y],[C2.x,C2.y+DEPTH],[C1.x,C1.y+DEPTH]],ox,oy,'#9A6030');
+    }
+    for(let s=0;s<CELL*2-1;s++){
+      for(let col=0;col<CELL;col++){
+        const row=s-col; if(row<0||row>=CELL) continue;
+        const ci=cells[row*CELL+col], hl=ci>=2?ci-1:0, rz=hl*HLIFT;
+        const P=iso(col,row,rz),R=iso(col+1,row,rz),Sv=iso(col+1,row+1,rz),Q=iso(col,row+1,rz);
+        const bx=ox+P.x, by=oy+P.y;
+        if(ci===0){
+          poly(ctx,[[P.x,P.y],[R.x,R.y],[Sv.x,Sv.y],[Q.x,Q.y]],ox,oy,GM[`${col},${row}`]||'#62b76f');
+        } else if(ci===1){
+          WT.forEach(({f,p})=>poly(ctx,p,bx,by,f));
+        } else if(ci>=2){
+          for(let l=0;l<hl;l++){ const lP=iso(col,row,l*HLIFT); HT.forEach(({f,p})=>poly(ctx,p,ox+lP.x,oy+lP.y,f)); }
+        }
+        if(editMode){
+          ctx.beginPath(); ctx.moveTo(ox+P.x,oy+P.y); ctx.lineTo(ox+R.x,oy+R.y); ctx.lineTo(ox+Sv.x,oy+Sv.y); ctx.lineTo(ox+Q.x,oy+Q.y); ctx.closePath();
+          ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=0.6; ctx.stroke();
+        }
+      }
+    }
+    if(editMode){
+      const C0=iso(0,0);
+      ctx.beginPath(); [C0,C1,C2,C3].forEach((c,i)=>i===0?ctx.moveTo(ox+c.x,oy+c.y):ctx.lineTo(ox+c.x,oy+c.y)); ctx.closePath();
+      ctx.strokeStyle='rgba(255,255,255,0.45)'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.restore();
+  });
+}
+
+/* ── Camera ── */
+function autoCenter(cam, W, H){
+  if(!tiles.size) return;
+  let sx=0,sy=0;
+  tiles.forEach(({tx,ty})=>{ const b=iso(tx*CELL,ty*CELL); sx+=b.x+(HW*CELL/2); sy+=b.y+(HH*CELL/2); });
+  cam.x = sx/tiles.size;
+  cam.y = sy/tiles.size - H*0.08;
+}
+
+/* ════════════════════════════════════
+   Home Canvas（純預覽，浮動動畫）
+════════════════════════════════════ */
+let hCv=null, hCx=null, hCam={x:0,y:0}, hRaf=null;
+
+function hResize(){
+  if(!hCv) return;
+  const p=hCv.parentElement; if(!p) return;
+  const w=p.clientWidth||p.offsetWidth, h=p.clientHeight||p.offsetHeight;
+  if(w>0&&h>0&&(hCv.width!==w||hCv.height!==h)){ hCv.width=w; hCv.height=h; autoCenter(hCam,w,h); }
+}
+
+window.initIslandCanvas = function(){
+  function tryInit(){
+    const c=document.getElementById('island-canvas'); if(!c){ setTimeout(tryInit,100); return; }
+    const p=c.parentElement; if(!p||p.clientWidth===0){ setTimeout(tryInit,100); return; }
+    hCv=c; hCx=c.getContext('2d');
+    load();
+    hResize();
+    if(window._hRO) window._hRO.disconnect();
+    window._hRO=new ResizeObserver(hResize); window._hRO.observe(p);
+    if(hRaf) cancelAnimationFrame(hRaf);
+    function loop(){
+      hResize();
+      if(hCv.width>0&&hCv.height>0) drawScene(hCx,hCv.width,hCv.height,hCam.x,hCam.y,false);
+      wave+=0.033; hRaf=requestAnimationFrame(loop);
+    }
+    hRaf=requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(tryInit);
+};
+
+/* ════════════════════════════════════
+   Editor Canvas（互動編輯）
+════════════════════════════════════ */
+let eCv=null, eCx=null, eCam={x:0,y:0}, eRaf=null;
+let ePan=null, ePanSnap=null, ePaint=false, eHover=null;
+
+/* 工具讀取（從 Vue DOM） */
+function eTool(){ return document.querySelector('.is-btn.active[data-tool],.imb-btn.active[data-tool]')?.dataset?.tool||'pan'; }
+function eBrush(){ return parseInt(document.querySelector('.is-sz.active,.imb-sz.active')?.textContent)||1; }
+function eEditing(){ return !!document.querySelector('.is-mode-btn.on'); }
+
+function eBrushCells(col,row){ const r=eBrush()-1,a=[]; for(let dr=-r;dr<=r;dr++) for(let dc=-r;dc<=r;dc++) a.push({c:col+dc,r:row+dr}); return a; }
+
+/* Hit test */
+function eDiamond(px,py,cx,cy,hw,hh){ return Math.abs(px-cx)/hw+Math.abs(py-cy)/hh<=1; }
+function eHitTile(sx,sy){
+  return [...tiles.values()].sort((a,b)=>(b.tx+b.ty)-(a.tx+a.ty)).find(({tx,ty})=>{
+    const b=iso(tx*CELL,ty*CELL), ox=b.x-eCam.x+eCv.width/2, oy=b.y-eCam.y+eCv.height/2;
+    return eDiamond(sx,sy,ox+iso(CELL/2,CELL/2).x,oy+iso(CELL/2,CELL/2).y,HW*CELL,HH*CELL);
+  })||null;
+}
+function eHitCell(sx,sy,tile){
+  const b=iso(tile.tx*CELL,tile.ty*CELL), ox=b.x-eCam.x+eCv.width/2, oy=b.y-eCam.y+eCv.height/2;
+  for(let col=0;col<CELL;col++) for(let row=0;row<CELL;row++){
+    const ci=tile.cells[row*CELL+col],hl=ci>=2?ci-1:0,rz=hl*HLIFT;
+    const P=iso(col,row,rz),R=iso(col+1,row,rz),S=iso(col+1,row+1,rz),Q=iso(col,row+1,rz);
+    if(eDiamond(sx,sy,ox+(P.x+R.x+S.x+Q.x)/4,oy+(P.y+R.y+S.y+Q.y)/4,HW,HH)) return {col,row};
+  }
+  return null;
+}
+
+/* Apply tool */
+function eApply(tile,col,row,tool){
+  eBrushCells(col,row).forEach(({c,r})=>{
+    if(c<0||c>=CELL||r<0||r>=CELL) return;
+    const cur=tile.cells[r*CELL+c];
+    if(tool==='grass') tile.cells[r*CELL+c]=0;
+    else if(tool==='water'&&cur===0) tile.cells[r*CELL+c]=1;
+    else if(tool==='highland'){ if(cur===0) tile.cells[r*CELL+c]=2; else if(cur>=2&&cur<1+MAX_HL) tile.cells[r*CELL+c]=cur+1; }
+  });
+}
+
+/* Hover overlay */
+function eDrawHover(){
+  if(!eHover) return;
+  const {tile,col,row}=eHover;
+  const b=iso(tile.tx*CELL,tile.ty*CELL), ox=b.x-eCam.x+eCv.width/2, oy=b.y-eCam.y+eCv.height/2;
+  eBrushCells(col,row).forEach(({c,r})=>{
+    if(c<0||c>=CELL||r<0||r>=CELL) return;
+    const ci=tile.cells[r*CELL+c],hl=ci>=2?ci-1:0,rz=hl*HLIFT;
+    const P=iso(c,r,rz),R=iso(c+1,r,rz),S=iso(c+1,r+1,rz),Q=iso(c,r+1,rz);
+    eCx.beginPath(); eCx.moveTo(ox+P.x,oy+P.y); eCx.lineTo(ox+R.x,oy+R.y); eCx.lineTo(ox+S.x,oy+S.y); eCx.lineTo(ox+Q.x,oy+Q.y); eCx.closePath();
+    eCx.fillStyle='rgba(255,255,255,0.3)'; eCx.fill();
+  });
+}
+
+/* Pointer events */
+function ePos(e){
+  const rc=eCv.getBoundingClientRect(), sx=eCv.width/rc.width, sy=eCv.height/rc.height;
+  const src=e.touches?e.touches[0]:(e.changedTouches||[e])[0];
+  return {x:(src.clientX-rc.left)*sx, y:(src.clientY-rc.top)*sy, cx:src.clientX, cy:src.clientY};
+}
+function eDown(e){
+  e.preventDefault(); const p=ePos(e);
+  const ed=eEditing(), tool=ed?eTool():'pan';
+  if(!ed||tool==='pan'){ ePan={cx:p.cx,cy:p.cy}; ePanSnap={x:eCam.x,y:eCam.y}; eCv.style.cursor='grabbing'; return; }
+  ePaint=true;
+  const tile=eHitTile(p.x,p.y);
+  if(tile){
+    if(tool==='shrink'){ tiles.delete(TK(tile.tx,tile.ty)); save(); ePaint=false; return; }
+    const cell=eHitCell(p.x,p.y,tile); if(cell) eApply(tile,cell.col,cell.row,tool);
+  } else if(tool==='expand'){
+    const wx=p.x-eCv.width/2+eCam.x, wy=p.y-eCv.height/2+eCam.y;
+    const d=wx/HW, s=wy/HH;
+    const tx=Math.floor((d+s)/2/CELL), ty=Math.floor((s-d)/2/CELL), k=TK(tx,ty);
+    if(!tiles.has(k)&&(tiles.size===0||nbrs(tx,ty).some(n=>tiles.has(TK(n.tx,n.ty))))){
+      tiles.set(k,{tx,ty,cells:new Uint8Array(CELL*CELL)}); save();
+    }
+  }
+}
+function eMove(e){
+  e.preventDefault(); const p=ePos(e); eHover=null;
+  if(ePan){
+    const rc=eCv.getBoundingClientRect();
+    eCam.x=ePanSnap.x-(p.cx-ePan.cx)*(eCv.width/rc.width);
+    eCam.y=ePanSnap.y-(p.cy-ePan.cy)*(eCv.height/rc.height);
+    return;
+  }
+  if(ePaint){ const tile=eHitTile(p.x,p.y); if(tile){const cell=eHitCell(p.x,p.y,tile);if(cell)eApply(tile,cell.col,cell.row,eTool());} return; }
+  if(eEditing()){ const tile=eHitTile(p.x,p.y); if(tile){const cell=eHitCell(p.x,p.y,tile);if(cell)eHover={tile,col:cell.col,row:cell.row};} }
+}
+function eUp(){ if(ePan){ePan=null;ePanSnap=null;eCv.style.cursor='grab';}  if(ePaint){save();ePaint=false;} }
+function eLeave(){ ePan=null; ePaint=false; eHover=null; }
+
+function eResize(){
+  if(!eCv) return;
+  const p=eCv.parentElement; if(!p) return;
+  const w=p.clientWidth||p.offsetWidth, h=p.clientHeight||p.offsetHeight||window.innerHeight*0.7;
+  if(w>0&&h>0){ eCv.width=w; eCv.height=h; }
+}
+
+window.initIslandEditorCanvas = function(){
+  function tryInit(){
+    const c=document.getElementById('island-editor-canvas'); if(!c){ setTimeout(tryInit,100); return; }
+    const p=c.parentElement; if(!p||p.clientWidth===0){ setTimeout(tryInit,150); return; }
+    eCv=c; eCx=c.getContext('2d');
+    load();  // 重新讀 localStorage
+    eResize();
+    autoCenter(eCam, eCv.width, eCv.height);
+    // 事件（防重複）
+    ['pointerdown','pointermove','pointerup','pointerleave'].forEach(ev=>c.removeEventListener(ev,c['_'+ev]));
+    c['_pointerdown']=eDown; c['_pointermove']=eMove; c['_pointerup']=eUp; c['_pointerleave']=eLeave;
+    c.addEventListener('pointerdown',eDown,{passive:false});
+    c.addEventListener('pointermove',eMove,{passive:false});
+    c.addEventListener('pointerup',eUp);
+    c.addEventListener('pointerleave',eLeave);
+    // ResizeObserver
+    if(window._eRO) window._eRO.disconnect();
+    window._eRO=new ResizeObserver(()=>{ eResize(); });
+    window._eRO.observe(p);
+    // render loop
+    if(eRaf) cancelAnimationFrame(eRaf);
+    function loop(){
+      eResize();
+      if(eCv.width>0&&eCv.height>0){
+        drawScene(eCx, eCv.width, eCv.height, eCam.x, eCam.y, eEditing());
+        if(eEditing()) eDrawHover();
+      }
+      wave+=0.033; eRaf=requestAnimationFrame(loop);
+    }
+    eRaf=requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(tryInit);
+};
+
+/* ── Public API ── */
+window.islandEngine={save, center(){if(hCv)autoCenter(hCam,hCv.width,hCv.height);}, get cam(){return hCam;}};;
+window.islandEditorEngine={
+  addTile(){
+    const cands=new Set();
+    tiles.forEach(t=>nbrs(t.tx,t.ty).forEach(n=>{if(!tiles.has(TK(n.tx,n.ty)))cands.add(TK(n.tx,n.ty));}));
+    if(!cands.size) return;
+    let best=null, bs=-Infinity;
+    cands.forEach(k=>{const[tx,ty]=k.split(',').map(Number);const s=tx+ty;if(s>bs){bs=s;best={tx,ty};}});
+    if(best){tiles.set(TK(best.tx,best.ty),{tx:best.tx,ty:best.ty,cells:new Uint8Array(CELL*CELL)});save();}
+  },
+  center(){ if(eCv) autoCenter(eCam,eCv.width,eCv.height); },
+  reset(){ tiles.clear(); tiles.set(TK(0,0),{tx:0,ty:0,cells:new Uint8Array(CELL*CELL)}); save(); if(eCv) autoCenter(eCam,eCv.width,eCv.height); },
+};
+
+/* ── 啟動（頁面載入時立刻讀資料）── */
+load();
+})();
+</script>
+</body>
+</html>
