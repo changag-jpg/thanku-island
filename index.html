@@ -3169,12 +3169,15 @@ createApp({
         // ===== 動物漫步 =====
         const initAnimalStates = () => {
             displayIslandItems.value.forEach((item) => {
-                if (item.type === 'animal' && !animalStates.value[item.id]) {
-                    animalStates.value[item.id] = {
-                        x: 15 + Math.random() * 55,
-                        y: 15 + Math.random() * 45,
-                        flip: Math.random() > 0.5
-                    };
+                if (item.type === 'animal') {
+                    if (!animalStates.value[item.id]) {
+                        // 優先使用 island 陣列中已儲存的位置，沒有才隨機
+                        animalStates.value[item.id] = {
+                            x:    item.x ?? (15 + Math.random() * 55),
+                            y:    item.y ?? (15 + Math.random() * 45),
+                            flip: Math.random() > 0.5
+                        };
+                    }
                 }
             });
         };
@@ -3234,13 +3237,23 @@ createApp({
             if (!fbUser.value) return;
             const uid = fbUser.value.uid;
             try {
+                // 存前先把 animalStates 的位置同步回 island 陣列
+                const me = users.value.find(u => u.id === uid);
+                if (me?.island) {
+                    me.island.forEach(item => {
+                        if (item.type === 'animal' && animalStates.value[item.id]) {
+                            item.x = animalStates.value[item.id].x;
+                            item.y = animalStates.value[item.id].y;
+                        }
+                    });
+                }
+
                 await db.collection('users').doc(uid).set({
                     users: JSON.parse(JSON.stringify(users.value)),
                     letters: JSON.parse(JSON.stringify(letters.value)),
                     updatedAt: Date.now()
                 });
                 // 同步更新公開 profile（含 island items 供訪島用）
-                const me = users.value.find(u => u.id === uid);
                 if (me) {
                     await db.collection('profiles').doc(uid).set({
                         id: uid,
@@ -3506,7 +3519,19 @@ createApp({
 
             // 載入島嶼物品（從 profiles）
             if (profileResult.status === 'fulfilled' && profileResult.value.exists) {
-                visitingIslandItems.value = profileResult.value.data().island || [];
+                const islandItems = profileResult.value.data().island || [];
+                visitingIslandItems.value = islandItems;
+
+                // 初始化對方動物的位置到 animalStates（用存好的 x/y，沒有才隨機）
+                islandItems.forEach(item => {
+                    if (item.type === 'animal') {
+                        animalStates.value[item.id] = {
+                            x:    item.x ?? (15 + Math.random() * 55),
+                            y:    item.y ?? (15 + Math.random() * 45),
+                            flip: Math.random() > 0.5
+                        };
+                    }
+                });
             }
 
             // 重繪 canvas 並置中
@@ -3514,6 +3539,10 @@ createApp({
             setTimeout(() => window.islandEngine?.center(), 200);
         };
         const stopVisiting = async () => {
+            // 清掉對方動物的 animalStates
+            visitingIslandItems.value.forEach(item => {
+                if (item.type === 'animal') delete animalStates.value[item.id];
+            });
             visitingId.value = null;
             visitingIslandItems.value = [];
             // 重新載入自己的地形
