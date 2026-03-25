@@ -673,6 +673,7 @@
             color: #fff; border-radius: 50%; display: flex;
             align-items: center; justify-content: center;
             font-size: 13px; font-weight: 800; flex-shrink: 0;
+            overflow: hidden;
         }
         .suggestion-name { font-size: 13px; font-weight: 800; color: var(--text); }
         .suggestion-email { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
@@ -1934,7 +1935,11 @@
                                 <div v-for="u in filteredSuggestions" :key="u.id"
                                      class="suggestion-item"
                                      @mousedown.prevent="selectRecipient(u)">
-                                    <span class="suggestion-avatar">{{ u.name[0] }}</span>
+                                    <div class="suggestion-avatar">
+                                        <img v-if="getProfileAvatar(u.id)" :src="getProfileAvatar(u.id).url"
+                                             :style="{objectPosition: getProfileAvatar(u.id).posX+'% '+getProfileAvatar(u.id).posY+'%', width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%'}">
+                                        <span v-else>{{ (u.name||'?')[0] }}</span>
+                                    </div>
                                     <div>
                                         <div class="suggestion-name">{{ u.name }}</div>
                                         <div class="suggestion-email">{{ u.email }}</div>
@@ -1980,7 +1985,12 @@
                     <div style="font-size:12px;margin-top:6px;color:var(--text-sub)">成為第一個傳遞感謝的人吧！</div>
                 </div>
                 <div v-else class="wall-grid">
-                    <div v-for="letter in sortedLetters" :key="letter.id" class="wall-card">
+                    <div v-if="globalLetters.length === 0" class="empty-state">
+                        <div style="font-size:48px;margin-bottom:12px;">🌊</div>
+                        <div>還沒有感謝故事</div>
+                        <div style="font-size:12px;margin-top:6px;color:var(--text-sub)">成為第一個說感謝的人吧！💌</div>
+                    </div>
+                    <div v-for="letter in globalLetters" :key="letter.id" class="wall-card">
                         <div class="wall-card-top">
                             <div class="wall-avatars">
                                 <div class="wall-avatar from">
@@ -2070,7 +2080,7 @@
                         <button v-if="seaSearch" @click="seaSearch=''" class="sea-search-clear">✕</button>
                     </div>
                     <p style="font-size:12px;color:var(--text-sub);margin-bottom:16px;font-weight:500;">
-                        共 {{ seaFilteredUsers.length }} 位島民
+                        共 {{ seaFilteredUsers.length }} 位感恩島主 🏝️
                     </p>
                     <div class="sea-explore-grid">
                         <div v-for="user in seaFilteredUsers" :key="user.id" class="sea-explore-card">
@@ -2386,16 +2396,22 @@ createApp({
         // ── 收件人建議清單 ──
         const recipientInput   = ref('');
         const showSuggestions  = ref(false);
-        const filteredSuggestions = computed(()=>{
+        const filteredSuggestions = computed(() => {
             const q = recipientInput.value.trim().toLowerCase();
-            if(!q) return otherUsers.value;
-            return otherUsers.value.filter(u=>
-                u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+            // 合併 allProfiles + 本地 users，排除自己
+            const profileMap = {};
+            allProfiles.value.forEach(p => { if (p.id !== currentUserId.value) profileMap[p.id] = p; });
+            users.value.forEach(u => { if (u.id !== currentUserId.value) profileMap[u.id] = { ...profileMap[u.id], ...u }; });
+            const all = Object.values(profileMap).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-Hant'));
+            if (!q) return all;
+            return all.filter(u =>
+                (u.name || '').toLowerCase().includes(q) ||
+                (u.email || '').toLowerCase().includes(q)
             );
         });
         const onRecipientInput = () => { showSuggestions.value = true; letterForm.toId = ''; };
-        const selectRecipient  = (u) => { recipientInput.value = `${u.name} (${u.email})`; letterForm.toId = u.id; showSuggestions.value = false; };
-        const hideSuggestions  = () => { setTimeout(()=>{ showSuggestions.value = false; }, 150); };
+        const selectRecipient  = (u) => { recipientInput.value = `${u.name}${u.email ? ' ('+u.email+')' : ''}`; letterForm.toId = u.id; showSuggestions.value = false; };
+        const hideSuggestions  = () => { setTimeout(() => { showSuggestions.value = false; }, 150); };
         let roamInterval    = null;
 
         // ===== Computed =====
@@ -2415,6 +2431,16 @@ createApp({
         const unreadCount = computed(() =>
             myLetters.value.filter(l => !l.read).length
         );
+
+        // ── 全站感謝信（佈告欄用）──
+        const globalLetters = ref([]);
+        const loadGlobalLetters = async () => {
+            try {
+                const snap = await db.collection('letters')
+                    .orderBy('timestamp', 'desc').limit(100).get();
+                globalLetters.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            } catch(_) {}
+        };
         const displayIslandItems = computed(() => {
             const id = visitingId.value || currentUserId.value;
             return (users.value.find(u => u.id === id) || {}).island || [];
@@ -2934,7 +2960,8 @@ createApp({
         const sendLetter = async () => {
             if (!letterForm.toId || !letterForm.content.trim()) { alert('請填寫收件人與訊息。'); return; }
             const sender   = users.value.find(u => u.id === currentUserId.value);
-            const receiver = users.value.find(u => u.id === letterForm.toId);
+            const receiver = users.value.find(u => u.id === letterForm.toId)
+                          || allProfiles.value.find(p => p.id === letterForm.toId);
             const cost     = letterForm.cost;
             if (sender.cards < cost) return;
 
@@ -2965,11 +2992,23 @@ createApp({
                 }
             }
 
-            letters.value.push({
-                id: Date.now(), from: sender.id, to: letterForm.toId,
-                content: letterForm.content, timestamp: Date.now(),
+            const newLetter = {
+                from: sender.id, to: letterForm.toId,
+                fromName: sender.name || '',
+                toName: receiver?.name || '',
+                content: letterForm.content,
+                timestamp: Date.now(),
                 cardCost: cost, likes: [], read: false
-            });
+            };
+
+            // 寫入自己的本地信件（收件人信箱用）
+            letters.value.push({ id: Date.now(), ...newLetter });
+
+            // 寫入全站 letters collection（佈告欄用）
+            try {
+                const docRef = await db.collection('letters').add(newLetter);
+                globalLetters.value.unshift({ id: docRef.id, ...newLetter });
+            } catch(_) {}
 
             await saveData();
             letterForm.content = '';
@@ -3015,12 +3054,18 @@ createApp({
             if (!letter.read) { letter.read = true; saveData(); }
         };
 
-        const toggleLike = (letter) => {
+        const toggleLike = async (letter) => {
             if (!letter.likes) letter.likes = [];
-            const idx = letter.likes.indexOf(currentUserId.value);
-            if (idx === -1) letter.likes.push(currentUserId.value);
+            const uid = currentUserId.value;
+            const idx = letter.likes.indexOf(uid);
+            if (idx === -1) letter.likes.push(uid);
             else letter.likes.splice(idx, 1);
-            saveData();
+            // 同步到 Firestore（只有 globalLetters 有真實 doc ID）
+            if (letter.id && typeof letter.id === 'string') {
+                try {
+                    await db.collection('letters').doc(letter.id).update({ likes: letter.likes });
+                } catch(_) {}
+            }
         };
         const isLiked = (letter) => (letter.likes || []).includes(currentUserId.value);
 
@@ -3575,6 +3620,7 @@ createApp({
                 if (user) {
                     await initData(user.uid);
                     await loadAnnouncements();
+                    await loadGlobalLetters();
                     initAnimalStates();
                     if (!roamInterval) roamInterval = setInterval(moveAnimals, 4500);
                     setTimeout(() => {
@@ -3599,7 +3645,7 @@ createApp({
             visitingId, leaderboard, errorMsg, isDrawing, drawResult,
             seaTab, seaSearch, seaFilteredUsers, seaUserStats,
             allProfiles, getProfileAvatar,
-            announcements,
+            announcements, globalLetters,
             animalStates, jumpStates, myLetters, unreadCount,
             getUserById, getDisplayName, getDisplayInitial, getUserAvatar, formatDate,
             switchUser, visitUser, stopVisiting, switchTab,
