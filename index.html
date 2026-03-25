@@ -2980,10 +2980,11 @@ createApp({
         const sendLetter = async () => {
             if (!letterForm.toId || !letterForm.content.trim()) { alert('請填寫收件人與訊息。'); return; }
             const sender   = users.value.find(u => u.id === currentUserId.value);
-            const receiver = users.value.find(u => u.id === letterForm.toId)
-                          || allProfiles.value.find(p => p.id === letterForm.toId);
+            const toId     = letterForm.toId;
             const cost     = letterForm.cost;
-            if (sender.cards < cost) return;
+            if (!sender || sender.cards < cost) return;
+
+            const ts = Date.now();
 
             sender.cards -= cost;
 
@@ -2995,41 +2996,69 @@ createApp({
                 sender.tileCount = (sender.tileCount || 6) + 1;
             }
 
-            if (receiver) {
-                const bonus = (Math.floor(Math.random() * 450) + 50) * cost;
-                receiver.shells += bonus;
-                receiver.energy += 100 * cost;
-                // 收到感謝卡 → 放入信箱待領取板塊
-                if (!receiver.rewards) receiver.rewards = [];
-                for (let i = 0; i < cost; i++) {
-                    receiver.rewards.push({
-                        id: Date.now() + i,
-                        type: 'tile',
-                        title: '🏝️ 獲得島嶼板塊！',
-                        desc: `${sender.name} 送了你感謝，帶來 1 片新的板塊！快去擴張你的小島吧 🌟`,
-                        claimed: false
+            // ── 更新收件人 Firestore 文件 ──
+            try {
+                const receiverDoc = await db.collection('users').doc(toId).get();
+                if (receiverDoc.exists) {
+                    const rData     = receiverDoc.data();
+                    const rUsers    = rData.users || [];
+                    const rLetters  = rData.letters || [];
+                    const rUser     = rUsers.find(u => u.id === toId) || {};
+
+                    // 更新能量和貝殼幣
+                    const bonus = (Math.floor(Math.random() * 450) + 50) * cost;
+                    rUser.shells = (rUser.shells || 0) + bonus;
+                    rUser.energy = (rUser.energy || 0) + 100 * cost;
+
+                    // 新增板塊待領取道具
+                    if (!rUser.rewards) rUser.rewards = [];
+                    for (let i = 0; i < cost; i++) {
+                        rUser.rewards.push({
+                            id: ts + i,
+                            type: 'tile',
+                            title: '🏝️ 獲得島嶼板塊！',
+                            desc: `${sender.name} 送了你感謝，帶來 1 片新的板塊！快去擴張你的小島吧 🌟`,
+                            claimed: false
+                        });
+                    }
+
+                    // 寫入信件到收件人信箱
+                    rLetters.push({
+                        id: ts,
+                        from: sender.id, to: toId,
+                        content: letterForm.content,
+                        timestamp: ts,
+                        cardCost: cost, likes: [], read: false
                     });
+
+                    // 更新 rUsers 陣列
+                    const rIdx = rUsers.findIndex(u => u.id === toId);
+                    if (rIdx >= 0) rUsers[rIdx] = rUser;
+                    else rUsers.push(rUser);
+
+                    // 寫回 Firestore
+                    await db.collection('users').doc(toId).set({
+                        users: rUsers, letters: rLetters, updatedAt: ts
+                    }, { merge: true });
                 }
+            } catch(e) {
+                console.warn('更新收件人失敗', e);
             }
 
+            // ── 寫入全站 letters（佈告欄）──
             const newLetter = {
-                from: sender.id, to: letterForm.toId,
+                from: sender.id, to: toId,
                 fromName: sender.name || '',
-                toName: receiver?.name || '',
+                toName: allProfiles.value.find(p => p.id === toId)?.name || '',
                 content: letterForm.content,
-                timestamp: Date.now(),
-                cardCost: cost, likes: [], read: false
+                timestamp: ts, cardCost: cost, likes: [], read: false
             };
-
-            // 寫入自己的本地信件（收件人信箱用）
-            letters.value.push({ id: Date.now(), ...newLetter });
-
-            // 寫入全站 letters collection（佈告欄用）
             try {
                 const docRef = await db.collection('letters').add(newLetter);
                 globalLetters.value.unshift({ id: docRef.id, ...newLetter });
             } catch(_) {}
 
+            // ── 存自己的資料 ──
             await saveData();
             letterForm.content = '';
             letterForm.toId    = '';
