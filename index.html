@@ -1994,19 +1994,19 @@
                         <div class="wall-card-top">
                             <div class="wall-avatars">
                                 <div class="wall-avatar from">
-                                    <img v-if="getUserAvatar(letter.from)" :src="getUserAvatar(letter.from).url" :style="{objectPosition: getUserAvatar(letter.from).posX+'% '+getUserAvatar(letter.from).posY+'%'}" :alt="getDisplayName(letter.from)">
-                                    <span v-else>{{ getDisplayName(letter.from)[0] }}</span>
+                                    <img v-if="getUserAvatar(letter.from)" :src="getUserAvatar(letter.from).url" :style="{objectPosition: getUserAvatar(letter.from).posX+'% '+getUserAvatar(letter.from).posY+'%'}" :alt="getLetterName(letter,'from')">
+                                    <span v-else>{{ getLetterName(letter,'from')[0] }}</span>
                                 </div>
                                 <div class="wall-arrow">💌</div>
                                 <div class="wall-avatar to">
-                                    <img v-if="getUserAvatar(letter.to)" :src="getUserAvatar(letter.to).url" :style="{objectPosition: getUserAvatar(letter.to).posX+'% '+getUserAvatar(letter.to).posY+'%'}" :alt="getDisplayName(letter.to)">
-                                    <span v-else>{{ getDisplayName(letter.to)[0] }}</span>
+                                    <img v-if="getUserAvatar(letter.to)" :src="getUserAvatar(letter.to).url" :style="{objectPosition: getUserAvatar(letter.to).posX+'% '+getUserAvatar(letter.to).posY+'%'}" :alt="getLetterName(letter,'to')">
+                                    <span v-else>{{ getLetterName(letter,'to')[0] }}</span>
                                 </div>
                             </div>
                             <div class="wall-names">
-                                <span class="wall-from-name">{{ getDisplayName(letter.from) }}</span>
+                                <span class="wall-from-name">{{ getLetterName(letter,'from') }}</span>
                                 <span class="wall-name-sep"> 感謝了 </span>
-                                <span class="wall-to-name">{{ getDisplayName(letter.to) }}</span>
+                                <span class="wall-to-name">{{ getLetterName(letter,'to') }}</span>
                             </div>
                             <div class="wall-time">{{ formatDate(letter.timestamp) }}</div>
                         </div>
@@ -2129,7 +2129,7 @@
                             <div class="letter-header">
                                 <div>
                                     <div class="letter-from">
-                                        💌 來自：{{ getDisplayName(letter.from) }}
+                                        💌 來自：{{ getLetterName(letter,'from') }}
                                         <span v-if="!letter.read" class="new-badge">New</span>
                                     </div>
                                     <div class="letter-time">{{ formatDate(letter.timestamp) }}</div>
@@ -2883,19 +2883,39 @@ createApp({
 
         // ===== 輔助函式 =====
         const getUserById = (id) => users.value.find(u => u.id === id) || { name: '未知', island: [] };
-        const getDisplayName = (id) => {
+
+        // 從信件物件取得寄件人/收件人名字（支援 globalLetters 的 fromName/toName）
+        const getLetterName = (letter, role) => {
+            const id = role === 'from' ? letter.from : letter.to;
+            const stored = role === 'from' ? letter.fromName : letter.toName;
+            // 優先從 allProfiles / users 找最新名字
             const u = users.value.find(u => u.id === id);
-            if (u) return u.name;
+            if (u?.name) return u.name;
+            const p = allProfiles.value.find(p => p.id === id);
+            if (p?.name) return p.name;
+            // fallback 用信件內儲存的名字
+            if (stored) return stored;
+            if (id === currentUserId.value) return fbUser.value?.displayName || '我';
+            return '未知';
+        };
+
+        const getDisplayName = (id) => {
+            if (!id) return '未知';
+            const u = users.value.find(u => u.id === id);
+            if (u?.name) return u.name;
+            const p = allProfiles.value.find(p => p.id === id);
+            if (p?.name) return p.name;
             if (id === currentUserId.value) return fbUser.value?.displayName || '我';
             return '未知';
         };
         const getDisplayInitial = (id) => getDisplayName(id).charAt(0).toUpperCase();
 
-        // 取得使用者頭像（自訂頭像 > Google 頭像 > null）
+        // 取得使用者頭像（自訂頭像 > allProfiles > Google 頭像 > null）
         const getUserAvatar = (id) => {
             const u = users.value.find(u => u.id === id);
             if (u?.avatarUrl) return { url: u.avatarUrl, posX: u.avatarPosX ?? 50, posY: u.avatarPosY ?? 50 };
-            // 如果是當前登入者，可以用 Google 頭像
+            const p = allProfiles.value.find(p => p.id === id);
+            if (p?.avatarUrl) return { url: p.avatarUrl, posX: p.avatarPosX ?? 50, posY: p.avatarPosY ?? 50 };
             if (id === currentUserId.value && fbUser.value?.photoURL) {
                 return { url: fbUser.value.photoURL, posX: 50, posY: 50 };
             }
@@ -3647,7 +3667,7 @@ createApp({
             allProfiles, getProfileAvatar,
             announcements, globalLetters,
             animalStates, jumpStates, myLetters, unreadCount,
-            getUserById, getDisplayName, getDisplayInitial, getUserAvatar, formatDate,
+            getUserById, getDisplayName, getDisplayInitial, getUserAvatar, getLetterName, formatDate,
             switchUser, visitUser, stopVisiting, switchTab,
             sendLetter, adjustCardCost, markAsRead, toggleLike, isLiked,
             openLetter, openLetterModal,
