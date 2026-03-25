@@ -2442,8 +2442,8 @@ createApp({
             } catch(_) {}
         };
         const displayIslandItems = computed(() => {
-            const id = visitingId.value || currentUserId.value;
-            return (users.value.find(u => u.id === id) || {}).island || [];
+            if (visitingId.value) return visitingIslandItems.value;
+            return (users.value.find(u => u.id === currentUserId.value) || {}).island || [];
         });
         // ── Sea 群島分頁 ──
         const seaTab     = ref('rank');
@@ -2466,7 +2466,9 @@ createApp({
             const map = {};
             allProfiles.value.forEach(p => { map[p.id] = 0; });
             users.value.forEach(u => { map[u.id] = 0; });
-            letters.value.forEach(l => { if (map[l.to] !== undefined) map[l.to]++; });
+            // 優先用 globalLetters（含所有人的感謝信）
+            const src = globalLetters.value.length > 0 ? globalLetters.value : letters.value;
+            src.forEach(l => { if (l.to in map) map[l.to]++; else map[l.to] = 1; });
             return map;
         });
 
@@ -2486,16 +2488,16 @@ createApp({
         });
 
         const leaderboard = computed(() => {
-            // 合併 allProfiles + 自己
             const profileMap = {};
             allProfiles.value.forEach(p => { profileMap[p.id] = p; });
             const me = users.value.find(u => u.id === currentUserId.value);
             if (me) profileMap[me.id] = me;
             const allUsers = Object.values(profileMap);
-            // 計算感謝封數
+            // 用 globalLetters 計算（含跨使用者的感謝信）
             const countMap = {};
             allUsers.forEach(u => { countMap[u.id] = 0; });
-            letters.value.forEach(l => { if (countMap[l.to] !== undefined) countMap[l.to]++; });
+            const src = globalLetters.value.length > 0 ? globalLetters.value : letters.value;
+            src.forEach(l => { if (l.to in countMap) countMap[l.to]++; else countMap[l.to] = 1; });
             return allUsers
                 .map(u => ({ ...u, thankCount: countMap[u.id] || 0 }))
                 .sort((a, b) => b.thankCount - a.thankCount);
@@ -2935,16 +2937,42 @@ createApp({
             visitingId.value    = null;
             letterForm.toId     = '';
         };
-        const visitUser  = (id) => {
+        const visitingIslandItems = ref([]); // 參觀模式下對方的島嶼物品
+
+        const visitUser = async (id) => {
             if (id === currentUserId.value) return;
             visitingId.value = id;
+            visitingIslandItems.value = [];
             switchTab('home');
-            // 重新初始化 canvas 以顯示對方島嶼
+
+            // 載入對方的 tiles
+            try {
+                const tilesDoc = await db.collection('tiles').doc(id).get();
+                if (tilesDoc.exists && tilesDoc.data().tiles?.length) {
+                    window.islandEngine?.importTiles(tilesDoc.data().tiles);
+                    setTimeout(() => window.islandEngine?.center(), 200);
+                } else {
+                    window.islandEngine?.importTiles([]);
+                }
+            } catch(_) {
+                window.islandEngine?.importTiles([]);
+            }
+
+            // 載入對方的 island items
+            try {
+                const userDoc = await db.collection('users').doc(id).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    const targetUser = (data.users || []).find(u => u.id === id);
+                    visitingIslandItems.value = targetUser?.island || [];
+                }
+            } catch(_) {}
+
             setTimeout(() => window.initIslandCanvas?.(), 100);
         };
         const stopVisiting = () => {
             visitingId.value = null;
-            // 重新載入自己的地形
+            visitingIslandItems.value = [];
             setTimeout(() => {
                 window.islandEngine?.importTiles([]);
                 if (fbUser.value) {
@@ -3000,22 +3028,25 @@ createApp({
             try {
                 const receiverDoc = await db.collection('users').doc(toId).get();
                 if (receiverDoc.exists) {
-                    const rData     = receiverDoc.data();
-                    const rUsers    = rData.users || [];
-                    const rLetters  = rData.letters || [];
-                    const rUser     = rUsers.find(u => u.id === toId) || {};
+                    const rData    = receiverDoc.data();
+                    const rUsers   = JSON.parse(JSON.stringify(rData.users || []));
+                    const rLetters = JSON.parse(JSON.stringify(rData.letters || []));
 
-                    // 更新能量和貝殼幣
+                    // 找到或建立收件人的 user 物件
+                    let rIdx = rUsers.findIndex(u => u.id === toId);
+                    if (rIdx < 0) {
+                        rUsers.push({ id: toId });
+                        rIdx = rUsers.length - 1;
+                    }
+
+                    // 更新能量、貝殼幣、板塊道具
                     const bonus = (Math.floor(Math.random() * 450) + 50) * cost;
-                    rUser.shells = (rUser.shells || 0) + bonus;
-                    rUser.energy = (rUser.energy || 0) + 100 * cost;
-
-                    // 新增板塊待領取道具
-                    if (!rUser.rewards) rUser.rewards = [];
+                    rUsers[rIdx].shells  = (rUsers[rIdx].shells  || 0) + bonus;
+                    rUsers[rIdx].energy  = (rUsers[rIdx].energy  || 0) + 100 * cost;
+                    if (!rUsers[rIdx].rewards) rUsers[rIdx].rewards = [];
                     for (let i = 0; i < cost; i++) {
-                        rUser.rewards.push({
-                            id: ts + i,
-                            type: 'tile',
+                        rUsers[rIdx].rewards.push({
+                            id: ts + i, type: 'tile',
                             title: '🏝️ 獲得島嶼板塊！',
                             desc: `${sender.name} 送了你感謝，帶來 1 片新的板塊！快去擴張你的小島吧 🌟`,
                             claimed: false
@@ -3024,22 +3055,18 @@ createApp({
 
                     // 寫入信件到收件人信箱
                     rLetters.push({
-                        id: ts,
-                        from: sender.id, to: toId,
+                        id: ts, from: sender.id, to: toId,
                         content: letterForm.content,
-                        timestamp: ts,
-                        cardCost: cost, likes: [], read: false
+                        timestamp: ts, cardCost: cost, likes: [], read: false
                     });
 
-                    // 更新 rUsers 陣列
-                    const rIdx = rUsers.findIndex(u => u.id === toId);
-                    if (rIdx >= 0) rUsers[rIdx] = rUser;
-                    else rUsers.push(rUser);
-
-                    // 寫回 Firestore
+                    // 全量覆寫（不用 merge，避免部分欄位殘留舊值）
                     await db.collection('users').doc(toId).set({
-                        users: rUsers, letters: rLetters, updatedAt: ts
-                    }, { merge: true });
+                        ...rData,
+                        users: rUsers,
+                        letters: rLetters,
+                        updatedAt: ts
+                    });
                 }
             } catch(e) {
                 console.warn('更新收件人失敗', e);
@@ -3691,7 +3718,7 @@ createApp({
             fbUser, fbLoading, loginError, signInWithGoogle, signOut,
             users, currentUserId, currentUser, otherUsers,
             currentTab, letterForm, shopItems, displayIslandItems,
-            visitingId, leaderboard, errorMsg, isDrawing, drawResult,
+            visitingId, visitingIslandItems, leaderboard, errorMsg, isDrawing, drawResult,
             seaTab, seaSearch, seaFilteredUsers, seaUserStats,
             allProfiles, getProfileAvatar,
             announcements, globalLetters,
