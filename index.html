@@ -2471,13 +2471,16 @@
                     <div v-else class="letters-grid">
                         <div v-for="reward in unclaimedRewards" :key="reward.id" class="letter-card reward-card">
                             <div class="reward-card-icon">
-                                {{ {tile:'🏝️', tiles:'🏝️', energy:'⚡', cards:'💌', shells:'🪙'}[reward.type] || '🎁' }}
+                                {{ reward.itemData ? reward.itemData.emoji : ({tile:'🏝️', tiles:'🏝️', energy:'⚡', cards:'💌', shells:'🪙', pet:'🐾', decor:'🏕️'}[reward.type] || '🎁') }}
                             </div>
                             <div class="reward-card-title">{{ reward.title }}</div>
                             <div class="reward-card-desc">{{ reward.desc }}</div>
-                            <div v-if="reward.amount && reward.type !== 'tile' && reward.type !== 'tiles'"
+                            <div v-if="reward.amount && reward.type !== 'tile' && reward.type !== 'tiles' && reward.type !== 'pet' && reward.type !== 'decor'"
                                  style="margin-top:8px;font-size:20px;font-weight:900;color:var(--primary-h);">
                                 ×{{ reward.amount }}
+                            </div>
+                            <div v-if="reward.itemData" style="margin-top:6px;font-size:12px;color:var(--text-sub);font-weight:600;">
+                                {{ {common:'普通',rare:'💎 稀有',legend:'⭐ 傳說'}[reward.itemData.rarity] || '' }}
                             </div>
                             <button @click="claimReward(reward)" class="btn-primary" style="margin-top:12px;width:100%;">
                                 <i class="fa-solid fa-hand-holding-heart"></i> 領取！
@@ -2833,50 +2836,73 @@ createApp({
             { id: 'u3', name: 'Carol', email: 'carol@company.com', level: 2, shells: 20,  energy: 150,  cards: 3, island: [], warehouse: [] },
         ];
 
-        const shopItems = [
-            // 🌿 植物類
-            { id: 't1', name: '橡木樹',   emoji: '🌳', rarity: 'common', weight: 40, type: 'decor', imgUrl: 'assets/items/tree_oak.png' },
-            { id: 't2', name: '雪松',     emoji: '🌲', rarity: 'common', weight: 40, type: 'decor', imgUrl: 'assets/items/tree_pine.png' },
-            { id: 't3', name: '櫻花樹',   emoji: '🌸', rarity: 'rare',   weight: 25, type: 'decor', imgUrl: 'assets/items/tree_sakura.png' },
-            { id: 'f1', name: '向日葵',   emoji: '🌻', rarity: 'common', weight: 35, type: 'decor', imgUrl: 'assets/items/flower_sunflower.png' },
-            { id: 'f2', name: '雛菊',     emoji: '🌼', rarity: 'common', weight: 35, type: 'decor', imgUrl: 'assets/items/flower_daisy.png' },
-            { id: 'f4', name: '蘑菇',     emoji: '🍄', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/plant_mushroom.png' },
-            // 🏕️ 建築類
-            { id: 'd1', name: '露營帳篷', emoji: '⛺', rarity: 'rare',   weight: 20, type: 'decor', imgUrl: 'assets/items/build_tent.png' },
-            { id: 'd4', name: '許願池',   emoji: '⛲', rarity: 'legend', weight: 8,  type: 'decor', imgUrl: 'assets/items/build_fountain.png' },
-            // 🪑 擺設類
-            { id: 's2', name: '野餐組合', emoji: '🧺', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_picnic.png' },
-            { id: 's3', name: '木製長椅', emoji: '🪑', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_bench.png' },
-            { id: 's4', name: '篝火堆',   emoji: '🔥', rarity: 'rare',   weight: 18, type: 'decor', imgUrl: 'assets/items/deco_campfire.png' },
-            { id: 's5', name: '石燈籠',   emoji: '🏮', rarity: 'rare',   weight: 15, type: 'decor', imgUrl: 'assets/items/deco_lantern.png' },
-            { id: 's6', name: '鯉魚旗',   emoji: '🎏', rarity: 'rare',   weight: 16, type: 'decor', imgUrl: 'assets/items/deco_koinobori.png' },
-            { id: 's7', name: '野餐布',         emoji: '🟩', rarity: 'common', weight: 35, type: 'decor', imgUrl: 'assets/items/deco_picnic_mat.png' },
-            { id: 's8', name: '野餐籃',         emoji: '🧺', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_picnic_basket.png' },
-            { id: 's9', name: '野餐摺疊椅',     emoji: '🪑', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_folding_chair.png' },
-            { id: 's10', name: '陽傘',           emoji: '☂️', rarity: 'rare',   weight: 20, type: 'decor', imgUrl: 'assets/items/deco_parasol.png' },
-            { id: 's11', name: '風車',           emoji: '🌀', rarity: 'common', weight: 32, type: 'decor', imgUrl: 'assets/items/deco_windmill.png' },
-            { id: 's12', name: '三明治',         emoji: '🥪', rarity: 'common', weight: 30, type: 'decor', imgUrl: 'assets/items/deco_sandwich.png' },
-            { id: 's13', name: '木製長桌',       emoji: '🪵', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_wood_table.png' },
-            { id: 's14', name: '木製圓椅',       emoji: '🪑', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_wood_stool.png' },
-            { id: 's15', name: '木製圓桌',       emoji: '🪵', rarity: 'common', weight: 28, type: 'decor', imgUrl: 'assets/items/deco_wood_round_table.png' },
+        // ── 卡池（從 Firestore 動態載入）──
+        const shopItems  = ref([]); // 裝飾品卡池
+        const gachaPool  = ref([]); // 島民卡池
+
+        // 預設卡池（Firestore 為空時初始化用）
+        const DEFAULT_PETS = [
+            { name:'倉鼠',       emoji:'🐹', rarity:'common', weight:40, type:'animal', imgUrl:'assets/pets/pet_hamster.png',           active:true },
+            { name:'白兔',       emoji:'🐇', rarity:'common', weight:40, type:'animal', imgUrl:'assets/pets/pet_rabbit.png',            active:true },
+            { name:'柴犬',       emoji:'🐕', rarity:'common', weight:35, type:'animal', imgUrl:'assets/pets/pet_shiba.png',             active:true },
+            { name:'小雞',       emoji:'🐥', rarity:'common', weight:35, type:'animal', imgUrl:'assets/pets/pet_chick.png',             active:true },
+            { name:'英國短毛貓', emoji:'🐈', rarity:'rare',   weight:25, type:'animal', imgUrl:'assets/pets/pet_british_shorthair.png', active:true },
+            { name:'企鵝',       emoji:'🐧', rarity:'rare',   weight:25, type:'animal', imgUrl:'assets/pets/pet_penguin.png',           active:true },
+            { name:'狐狸',       emoji:'🦊', rarity:'rare',   weight:20, type:'animal', imgUrl:'assets/pets/pet_fox.png',              active:true },
+            { name:'獨角獸',     emoji:'🦄', rarity:'legend', weight:8,  type:'animal', imgUrl:'assets/pets/pet_unicorn.png',           active:true },
+            { name:'水手',       emoji:'⚓', rarity:'legend', weight:7,  type:'animal', imgUrl:'assets/pets/pet_sailor.png',            active:true },
+            { name:'小馬',       emoji:'🐴', rarity:'legend', weight:5,  type:'animal', imgUrl:'assets/pets/pet_pony.png',             active:true },
+        ];
+        const DEFAULT_DECORS = [
+            { name:'橡木樹',     emoji:'🌳', rarity:'common', weight:40, type:'decor', imgUrl:'assets/items/tree_oak.png',            active:true },
+            { name:'雪松',       emoji:'🌲', rarity:'common', weight:40, type:'decor', imgUrl:'assets/items/tree_pine.png',           active:true },
+            { name:'向日葵',     emoji:'🌻', rarity:'common', weight:35, type:'decor', imgUrl:'assets/items/flower_sunflower.png',    active:true },
+            { name:'雛菊',       emoji:'🌼', rarity:'common', weight:35, type:'decor', imgUrl:'assets/items/flower_daisy.png',        active:true },
+            { name:'蘑菇',       emoji:'🍄', rarity:'common', weight:30, type:'decor', imgUrl:'assets/items/plant_mushroom.png',      active:true },
+            { name:'野餐組合',   emoji:'🧺', rarity:'common', weight:30, type:'decor', imgUrl:'assets/items/deco_picnic.png',         active:true },
+            { name:'木製長椅',   emoji:'🪑', rarity:'common', weight:30, type:'decor', imgUrl:'assets/items/deco_bench.png',          active:true },
+            { name:'野餐布',     emoji:'🟩', rarity:'common', weight:35, type:'decor', imgUrl:'assets/items/deco_picnic_mat.png',     active:true },
+            { name:'野餐籃',     emoji:'🧺', rarity:'common', weight:30, type:'decor', imgUrl:'assets/items/deco_picnic_basket.png',  active:true },
+            { name:'野餐摺疊椅', emoji:'🪑', rarity:'common', weight:28, type:'decor', imgUrl:'assets/items/deco_folding_chair.png',  active:true },
+            { name:'風車',       emoji:'🌀', rarity:'common', weight:32, type:'decor', imgUrl:'assets/items/deco_windmill.png',       active:true },
+            { name:'三明治',     emoji:'🥪', rarity:'common', weight:30, type:'decor', imgUrl:'assets/items/deco_sandwich.png',       active:true },
+            { name:'木製長桌',   emoji:'🪵', rarity:'common', weight:28, type:'decor', imgUrl:'assets/items/deco_wood_table.png',     active:true },
+            { name:'木製圓椅',   emoji:'🪑', rarity:'common', weight:28, type:'decor', imgUrl:'assets/items/deco_wood_stool.png',     active:true },
+            { name:'木製圓桌',   emoji:'🪵', rarity:'common', weight:28, type:'decor', imgUrl:'assets/items/deco_wood_round_table.png', active:true },
+            { name:'櫻花樹',     emoji:'🌸', rarity:'rare',   weight:25, type:'decor', imgUrl:'assets/items/tree_sakura.png',         active:true },
+            { name:'露營帳篷',   emoji:'⛺', rarity:'rare',   weight:20, type:'decor', imgUrl:'assets/items/build_tent.png',          active:true },
+            { name:'篝火堆',     emoji:'🔥', rarity:'rare',   weight:18, type:'decor', imgUrl:'assets/items/deco_campfire.png',       active:true },
+            { name:'石燈籠',     emoji:'🏮', rarity:'rare',   weight:15, type:'decor', imgUrl:'assets/items/deco_lantern.png',        active:true },
+            { name:'鯉魚旗',     emoji:'🎏', rarity:'rare',   weight:16, type:'decor', imgUrl:'assets/items/deco_koinobori.png',      active:true },
+            { name:'陽傘',       emoji:'☂️', rarity:'rare',   weight:20, type:'decor', imgUrl:'assets/items/deco_parasol.png',        active:true },
+            { name:'許願池',     emoji:'⛲', rarity:'legend', weight:8,  type:'decor', imgUrl:'assets/items/build_fountain.png',      active:true },
         ];
 
-        // 抽卡池：10 種寵物，三階稀有度
-        const gachaPool = [
-            // 普通 (Common)
-            { name: '倉鼠',       emoji: '🐹', rarity: 'common', weight: 40, imgUrl: 'assets/pets/pet_hamster.png' },
-            { name: '白兔',       emoji: '🐇', rarity: 'common', weight: 40, imgUrl: 'assets/pets/pet_rabbit.png' },
-            { name: '柴犬',       emoji: '🐕', rarity: 'common', weight: 35, imgUrl: 'assets/pets/pet_shiba.png' },
-            { name: '小雞',       emoji: '🐥', rarity: 'common', weight: 35, imgUrl: 'assets/pets/pet_chick.png' },
-            // 稀有 (Rare)
-            { name: '英國短毛貓', emoji: '🐈', rarity: 'rare',   weight: 25, imgUrl: 'assets/pets/pet_british_shorthair.png' },
-            { name: '企鵝',       emoji: '🐧', rarity: 'rare',   weight: 25, imgUrl: 'assets/pets/pet_penguin.png' },
-            { name: '狐狸',       emoji: '🦊', rarity: 'rare',   weight: 20, imgUrl: 'assets/pets/pet_fox.png' },
-            // 傳說 (Legend)
-            { name: '獨角獸',     emoji: '🦄', rarity: 'legend', weight: 8,  imgUrl: 'assets/pets/pet_unicorn.png' },
-            { name: '水手',       emoji: '⚓', rarity: 'legend', weight: 7,  imgUrl: 'assets/pets/pet_sailor.png' },
-            { name: '小馬',       emoji: '🐴', rarity: 'legend', weight: 5,  imgUrl: 'assets/pets/pet_pony.png' },
-        ];
+        // 從 Firestore 載入卡池
+        const loadGachaItems = async () => {
+            try {
+                const snap = await db.collection('gacha_items').where('active', '==', true).get();
+                if (snap.empty) {
+                    // 第一次：寫入預設清單
+                    const batch = db.batch();
+                    [...DEFAULT_PETS, ...DEFAULT_DECORS].forEach(item => {
+                        const ref = db.collection('gacha_items').doc();
+                        batch.set(ref, { ...item, createdAt: Date.now() });
+                    });
+                    await batch.commit();
+                    gachaPool.value = DEFAULT_PETS;
+                    shopItems.value  = DEFAULT_DECORS;
+                } else {
+                    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    gachaPool.value = items.filter(i => i.type === 'animal');
+                    shopItems.value  = items.filter(i => i.type === 'decor');
+                }
+            } catch(e) {
+                // Firestore 讀取失敗時 fallback 到預設清單
+                gachaPool.value = DEFAULT_PETS;
+                shopItems.value  = DEFAULT_DECORS;
+            }
+        };
 
         // ===== 狀態 =====
         const users         = ref(JSON.parse(JSON.stringify(defaultUsers)));
@@ -3412,20 +3438,23 @@ createApp({
                             if (item.type === 'admin_reward' && !item.processed) {
                                 if (me) {
                                     if (!me.rewards) me.rewards = [];
-                                    // 避免重複加入
                                     const alreadyIn = me.rewards.some(r => r.id === `admin_${item.id}`);
                                     if (!alreadyIn) {
-                                        const rewardIcon = { energy:'⚡', cards:'💌', tiles:'🏝️', shells:'🪙' }[item.rewardType] || '🎁';
-                                        me.rewards.push({
+                                        const rewardIcon = { energy:'⚡', cards:'💌', tiles:'🏝️', shells:'🪙', pet:'🐾', decor:'🏕️' }[item.rewardType] || '🎁';
+                                        const rewardEntry = {
                                             id: `admin_${item.id}`,
                                             type: item.rewardType || 'energy',
                                             amount: item.amount || 1,
-                                            title: item.title || `🎁 管理員發放了 ${rewardIcon} ×${item.amount}！`,
+                                            title: item.title || `🎁 管理員發放了 ${rewardIcon}！`,
                                             desc: item.note || '管理員送出的特別獎勵，快點領取吧！🎉',
                                             claimed: false,
                                             timestamp: item.timestamp,
-                                        });
-                                        // 標記已處理
+                                        };
+                                        // 物品類型：帶入完整 itemData
+                                        if (item.itemData) {
+                                            rewardEntry.itemData = item.itemData;
+                                        }
+                                        me.rewards.push(rewardEntry);
                                         await db.collection('inboxes').doc(uid)
                                             .collection('items').doc(docSnap.id)
                                             .update({ processed: true });
@@ -3907,6 +3936,17 @@ createApp({
                 user.cards = Math.min(6, (user.cards || 0) + amt);
             } else if (reward.type === 'shells') {
                 user.shells = (user.shells || 0) + amt;
+            } else if ((reward.type === 'pet' || reward.type === 'decor') && reward.itemData) {
+                // 物品：加入倉庫
+                if (!user.warehouse) user.warehouse = [];
+                user.warehouse.push({
+                    id: Date.now(),
+                    name:   reward.itemData.name,
+                    emoji:  reward.itemData.emoji,
+                    imgUrl: reward.itemData.imgUrl || null,
+                    type:   reward.itemData.type || (reward.type === 'pet' ? 'animal' : 'decor'),
+                    rarity: reward.itemData.rarity || 'common',
+                });
             }
             await saveData();
         };
@@ -4251,7 +4291,7 @@ createApp({
             isDrawing.value  = true;
             drawResult.value = null;
 
-            let pool = type === 'pet' ? gachaPool : shopItems;
+            let pool = type === 'pet' ? [...gachaPool.value] : [...shopItems.value];
 
             // 寵物：排除已擁有（島上 + 倉庫）的種類
             if (type === 'pet') {
@@ -4294,7 +4334,7 @@ createApp({
             isDrawing.value   = true;
             drawResult.value  = null;
             draw10Results.value = null;
-            let pool = type === 'pet' ? gachaPool : shopItems;
+            let pool = type === 'pet' ? [...gachaPool.value] : [...shopItems.value];
             if (type === 'pet') {
                 const user = currentUser.value;
                 const owned = new Set([
@@ -4348,13 +4388,13 @@ createApp({
         const closePool = ()     => { poolPreview.value = null; };
 
         const filteredPoolItems = computed(() => {
-            const pool = poolPreview.value === 'pet' ? gachaPool : shopItems;
+            const pool = poolPreview.value === 'pet' ? gachaPool.value : shopItems.value;
             if (poolRarityFilter.value === 'all') return pool;
             return pool.filter(i => i.rarity === poolRarityFilter.value);
         });
 
         const calcRate = (item, type) => {
-            const pool  = type === 'pet' ? gachaPool : shopItems;
+            const pool  = type === 'pet' ? gachaPool.value : shopItems.value;
             const total = pool.reduce((s, g) => s + g.weight, 0);
             return ((item.weight / total) * 100).toFixed(1);
         };
@@ -4374,6 +4414,7 @@ createApp({
                     await initData(user.uid);
                     await loadAnnouncements();
                     await loadGlobalLetters();
+                    await loadGachaItems();
                     initAnimalStates();
                     if (!roamInterval) roamInterval = setInterval(moveAnimals, 4500);
                     setTimeout(() => {
