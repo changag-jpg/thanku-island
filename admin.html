@@ -870,9 +870,9 @@ createApp({setup(){
     } catch(e){ toast('刪除失敗','err'); }
   };
 
-  // 圖片上傳（Cloudinary - 待設定）
-  const CLOUDINARY_CLOUD = '';  // ← 填入你的 Cloud Name
-  const CLOUDINARY_PRESET = ''; // ← 填入你的 Upload Preset
+  // 圖片上傳（Cloudinary）
+  const CLOUDINARY_CLOUD = 'djjbj67s5';
+  const CLOUDINARY_PRESET = 'gsik1r4i';
   const onItemImgChange = async (e) => {
     const file = e.target.files[0];
     if(!file) return;

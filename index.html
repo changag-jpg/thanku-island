@@ -3771,14 +3771,25 @@ createApp({
         const feedbackContent     = ref('');
         const feedbackImgUrl      = ref('');
 
-        const onFeedbackImgChange = (e) => {
+        const onFeedbackImgChange = async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
             if (file.size > 3 * 1024 * 1024) { alert('圖片太大！請選擇 3MB 以內的圖片。'); return; }
-            const reader = new FileReader();
-            reader.onload = (ev) => { feedbackImgUrl.value = ev.target.result; };
-            reader.readAsDataURL(file);
             e.target.value = '';
+            // 上傳到 Cloudinary
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('upload_preset', 'gsik1r4i');
+                const res = await fetch('https://api.cloudinary.com/v1_1/djjbj67s5/image/upload', { method:'POST', body:fd });
+                const data = await res.json();
+                feedbackImgUrl.value = data.secure_url;
+            } catch(err) {
+                // Cloudinary 失敗時 fallback base64
+                const reader = new FileReader();
+                reader.onload = (ev) => { feedbackImgUrl.value = ev.target.result; };
+                reader.readAsDataURL(file);
+            }
         };
 
         const submitFeedback = async () => {
