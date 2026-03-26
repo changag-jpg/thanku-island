@@ -84,34 +84,47 @@ textarea.fi{resize:vertical;min-height:100px;line-height:1.7}
 .ri{font-size:26px;margin-bottom:6px}
 .rl{font-size:12px;font-weight:800}
 /* 卡池管理 */
-.gacha-tabs{display:flex;gap:8px;margin-bottom:16px}
-.gacha-tab{padding:8px 20px;border-radius:var(--rp);border:2px solid var(--border);background:var(--surface);font-size:13px;font-weight:800;color:var(--sub);cursor:pointer;transition:all .15s}
-.gacha-tab.on{background:var(--pri);color:#fff;border-color:var(--prih)}
-.gacha-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.gacha-card{background:var(--s2);border-radius:var(--r);border:2px solid var(--border);padding:16px 12px;text-align:center;position:relative;transition:border-color .15s}
-.gacha-card.inactive{opacity:.5}
-.gacha-card:hover{border-color:var(--pri)}
-.gc-emoji{font-size:40px;margin-bottom:8px}
-.gc-name{font-size:13px;font-weight:800;margin-bottom:4px}
-.gc-rarity{font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--rp);display:inline-block;margin-bottom:6px}
-.gc-weight{font-size:11px;color:var(--sub);margin-bottom:10px}
-.gc-btns{display:flex;gap:6px;justify-content:center}
-.gc-btn{padding:4px 10px;border-radius:var(--rp);font-size:11px;font-weight:800;cursor:pointer;border:none;transition:all .15s}
+.gacha-view{display:flex;gap:20px;min-height:600px}
+.gacha-sidebar{width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.gacha-main{flex:1;min-width:0}
+.pool-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:all .15s;position:relative}
+.pool-card:hover{border-color:var(--pri)}
+.pool-card.on{border-color:var(--pri);background:var(--prilt)}
+.pool-card-name{font-size:14px;font-weight:800;margin-bottom:2px}
+.pool-card-meta{font-size:11px;color:var(--sub)}
+.pool-card-badge{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:var(--rp)}
+.pool-add-btn{border:2px dashed var(--border);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;color:var(--sub);font-size:13px;font-weight:700;transition:all .15s;background:transparent}
+.pool-add-btn:hover{border-color:var(--pri);color:var(--pri);background:var(--prilt)}
+.gacha-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.gacha-card{background:var(--s2);border-radius:var(--r);border:2px solid var(--border);padding:14px 10px;text-align:center;position:relative;transition:all .15s}
+.gacha-card.inactive{opacity:.45}
+.gacha-card:hover{border-color:var(--pri);transform:translateY(-2px)}
+.gc-img{width:72px;height:72px;object-fit:contain;margin:0 auto 8px;display:block}
+.gc-emoji{font-size:44px;margin-bottom:8px;display:block}
+.gc-name{font-size:12px;font-weight:800;margin-bottom:4px}
+.gc-rarity{font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--rp);display:inline-block;margin-bottom:5px}
+.gc-pct{font-size:11px;color:var(--sub);margin-bottom:8px;font-weight:600}
+.gc-actions{display:flex;flex-direction:column;gap:5px}
+.gc-btn{padding:5px 8px;border-radius:var(--r);font-size:11px;font-weight:800;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
 .gc-edit{background:var(--prilt);color:var(--prih)}.gc-edit:hover{background:var(--pri);color:#fff}
 .gc-del{background:var(--redlt);color:var(--red)}.gc-del:hover{background:var(--red);color:#fff}
-.gc-toggle{font-size:10px;padding:3px 8px;border-radius:var(--rp);border:1.5px solid;cursor:pointer;font-weight:800;background:transparent;margin-bottom:6px;display:block;width:100%;transition:all .15s}
-.gc-toggle.on{border-color:var(--pri);color:var(--prih)}.gc-toggle.on:hover{background:var(--pri);color:#fff}
-.gc-toggle.off{border-color:var(--sub);color:var(--sub)}.gc-toggle.off:hover{background:var(--sub);color:#fff}
+.gc-toggle{background:transparent;border:1.5px solid}.gc-toggle.on{border-color:var(--pri);color:var(--prih)}.gc-toggle.on:hover{background:var(--pri);color:#fff}.gc-toggle.off{border-color:var(--sub);color:var(--sub)}.gc-toggle.off:hover{background:var(--sub);color:#fff}
 /* 表單彈窗 */
-.form-ov{position:fixed;inset:0;z-index:800;background:rgba(26,32,44,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
-.form-box{background:var(--surface);border-radius:var(--rlg);border:2px solid var(--border);width:100%;max-width:480px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.form-ov{position:fixed;inset:0;z-index:900;background:rgba(26,32,44,.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
+.form-box{background:var(--surface);border-radius:var(--rlg);border:2px solid var(--border);width:100%;max-width:520px;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
 .form-box-title{font-size:18px;font-weight:900;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.rarity-btns{display:flex;gap:8px}
-.rarity-btn{padding:8px 14px;border-radius:var(--r);border:2px solid var(--border);font-size:12px;font-weight:800;cursor:pointer;transition:all .15s;background:var(--surface)}
-.rarity-btn.on{border-width:2px}
+.rarity-btns{display:flex;gap:8px;flex-wrap:wrap}
+.rarity-btn{padding:8px 14px;border-radius:var(--r);border:2px solid var(--border);font-size:12px;font-weight:800;cursor:pointer;transition:all .15s;background:var(--surface);font-family:inherit}
 .weight-row{display:flex;align-items:center;gap:12px}
-.weight-val{font-size:20px;font-weight:900;color:var(--prih);min-width:36px;text-align:center}
+.weight-val{font-size:20px;font-weight:900;color:var(--prih);min-width:40px;text-align:center}
 input[type=range]{flex:1;accent-color:var(--pri)}
+.img-upload-area{border:2px dashed var(--border);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.img-upload-area:hover{border-color:var(--pri);background:var(--prilt)}
+.img-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.img-preview{width:80px;height:80px;object-fit:contain;border-radius:var(--r);border:2px solid var(--border);margin:0 auto 8px;display:block}
+.pool-form-ov{position:fixed;inset:0;z-index:900;background:rgba(26,32,44,.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
+.pool-form-box{background:var(--surface);border-radius:var(--rlg);border:2px solid var(--border);width:100%;max-width:440px;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+@media(max-width:768px){.gacha-view{flex-direction:column}.gacha-sidebar{width:100%}}
 /* 物品選取 */
 .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;max-height:280px;overflow-y:auto;border:2px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:10px}
 .item-card{border:2px solid var(--border);border-radius:var(--r);padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);position:relative}
@@ -325,51 +338,99 @@ input[type=range]{flex:1;accent-color:var(--pri)}
       <div v-if="tab==='gacha'">
         <div class="ph">
           <div class="pht">✨ 卡池管理</div>
-          <div class="phs">管理可抽到的島民與裝飾品，前端即時同步</div>
+          <div class="phs">管理所有卡池與物品，前端即時同步</div>
         </div>
 
-        <!-- 分頁切換 -->
-        <div class="gacha-tabs">
-          <button class="gacha-tab" :class="{on:gachaTab==='animal'}" @click="gachaTab='animal'">🐾 島民</button>
-          <button class="gacha-tab" :class="{on:gachaTab==='decor'}"  @click="gachaTab='decor'">🏕️ 裝飾品</button>
-        </div>
+        <div class="gacha-view">
+          <!-- 左側：卡池清單 -->
+          <div class="gacha-sidebar">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);margin-bottom:4px;letter-spacing:.05em">卡池列表</div>
 
-        <!-- 工具列 -->
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
-          <input v-model="gachaSearch" class="fi" placeholder="🔍 搜尋物品名稱..." style="max-width:220px;flex:1">
-          <button class="btn bp" @click="openNewItem(gachaTab==='animal'?'animal':'decor')">
-            <i class="fa-solid fa-plus"></i> 新增{{ gachaTab==='animal'?'島民':'裝飾品' }}
-          </button>
-        </div>
-
-        <!-- 統計 -->
-        <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-          <div style="font-size:12px;color:var(--sub);font-weight:600">
-            共 {{ filtGachaItems.length }} 個
-            <span style="color:var(--pri);margin-left:8px">{{ filtGachaItems.filter(i=>i.active).length }} 上架中</span>
-            <span style="color:var(--sub);margin-left:8px">{{ filtGachaItems.filter(i=>!i.active).length }} 已下架</span>
-          </div>
-        </div>
-
-        <!-- 物品格子 -->
-        <div v-if="gachaLoading" style="text-align:center;padding:48px;color:var(--sub)">載入中...</div>
-        <div v-else-if="!filtGachaItems.length" class="empty"><div style="font-size:48px;margin-bottom:12px">✨</div><div style="font-size:14px;font-weight:600">還沒有物品，點右上角新增吧！</div></div>
-        <div v-else class="gacha-grid">
-          <div v-for="item in filtGachaItems" :key="item.id"
-            class="gacha-card" :class="{inactive:!item.active}">
-            <div class="gc-emoji">{{ item.emoji }}</div>
-            <div class="gc-name">{{ item.name }}</div>
-            <div class="gc-rarity"
-              :style="{background:{common:'#F0F0F0',rare:'#EEF0FF',legend:'#FFF8E0'}[item.rarity],color:{common:'#666',rare:'#5B6AB5',legend:'#B8860B'}[item.rarity]}">
-              {{ {common:'普通',rare:'稀有',legend:'傳說'}[item.rarity] }}
+            <!-- 基礎卡池 -->
+            <div class="pool-card" :class="{on:currentPool==='animal'}" @click="currentPool='animal';gachaSearch=''">
+              <div class="pool-card-name">🐾 島民基礎卡池</div>
+              <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId==='animal'||(!i.poolId&&i.type==='animal')).length }} 個物品</div>
+              <span class="pool-card-badge" style="background:var(--prilt);color:var(--prih)">常駐</span>
             </div>
-            <div class="gc-weight">權重 {{ item.weight }}（機率 {{ ((item.weight / filtGachaItems.filter(i=>i.active).reduce((s,i)=>s+i.weight,0))*100).toFixed(1) }}%）</div>
-            <button class="gc-toggle" :class="{on:item.active,off:!item.active}" @click="toggleActive(item)">
-              {{ item.active ? '✅ 上架中' : '⏸ 已下架' }}
+            <div class="pool-card" :class="{on:currentPool==='decor'}" @click="currentPool='decor';gachaSearch=''">
+              <div class="pool-card-name">🏕️ 裝飾基礎卡池</div>
+              <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId==='decor'||(!i.poolId&&i.type==='decor')).length }} 個物品</div>
+              <span class="pool-card-badge" style="background:var(--prilt);color:var(--prih)">常駐</span>
+            </div>
+
+            <!-- 特別卡池 -->
+            <div v-if="specialPools.length" style="font-size:12px;font-weight:800;color:var(--sub);margin:8px 0 4px;letter-spacing:.05em">特別卡池</div>
+            <div v-for="pool in specialPools" :key="pool.id"
+              class="pool-card" :class="{on:currentPool===pool.id}"
+              @click="currentPool=pool.id;gachaSearch=''">
+              <div class="pool-card-name">{{ pool.icon }} {{ pool.name }}</div>
+              <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId===pool.id).length }} 個物品</div>
+              <span v-if="pool.endDate" class="pool-card-badge"
+                :style="new Date(pool.endDate)<new Date()?{background:'#FFF5F5',color:'var(--red)'}:{background:'#FFF8E0',color:'#B8860B'}">
+                {{ new Date(pool.endDate)<new Date()?'已結束':pool.endDate }}
+              </span>
+              <div style="display:flex;gap:4px;margin-top:8px">
+                <button class="gc-btn gc-edit" style="flex:1;font-size:10px" @click.stop="openEditPool(pool)">設定</button>
+                <button class="gc-btn gc-del" style="font-size:10px" @click.stop="deletePool(pool)">🗑</button>
+              </div>
+            </div>
+
+            <button class="pool-add-btn" @click="showPoolForm=true">
+              <i class="fa-solid fa-plus"></i> 新增特別卡池
             </button>
-            <div class="gc-btns">
-              <button class="gc-btn gc-edit" @click="openEditItem(item)"><i class="fa-solid fa-pen"></i> 編輯</button>
-              <button class="gc-btn gc-del"  @click="deleteItem(item)"><i class="fa-solid fa-trash"></i></button>
+          </div>
+
+          <!-- 右側：物品管理 -->
+          <div class="gacha-main">
+            <!-- 工具列 -->
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+              <input v-model="gachaSearch" class="fi" placeholder="🔍 搜尋物品名稱..." style="flex:1;min-width:120px">
+              <button class="btn bp" @click="openNewItem">
+                <i class="fa-solid fa-plus"></i> 新增物品
+              </button>
+            </div>
+
+            <!-- 統計列 -->
+            <div style="display:flex;gap:16px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
+              <div style="font-size:12px;color:var(--sub);font-weight:600">
+                共 {{ filtGachaItems.length }} 個
+                <span style="color:var(--pri);margin-left:8px">{{ filtGachaItems.filter(i=>i.active).length }} 上架</span>
+                <span style="margin-left:8px">{{ filtGachaItems.filter(i=>!i.active).length }} 下架</span>
+              </div>
+              <div style="font-size:11px;color:var(--sub)">總權重 {{ filtGachaItems.filter(i=>i.active).reduce((s,i)=>s+i.weight,0) }}</div>
+            </div>
+
+            <!-- 物品格子 -->
+            <div v-if="gachaLoading" style="text-align:center;padding:64px;color:var(--sub)">載入中...</div>
+            <div v-else-if="!filtGachaItems.length" class="empty">
+              <div style="font-size:48px;margin-bottom:12px">✨</div>
+              <div style="font-size:14px;font-weight:600">還沒有物品，點右上角新增！</div>
+            </div>
+            <div v-else class="gacha-grid">
+              <div v-for="item in filtGachaItems" :key="item.id"
+                class="gacha-card" :class="{inactive:!item.active}">
+                <!-- 圖片或 emoji -->
+                <img v-if="item.imgUrl" :src="item.imgUrl" class="gc-img" :alt="item.name" @error="$event.target.style.display='none'">
+                <span v-else class="gc-emoji">{{ item.emoji }}</span>
+                <div class="gc-name">{{ item.emoji }} {{ item.name }}</div>
+                <div class="gc-rarity"
+                  :style="{background:{common:'#F0F0F0',rare:'#EEF0FF',legend:'#FFF8E0'}[item.rarity],color:{common:'#555',rare:'#5B6AB5',legend:'#B8860B'}[item.rarity]}">
+                  {{ {common:'普通',rare:'稀有 💎',legend:'傳說 ⭐'}[item.rarity] }}
+                </div>
+                <div class="gc-pct">
+                  權重 {{ item.weight }}
+                  <span v-if="filtGachaItems.filter(i=>i.active).length">
+                    · {{ ((item.weight / Math.max(1, filtGachaItems.filter(i=>i.active).reduce((s,i)=>s+i.weight,0)))*100).toFixed(1) }}%
+                  </span>
+                </div>
+                <div class="gc-actions">
+                  <button class="gc-btn gc-toggle" :class="{on:item.active,off:!item.active}" @click="toggleActive(item)">
+                    {{ item.active ? '✅ 上架中' : '⏸ 已下架' }}
+                  </button>
+                  <button class="gc-btn gc-edit" @click="openEditItem(item)">✏️ 編輯</button>
+                  <button class="gc-btn gc-del" @click="deleteItem(item)">🗑 刪除</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -451,13 +512,19 @@ input[type=range]{flex:1;accent-color:var(--pri)}
     <div class="form-box">
       <div class="form-box-title">
         {{ editingItem ? '✏️ 編輯物品' : '➕ 新增物品' }}
-        <button @click="showItemForm=false" style="font-size:18px;color:var(--sub);padding:0">✕</button>
+        <button @click="showItemForm=false" style="font-size:18px;color:var(--sub);padding:0;cursor:pointer">✕</button>
       </div>
 
       <!-- 預覽 -->
-      <div style="text-align:center;margin-bottom:20px;padding:16px;background:var(--s2);border-radius:var(--r)">
-        <div style="font-size:52px;margin-bottom:6px">{{ itemForm.emoji || '❓' }}</div>
-        <div style="font-size:16px;font-weight:800">{{ itemForm.name || '物品名稱' }}</div>
+      <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--s2);border-radius:var(--r);margin-bottom:20px">
+        <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);border:2px solid var(--border);background:var(--surface);overflow:hidden;flex-shrink:0">
+          <img v-if="itemForm.imgUrl" :src="itemForm.imgUrl" style="width:100%;height:100%;object-fit:contain">
+          <span v-else style="font-size:40px">{{ itemForm.emoji || '❓' }}</span>
+        </div>
+        <div>
+          <div style="font-size:18px;font-weight:800">{{ itemForm.name || '物品名稱' }}</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:2px">{{ {common:'普通',rare:'稀有 💎',legend:'傳說 ⭐'}[itemForm.rarity] }}</div>
+        </div>
       </div>
 
       <div class="fr">
@@ -470,20 +537,45 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         <input v-model="itemForm.emoji" class="fi" placeholder="例如：🐕" style="font-size:24px;max-width:120px">
       </div>
 
+      <!-- 圖片上傳區（Cloudinary，待整合） -->
       <div class="fr">
-        <label class="fl">圖片 URL <span style="color:var(--sub);font-weight:400">（選填，沒有就用 emoji）</span></label>
-        <input v-model="itemForm.imgUrl" class="fi" placeholder="assets/pets/pet_shiba.png">
+        <label class="fl">圖片 <span style="color:var(--sub);font-weight:400">（選填，上傳後自動使用；沒有則顯示 emoji）</span></label>
+        <div class="img-upload-area" @click="$refs.imgFileInput.click()">
+          <input ref="imgFileInput" type="file" accept="image/*" style="display:none" @change="onItemImgChange">
+          <div v-if="itemForm.imgUrl">
+            <img :src="itemForm.imgUrl" class="img-preview">
+            <div style="font-size:12px;color:var(--sub)">點擊更換圖片</div>
+          </div>
+          <div v-else>
+            <div style="font-size:32px;margin-bottom:6px">📁</div>
+            <div style="font-size:13px;font-weight:700;color:var(--sub)">點擊上傳圖片</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:3px">PNG / JPG，建議 256×256px</div>
+          </div>
+          <div v-if="imgUploading" style="position:absolute;inset:0;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;border-radius:var(--r);font-weight:700;color:var(--pri)">上傳中...</div>
+        </div>
+        <div v-if="itemForm.imgUrl" style="margin-top:6px">
+          <button @click="itemForm.imgUrl=''" style="font-size:12px;color:var(--red);font-weight:700;cursor:pointer;border:none;background:none;padding:0">✕ 移除圖片</button>
+        </div>
       </div>
 
       <div class="fr">
-        <label class="fl">類型</label>
+        <label class="fl">所屬卡池</label>
+        <select v-model="itemForm.poolId" class="fi">
+          <option value="animal">🐾 島民基礎卡池</option>
+          <option value="decor">🏕️ 裝飾基礎卡池</option>
+          <option v-for="p in specialPools" :key="p.id" :value="p.id">{{ p.icon }} {{ p.name }}</option>
+        </select>
+      </div>
+
+      <div class="fr">
+        <label class="fl">物品類型</label>
         <div style="display:flex;gap:8px">
-          <button class="rarity-btn" :class="{on:itemForm.type==='animal'}"
+          <button class="rarity-btn"
             :style="itemForm.type==='animal'?{borderColor:'var(--pri)',background:'var(--prilt)',color:'var(--prih)'}:{}"
-            @click="itemForm.type='animal'">🐾 島民</button>
-          <button class="rarity-btn" :class="{on:itemForm.type==='decor'}"
-            :style="itemForm.type==='decor'?{borderColor:'var(--pri)',background:'var(--prilt)',color:'var(--prih)'}:{}"
-            @click="itemForm.type='decor'">🏕️ 裝飾品</button>
+            @click="itemForm.type='animal'">🐾 島民（會移動）</button>
+          <button class="rarity-btn"
+            :style="itemForm.type==='decor'?{borderColor:'var(--acc)',background:'var(--acclt)',color:'#C47A40'}:{}"
+            @click="itemForm.type='decor'">🏕️ 裝飾品（固定）</button>
         </div>
       </div>
 
@@ -491,14 +583,13 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         <label class="fl">稀有度</label>
         <div class="rarity-btns">
           <button v-for="r in rarityOpts" :key="r.id" class="rarity-btn"
-            :class="{on:itemForm.rarity===r.id}"
-            :style="itemForm.rarity===r.id?{borderColor:r.color,background:r.color+'20',color:r.color}:{}"
+            :style="itemForm.rarity===r.id?{borderColor:r.color,background:r.color+'22',color:r.color}:{}"
             @click="itemForm.rarity=r.id">{{ r.label }}</button>
         </div>
       </div>
 
       <div class="fr">
-        <label class="fl">機率權重 <span style="color:var(--sub);font-weight:400">（越高越容易抽到；普通建議30-40，稀有15-25，傳說5-10）</span></label>
+        <label class="fl">機率權重 <span style="color:var(--sub);font-weight:400">（普通 30-40 / 稀有 15-25 / 傳說 5-10）</span></label>
         <div class="weight-row">
           <input type="range" v-model.number="itemForm.weight" min="1" max="60" step="1">
           <div class="weight-val">{{ itemForm.weight }}</div>
@@ -509,16 +600,57 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         <label class="fl" style="margin:0">上架狀態</label>
         <button @click="itemForm.active=!itemForm.active"
           :style="itemForm.active?{background:'var(--prilt)',color:'var(--prih)',border:'2px solid var(--pri)'}:{background:'var(--s2)',color:'var(--sub)',border:'2px solid var(--border)'}"
-          style="padding:8px 18px;border-radius:var(--rp);font-weight:800;font-size:13px;cursor:pointer;">
-          {{ itemForm.active ? '✅ 上架中' : '⏸ 下架中' }}
+          style="padding:8px 20px;border-radius:var(--rp);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">
+          {{ itemForm.active ? '✅ 上架中' : '⏸ 下架（不會出現在卡池）' }}
         </button>
       </div>
 
       <div style="display:flex;gap:10px;margin-top:8px">
         <button class="btn bg" @click="showItemForm=false" style="flex:1">取消</button>
-        <button class="btn bp" @click="saveItem" :disabled="!itemForm.name.trim()||!itemForm.emoji.trim()" style="flex:2">
+        <button class="btn bp" @click="saveItem" :disabled="!itemForm.name.trim()||!itemForm.emoji.trim()||imgUploading" style="flex:2">
           <i class="fa-solid fa-floppy-disk"></i>
           {{ editingItem ? '儲存變更' : '新增到卡池' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增特別卡池 -->
+  <div v-if="showPoolForm" class="pool-form-ov" @click.self="showPoolForm=false">
+    <div class="pool-form-box">
+      <div class="form-box-title">
+        {{ editingPool ? '✏️ 編輯卡池' : '🎰 建立特別卡池' }}
+        <button @click="showPoolForm=false" style="font-size:18px;color:var(--sub);padding:0;cursor:pointer">✕</button>
+      </div>
+      <div class="fr">
+        <label class="fl">卡池名稱</label>
+        <input v-model="poolForm.name" class="fi" placeholder="例如：春季限定、週年慶...">
+      </div>
+      <div class="fr">
+        <label class="fl">圖示 Emoji</label>
+        <input v-model="poolForm.icon" class="fi" placeholder="🌸" style="font-size:24px;max-width:100px">
+      </div>
+      <div class="fr">
+        <label class="fl">卡池說明 <span style="color:var(--sub);font-weight:400">（選填）</span></label>
+        <input v-model="poolForm.desc" class="fi" placeholder="限時特別卡池，包含限定物品！">
+      </div>
+      <div class="fr">
+        <label class="fl">結束日期 <span style="color:var(--sub);font-weight:400">（選填，不填則永久開放）</span></label>
+        <input v-model="poolForm.endDate" type="date" class="fi">
+      </div>
+      <div class="fr" style="flex-direction:row;align-items:center;gap:12px">
+        <label class="fl" style="margin:0">啟用狀態</label>
+        <button @click="poolForm.active=!poolForm.active"
+          :style="poolForm.active?{background:'var(--prilt)',color:'var(--prih)',border:'2px solid var(--pri)'}:{background:'var(--s2)',color:'var(--sub)',border:'2px solid var(--border)'}"
+          style="padding:8px 20px;border-radius:var(--rp);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">
+          {{ poolForm.active ? '✅ 開放中' : '⏸ 暫停' }}
+        </button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn bg" @click="showPoolForm=false" style="flex:1">取消</button>
+        <button class="btn bpu" @click="savePool" :disabled="!poolForm.name.trim()||!poolForm.icon.trim()" style="flex:2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          {{ editingPool ? '儲存變更' : '建立卡池' }}
         </button>
       </div>
     </div>
@@ -633,64 +765,94 @@ createApp({setup(){
   const aTitle=ref(''),aContent=ref(''),aShow=ref(false),newWL=ref(''),fbF=ref('all');
 
   // ── 卡池管理 ──
-  const gachaItems   = ref([]);       // 所有卡池物品（含未上架）
-  const gachaTab     = ref('animal'); // 'animal' | 'decor'
+  const gachaItems   = ref([]);
+  const specialPools = ref([]);       // 特別卡池清單
+  const currentPool  = ref('animal'); // 目前選取的卡池
   const gachaSearch  = ref('');
   const gachaLoading = ref(false);
-  const showItemForm = ref(false);    // 新增/編輯表單
-  const editingItem  = ref(null);     // null=新增，有值=編輯
-  const itemForm     = Vue.reactive({
+  const showItemForm = ref(false);
+  const editingItem  = ref(null);
+  const imgUploading = ref(false);
+  const itemForm = Vue.reactive({
     name:'', emoji:'', imgUrl:'', type:'animal',
-    rarity:'common', weight:30, active:true,
+    poolId:'animal', rarity:'common', weight:30, active:true,
   });
-  const rarityOpts = [{id:'common',label:'普通',color:'#666'},{id:'rare',label:'稀有 💎',color:'#5B6AB5'},{id:'legend',label:'傳說 ⭐',color:'#B8860B'}];
+  const showPoolForm = ref(false);
+  const editingPool  = ref(null);
+  const poolForm = Vue.reactive({name:'',icon:'🎰',desc:'',endDate:'',active:true});
+  const rarityOpts = [
+    {id:'common',label:'普通',color:'#555'},
+    {id:'rare',label:'稀有 💎',color:'#5B6AB5'},
+    {id:'legend',label:'傳說 ⭐',color:'#B8860B'},
+  ];
 
+  // 依目前選取卡池篩選物品
   const filtGachaItems = computed(()=>{
     const q = gachaSearch.value.trim().toLowerCase();
-    return gachaItems.value.filter(i =>
-      i.type===(gachaTab.value==='animal'?'animal':'decor') &&
-      (!q || i.name.toLowerCase().includes(q))
-    );
+    return gachaItems.value.filter(i => {
+      // 基礎卡池：用 poolId 或舊的 type 欄位判斷
+      const poolMatch = currentPool.value==='animal'
+        ? (i.poolId==='animal'||(!i.poolId&&i.type==='animal'))
+        : currentPool.value==='decor'
+          ? (i.poolId==='decor'||(!i.poolId&&i.type==='decor'))
+          : i.poolId===currentPool.value;
+      return poolMatch && (!q||i.name.toLowerCase().includes(q));
+    });
   });
 
   const loadGachaItems = async () => {
     gachaLoading.value = true;
     try {
-      const snap = await db.collection('gacha_items').orderBy('createdAt','desc').get();
-      gachaItems.value = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const [itemSnap, poolSnap] = await Promise.all([
+        db.collection('gacha_items').orderBy('createdAt','desc').get(),
+        db.collection('gacha_pools').orderBy('createdAt','desc').get(),
+      ]);
+      gachaItems.value  = itemSnap.docs.map(d=>({id:d.id,...d.data()}));
+      specialPools.value = poolSnap.docs.map(d=>({id:d.id,...d.data()}));
     } catch(e){ console.error(e); }
     gachaLoading.value = false;
   };
 
-  const openNewItem = (type) => {
+  // 物品 CRUD
+  const openNewItem = () => {
     editingItem.value = null;
-    Object.assign(itemForm,{name:'',emoji:'',imgUrl:'',type,rarity:'common',weight:30,active:true});
+    // 預設 poolId 跟著目前選取的卡池
+    const pid = currentPool.value;
+    const defaultType = pid==='animal'?'animal':pid==='decor'?'decor':'animal';
+    Object.assign(itemForm,{name:'',emoji:'',imgUrl:'',type:defaultType,poolId:pid,rarity:'common',weight:30,active:true});
     showItemForm.value = true;
   };
   const openEditItem = (item) => {
     editingItem.value = item;
-    Object.assign(itemForm,{name:item.name,emoji:item.emoji,imgUrl:item.imgUrl||'',type:item.type,rarity:item.rarity,weight:item.weight,active:item.active});
+    Object.assign(itemForm,{
+      name:item.name, emoji:item.emoji, imgUrl:item.imgUrl||'',
+      type:item.type, poolId:item.poolId||(item.type==='animal'?'animal':'decor'),
+      rarity:item.rarity, weight:item.weight, active:item.active,
+    });
     showItemForm.value = true;
   };
   const saveItem = async () => {
     if(!itemForm.name.trim()||!itemForm.emoji.trim()) return;
     const data = {
       name:itemForm.name.trim(), emoji:itemForm.emoji.trim(),
-      imgUrl:itemForm.imgUrl.trim(), type:itemForm.type,
-      rarity:itemForm.rarity, weight:Number(itemForm.weight)||30,
-      active:itemForm.active,
+      imgUrl:itemForm.imgUrl||'', type:itemForm.type,
+      poolId:itemForm.poolId, rarity:itemForm.rarity,
+      weight:Number(itemForm.weight)||30, active:itemForm.active,
     };
     try {
       if(editingItem.value) {
         await db.collection('gacha_items').doc(editingItem.value.id).update(data);
+        // 本地同步
+        const idx = gachaItems.value.findIndex(i=>i.id===editingItem.value.id);
+        if(idx>=0) gachaItems.value[idx] = {...gachaItems.value[idx],...data};
         toast('✅ 已更新 '+data.name);
       } else {
-        await db.collection('gacha_items').doc().set({...data, createdAt:Date.now()});
+        const ref = await db.collection('gacha_items').add({...data, createdAt:Date.now()});
+        gachaItems.value.unshift({id:ref.id,...data,createdAt:Date.now()});
         toast('✅ 已新增 '+data.name);
       }
       showItemForm.value = false;
-      await loadGachaItems();
-    } catch(e){ toast('儲存失敗','err'); }
+    } catch(e){ toast('儲存失敗','err'); console.error(e); }
   };
   const toggleActive = async (item) => {
     try {
@@ -705,6 +867,68 @@ createApp({setup(){
       await db.collection('gacha_items').doc(item.id).delete();
       gachaItems.value = gachaItems.value.filter(i=>i.id!==item.id);
       toast('已刪除 '+item.name);
+    } catch(e){ toast('刪除失敗','err'); }
+  };
+
+  // 圖片上傳（Cloudinary - 待設定）
+  const CLOUDINARY_CLOUD = '';  // ← 填入你的 Cloud Name
+  const CLOUDINARY_PRESET = ''; // ← 填入你的 Upload Preset
+  const onItemImgChange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(!CLOUDINARY_CLOUD || !CLOUDINARY_PRESET) {
+      // Cloudinary 未設定：使用 base64 預覽（暫時方案）
+      const reader = new FileReader();
+      reader.onload = ev => { itemForm.imgUrl = ev.target.result; };
+      reader.readAsDataURL(file);
+      toast('⚠️ Cloudinary 未設定，使用暫時預覽（儲存後可能無法顯示）');
+      return;
+    }
+    imgUploading.value = true;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST',body:fd});
+      const data = await res.json();
+      itemForm.imgUrl = data.secure_url;
+      toast('✅ 圖片已上傳！');
+    } catch(e){ toast('圖片上傳失敗','err'); }
+    imgUploading.value = false;
+    e.target.value = '';
+  };
+
+  // 特別卡池 CRUD
+  const openEditPool = (pool) => {
+    editingPool.value = pool;
+    Object.assign(poolForm,{name:pool.name,icon:pool.icon||'🎰',desc:pool.desc||'',endDate:pool.endDate||'',active:pool.active!==false});
+    showPoolForm.value = true;
+  };
+  const savePool = async () => {
+    if(!poolForm.name.trim()||!poolForm.icon.trim()) return;
+    const data = {name:poolForm.name.trim(),icon:poolForm.icon.trim(),desc:poolForm.desc||'',endDate:poolForm.endDate||'',active:poolForm.active};
+    try {
+      if(editingPool.value) {
+        await db.collection('gacha_pools').doc(editingPool.value.id).update(data);
+        const idx = specialPools.value.findIndex(p=>p.id===editingPool.value.id);
+        if(idx>=0) specialPools.value[idx] = {...specialPools.value[idx],...data};
+        toast('✅ 已更新卡池：'+data.name);
+      } else {
+        const ref = await db.collection('gacha_pools').add({...data,createdAt:Date.now()});
+        specialPools.value.unshift({id:ref.id,...data,createdAt:Date.now()});
+        toast('✅ 已建立卡池：'+data.name);
+      }
+      showPoolForm.value = false;
+      editingPool.value = null;
+    } catch(e){ toast('儲存失敗','err'); console.error(e); }
+  };
+  const deletePool = async (pool) => {
+    if(!confirm(`確定刪除卡池「${pool.name}」？卡池內的物品不會被刪除`)) return;
+    try {
+      await db.collection('gacha_pools').doc(pool.id).delete();
+      specialPools.value = specialPools.value.filter(p=>p.id!==pool.id);
+      if(currentPool.value===pool.id) currentPool.value='animal';
+      toast('已刪除卡池 '+pool.name);
     } catch(e){ toast('刪除失敗','err'); }
   };
   const adminAnns=computed(()=>anns.value.filter(a=>a.type==='admin'));
@@ -781,7 +1005,7 @@ createApp({setup(){
   const doAnn=async()=>{sending.value=true;try{await db.collection('announcements').add({type:'admin',title:aTitle.value.trim(),content:aContent.value.trim(),timestamp:Date.now(),fromName:'感恩小島官方'});toast('✅ 全站公告已發送！');aShow.value=false;aTitle.value='';aContent.value='';await loadData();}catch(e){toast('發送失敗','err');}sending.value=false;};
   const markRead=async(fb)=>{try{await db.collection('feedback').doc(fb.id).update({read:true});fb.read=true;}catch(e){}};
   const delFb=async(fb)=>{if(!confirm('確定刪除？'))return;try{await db.collection('feedback').doc(fb.id).delete();feedbacks.value=feedbacks.value.filter(f=>f.id!==fb.id);toast('已刪除');}catch(e){toast('刪除失敗','err');}};
-  return{fbUser,isAdmin,loading,lerr,tab,tabs,sending,profiles,feedbacks,anns,adminAnns,wl,stats,toasts,prevImg,rTarget,selUsers,uQ,rType,rAmt,rNote,rShow,rtypes,selectedItem,itemSearch,filtItems,aTitle,aContent,aShow,newWL,fbF,filtP,filtFb,unreadFb,gachaItems,gachaTab,gachaSearch,gachaLoading,showItemForm,editingItem,itemForm,rarityOpts,filtGachaItems,signIn,signOut,fmtDate,gname,toggleU,addWL,rmWL,openRC,doReward,openAC,doAnn,markRead,delFb,openNewItem,openEditItem,saveItem,toggleActive,deleteItem};
+  return{fbUser,isAdmin,loading,lerr,tab,tabs,sending,profiles,feedbacks,anns,adminAnns,wl,stats,toasts,prevImg,rTarget,selUsers,uQ,rType,rAmt,rNote,rShow,rtypes,selectedItem,itemSearch,filtItems,aTitle,aContent,aShow,newWL,fbF,filtP,filtFb,unreadFb,gachaItems,specialPools,currentPool,gachaSearch,gachaLoading,showItemForm,editingItem,imgUploading,itemForm,showPoolForm,editingPool,poolForm,rarityOpts,filtGachaItems,signIn,signOut,fmtDate,gname,toggleU,addWL,rmWL,openRC,doReward,openAC,doAnn,markRead,delFb,openNewItem,openEditItem,saveItem,toggleActive,deleteItem,onItemImgChange,openEditPool,savePool,deletePool};
 }}).mount('#app');
 </script>
 </body>
