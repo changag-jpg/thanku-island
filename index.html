@@ -4245,12 +4245,14 @@ createApp({
         watch(islandTool,     v => { window._islandTool = v; });
 
         const islandTools = [
-            { id:'pan',      icon:'✋', label:'移動', sub:'拖曳平移' },
-            { id:'expand',   icon:'🟩', label:'擴張', sub:'塗抹增加' },
-            { id:'shrink',   icon:'🟫', label:'縮減', sub:'塗抹移除' },
-            { id:'grass',    icon:'🌿', label:'草地', sub:'平地' },
-            { id:'water',    icon:'💧', label:'湖水', sub:'草地→湖' },
-            { id:'highland', icon:'⛰️', label:'高地', sub:'草地→丘' },
+            { id:'pan',      icon:'✋', label:'移動',     sub:'拖曳平移' },
+            { id:'expand',   icon:'🟩', label:'擴張',     sub:'塗抹增加' },
+            { id:'shrink',   icon:'🟫', label:'縮減',     sub:'塗抹移除' },
+            { id:'grass',    icon:'🌿', label:'草地',     sub:'恢復平地' },
+            { id:'water',    icon:'💧', label:'湖水',     sub:'草地→湖' },
+            { id:'highland', icon:'⛰️', label:'升高地',  sub:'增加高度' },
+            { id:'lower',    icon:'🔽', label:'降低地',  sub:'降低高度' },
+            { id:'eraser',   icon:'🧹', label:'清除',     sub:'恢復草地' },
         ];
 
         const islandEditorHint = computed(()=>{
@@ -4259,9 +4261,11 @@ createApp({
                 pan:'拖曳平移視角',
                 expand:'在島嶼旁塗抹擴張陸地',
                 shrink:'塗抹縮減陸地',
-                grass:'塗草地（恢復平地）',
+                grass:'塗草地（可覆蓋湖水和高地，恢復平地）',
                 water:'在草地上塗湖水',
-                highland:'在草地上塗高地（最多3層，再點加層）',
+                highland:'在草地/高地上塗抹增加高度（最多3層）',
+                lower:'在高地上塗抹降低高度（降到0變草地）',
+                eraser:'清除任何地形，恢復為草地',
             };
             return map[islandTool.value] || '';
         });
@@ -4868,9 +4872,11 @@ function eApply(tile,col,row,tool){
   eBrushCells(col,row).forEach(({c,r})=>{
     if(c<0||c>=CELL||r<0||r>=CELL) return;
     const cur=tile.cells[r*CELL+c];
-    if(tool==='grass') tile.cells[r*CELL+c]=0;
-    else if(tool==='water'&&cur===0) tile.cells[r*CELL+c]=1;
-    else if(tool==='highland'){ if(cur===0) tile.cells[r*CELL+c]=2; else if(cur>=2&&cur<1+MAX_HL) tile.cells[r*CELL+c]=cur+1; }
+    if(tool==='grass')    tile.cells[r*CELL+c]=0;                                          // 草地：覆蓋任何地形
+    else if(tool==='eraser') tile.cells[r*CELL+c]=0;                                       // 清除：恢復草地
+    else if(tool==='water')  tile.cells[r*CELL+c]=1;                                       // 湖水：覆蓋任何地形改為湖
+    else if(tool==='highland'){ if(cur===0||cur===1) tile.cells[r*CELL+c]=2; else if(cur>=2&&cur<1+MAX_HL) tile.cells[r*CELL+c]=cur+1; } // 升高：草地/湖水→高地1，高地往上加
+    else if(tool==='lower'){   if(cur>=3) tile.cells[r*CELL+c]=cur-1; else if(cur===2) tile.cells[r*CELL+c]=0; } // 降低：高地往下，高地1→草地
   });
 }
 
