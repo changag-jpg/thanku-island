@@ -3672,6 +3672,20 @@ createApp({
             // 載入島嶼物品（從 profiles）
             if (profileResult.status === 'fulfilled' && profileResult.value.exists) {
                 const islandItems = profileResult.value.data().island || [];
+
+                // 用最新卡池圖片即時同步（不需要等對方登入）
+                const imgMap = {};
+                [...gachaPool.value, ...shopItems.value].forEach(g => {
+                    if (g.name) imgMap[g.name] = { imgUrl: g.imgUrl||'', spriteUrl: g.spriteUrl||'' };
+                });
+                islandItems.forEach(item => {
+                    const latest = imgMap[item.name];
+                    if (latest) {
+                        item.imgUrl    = latest.imgUrl;
+                        item.spriteUrl = latest.spriteUrl;
+                    }
+                });
+
                 visitingIslandItems.value = islandItems;
 
                 // 初始化對方動物的位置到 animalStates（用存好的 x/y，沒有才隨機）
