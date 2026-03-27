@@ -980,7 +980,7 @@ createApp({setup(){
   const signIn=async()=>{lerr.value='';try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(e){lerr.value='登入失敗';}};
   const signOut=()=>auth.signOut();
   const loadWL=async()=>{try{const d=await db.collection('admin_settings').doc('admin_config').get();if(d.exists&&d.data().emails?.length)wl.value=d.data().emails;else await db.collection('admin_settings').doc('admin_config').set({emails:['changag@garena.com']});}catch(e){}};
-  const loadData=async()=>{try{const[pS,lS,aS,fS]=await Promise.all([db.collection('profiles').get(),db.collection('letters').get(),db.collection('announcements').orderBy('timestamp','desc').get(),db.collection('feedback').orderBy('timestamp','desc').get()]);profiles.value=pS.docs.map(d=>d.data());stats.value.users=profiles.value.length;stats.value.letters=lS.size;anns.value=aS.docs.map(d=>({id:d.id,...d.data()}));stats.value.ann=anns.value.filter(a=>a.type==='admin').length;feedbacks.value=fS.docs.map(d=>({id:d.id,...d.data()}));}catch(e){console.error(e);}};
+  const loadData=async()=>{try{const[pS,lS,aS,fS]=await Promise.all([db.collection('profiles').get(),db.collection('letters').get(),db.collection('announcements').orderBy('timestamp','desc').get(),db.collection('feedback').orderBy('timestamp','desc').get()]);profiles.value=pS.docs.map(d=>({docId:d.id,...d.data()}));stats.value.users=profiles.value.length;stats.value.letters=lS.size;anns.value=aS.docs.map(d=>({id:d.id,...d.data()}));stats.value.ann=anns.value.filter(a=>a.type==='admin').length;feedbacks.value=fS.docs.map(d=>({id:d.id,...d.data()}));}catch(e){console.error(e);}};
   auth.onAuthStateChanged(async(user)=>{fbUser.value=user;if(user){await loadWL();isAdmin.value=wl.value.includes(user.email);if(isAdmin.value){await loadData();await loadGachaItems();}}loading.value=false;});
   const addWL=async()=>{const e=newWL.value.trim().toLowerCase();if(!e||wl.value.includes(e))return;wl.value.push(e);await db.collection('admin_settings').doc('admin_config').set({emails:wl.value});newWL.value='';toast('✅ 已新增 '+e);};
   const rmWL=async(email)=>{if(email===fbUser.value?.email){toast('不能移除自己！','err');return;}wl.value=wl.value.filter(e=>e!==email);await db.collection('admin_settings').doc('admin_config').set({emails:wl.value});toast('已移除 '+email);};
@@ -1057,21 +1057,27 @@ createApp({setup(){
     const p = deleteTarget.value;
     if(!p) return;
     try {
-      const uid = p.id;
+      // docId 是 Firestore document ID（就是 uid），p.id 是資料裡的 id 欄位
+      const uid = p.docId || p.id;
       // 刪除所有 Firestore 資料
-      await Promise.allSettled([
+      // 注意：users/{uid} 規則只有本人能寫，需要在規則裡加管理員權限
+      const results = await Promise.allSettled([
         db.collection('users').doc(uid).delete(),
         db.collection('profiles').doc(uid).delete(),
         db.collection('tiles').doc(uid).delete(),
-        // inbox subcollection
         db.collection('inboxes').doc(uid).collection('items').get().then(snap =>
           Promise.all(snap.docs.map(d => d.ref.delete()))
         ),
       ]);
+      // 記錄哪些成功哪些失敗
+      const failed = results.filter(r=>r.status==='rejected');
+      if(failed.length > 0) {
+        console.warn('部分刪除失敗:', failed);
+      }
       // 從本地清單移除
-      profiles.value = profiles.value.filter(u => u.id !== uid);
+      profiles.value = profiles.value.filter(u => (u.docId||u.id) !== uid);
       stats.value.users = profiles.value.length;
-      toast(`🗑️ 已刪除 ${p.name} 的所有資料`);
+      toast(`🗑️ 已刪除 ${p.name} 的資料`);
       showDeleteModal.value = false;
       deleteTarget.value = null;
     } catch(e){ toast('刪除失敗','err'); console.error(e); }
