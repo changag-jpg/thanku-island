@@ -1,0 +1,12 @@
+{
+  "name": "thanku-island",
+  "version": "1.0.0",
+  "description": "感恩小島 ThankU Island",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
