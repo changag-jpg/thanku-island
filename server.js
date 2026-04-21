@@ -38,14 +38,6 @@ async function getAppAccessToken() {
   }
 }
 
-// SeaTalk 登入發起路由
-app.get('/auth/seatalk/login', (req, res) => {
-  const state = Math.random().toString(36).substring(2);
-  req.session.oauthState = state;
-  const authUrl = `https://login.seatalk.io/authorize?app_id=${SEATALK_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&state=${state}`;
-  res.redirect(authUrl);
-});
-
 // SeaTalk 登入 Callback
 app.get('/auth/seatalk/callback', async (req, res) => {
   const { code, state } = req.query;

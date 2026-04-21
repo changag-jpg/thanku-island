@@ -1719,11 +1719,20 @@
             <h1 class="login-title">感恩小島</h1>
             <p class="login-sub">ThankU Island</p>
             <p class="login-desc">用感謝的力量，打造屬於你的小島 🌿</p>
-            <a href="/auth/seatalk/login" class="google-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#1F75FE"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="white" font-family="sans-serif">ST</text></svg>
-                使用 SeaTalk 帳號登入
-            </a>
+            <div id="seatalk_login_app_info"
+              data-redirect_uri="https://thankuisland.run.ingarena.net/auth/seatalk/callback"
+              data-appid="MDIxMjA0MDE0MTg3"
+              data-response_type="code"
+              data-state="thanku">
+            </div>
+            <div id="seatalk_login_button"
+              data-size="default"
+              data-theme="default"
+              data-align="center"
+              data-copywriting="使用 SeaTalk 帳號登入">
+            </div>
             <div v-if="loginError" class="login-error">{{ loginError }}</div>
+            <script src="https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js"></script>
         </div>
     </div>
 
