@@ -8,9 +8,8 @@
     <!-- Vue 3 (可換成本機版本) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (Auth 已移除，僅保留 Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script>
     // Firebase 設定
@@ -24,9 +23,7 @@
         measurementId: "G-FYRJ7BY75K"
     };
     firebase.initializeApp(firebaseConfig);
-    const db   = firebase.firestore();
-    const auth = firebase.auth();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
+    const db = firebase.firestore();
     </script>
 
     <!-- FontAwesome (圖示) -->
@@ -1722,10 +1719,10 @@
             <h1 class="login-title">感恩小島</h1>
             <p class="login-sub">ThankU Island</p>
             <p class="login-desc">用感謝的力量，打造屬於你的小島 🌿</p>
-            <button @click="signInWithGoogle" class="google-btn">
-                <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                使用 Google 帳號登入
-            </button>
+            <a href="/auth/seatalk/login" class="google-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#1F75FE"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="white" font-family="sans-serif">ST</text></svg>
+                使用 SeaTalk 帳號登入
+            </a>
             <div v-if="loginError" class="login-error">{{ loginError }}</div>
         </div>
     </div>
@@ -3422,21 +3419,16 @@ createApp({
             });
         };
 
-        // ===== Firebase 認證 =====
+        // ===== SeaTalk 認證 =====
         const fbUser    = ref(null);
         const fbLoading = ref(true);
         const loginError = ref('');
 
-        const signInWithGoogle = async () => {
-            loginError.value = '';
-            try {
-                await auth.signInWithPopup(googleProvider);
-            } catch(e) {
-                loginError.value = '登入失敗，請再試一次。';
-            }
+        const signInWithGoogle = () => {
+            window.location.href = '/auth/seatalk/login';
         };
-        const signOut = async () => {
-            await auth.signOut();
+        const signOut = () => {
+            window.location.href = '/auth/logout';
         };
 
         // ===== 資料持久化（Firestore）=====
@@ -4610,13 +4602,21 @@ createApp({
         // 只在登入後才自動存雲端，避免未登入時觸發
         watch([users, letters], () => { if (fbUser.value) saveData(); }, { deep: true });
 
-        onMounted(() => {
-            // Firebase 認證狀態監聽，登入後才載入資料
-            auth.onAuthStateChanged(async (user) => {
-                fbUser.value = user;
-                try {
-                    if (user) {
-                        // 每個步驟加 timeout 保護，避免任何一個無限等待
+        onMounted(async () => {
+            // 從 server session 取得登入用戶（取代 Firebase Auth）
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                if (data.success && data.user) {
+                    // 對應原本 Firebase user 物件的欄位
+                    fbUser.value = {
+                        uid:         data.user.employee_code,
+                        displayName: data.user.name,
+                        email:       data.user.email,
+                        photoURL:    data.user.avatar || null
+                    };
+                    const user = fbUser.value;
+                    try {
                         const withTimeout = (promise, ms=8000) =>
                             Promise.race([promise, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
 
@@ -4631,15 +4631,17 @@ createApp({
                             window.initIslandCanvas?.();
                             setTimeout(() => updateCamBase(), 300);
                         }, 100);
-                    } else {
-                        if (roamInterval) { clearInterval(roamInterval); roamInterval = null; }
+                    } catch(e) {
+                        console.error('載入失敗：', e);
                     }
-                } catch(e) {
-                    console.error('載入失敗：', e);
-                } finally {
-                    fbLoading.value = false;
+                } else {
+                    if (roamInterval) { clearInterval(roamInterval); roamInterval = null; }
                 }
-            });
+            } catch(e) {
+                console.error('/api/me 失敗：', e);
+            } finally {
+                fbLoading.value = false;
+            }
         });
         onUnmounted(() => {
             if (roamInterval) clearInterval(roamInterval);
