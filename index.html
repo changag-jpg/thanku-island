@@ -28,6 +28,7 @@
 
     <!-- FontAwesome (圖示) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js"></script>
 
     <!-- Google Fonts：Noto Sans TC 思源黑體 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -1713,7 +1714,7 @@
 
     <!-- 抽卡動畫 -->
     <!-- 登入畫面 -->
-    <div v-if="!fbUser && !fbLoading" class="login-screen">
+    <div v-show="!fbUser && !fbLoading" class="login-screen">
         <div class="login-card">
             <div class="login-logo">🏝️</div>
             <h1 class="login-title">感恩小島</h1>
@@ -1732,7 +1733,6 @@
               data-copywriting="使用 SeaTalk 帳號登入">
             </div>
             <div v-if="loginError" class="login-error">{{ loginError }}</div>
-            <script src="https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js"></script>
         </div>
     </div>
 
