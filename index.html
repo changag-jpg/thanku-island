@@ -8,23 +8,6 @@
     <!-- Vue 3 (可換成本機版本) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <!-- Firebase SDK (Auth 已移除，僅保留 Firestore) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    <script>
-    // Firebase 設定
-    const firebaseConfig = {
-        apiKey: "AIzaSyC-JR80af8Vx7SHmyDUkGFVFD9HzlmpP8w",
-        authDomain: "thanku-island-30428.firebaseapp.com",
-        projectId: "thanku-island-30428",
-        storageBucket: "thanku-island-30428.firebasestorage.app",
-        messagingSenderId: "245260789354",
-        appId: "1:245260789354:web:dfc729c0c0ea7cc4360c13",
-        measurementId: "G-FYRJ7BY75K"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    </script>
 
     <!-- FontAwesome (圖示) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -2923,27 +2906,25 @@ createApp({
             { name:'許願池',     emoji:'⛲', rarity:'legend', weight:8,  type:'decor', imgUrl:'assets/items/build_fountain.png',      active:true },
         ];
 
-        // 從 Firestore 載入卡池
+        // 從伺服器載入卡池
         const loadGachaItems = async () => {
             try {
-                const snap = await db.collection('gacha_items').where('active', '==', true).get();
-                if (snap.empty) {
+                const res = await fetch('/api/gacha-items');
+                const items = await res.json();
+                if (!items.length) {
                     // 第一次：寫入預設清單
-                    const batch = db.batch();
-                    [...DEFAULT_PETS, ...DEFAULT_DECORS].forEach(item => {
-                        const ref = db.collection('gacha_items').doc();
-                        batch.set(ref, { ...item, createdAt: Date.now() });
+                    await fetch('/api/gacha-items/seed', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ items: [...DEFAULT_PETS, ...DEFAULT_DECORS] })
                     });
-                    await batch.commit();
                     gachaPool.value = DEFAULT_PETS;
                     shopItems.value  = DEFAULT_DECORS;
                 } else {
-                    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     gachaPool.value = items.filter(i => i.type === 'animal');
                     shopItems.value  = items.filter(i => i.type === 'decor');
                 }
             } catch(e) {
-                // Firestore 讀取失敗時 fallback 到預設清單
                 gachaPool.value = DEFAULT_PETS;
                 shopItems.value  = DEFAULT_DECORS;
             }
@@ -3090,9 +3071,8 @@ createApp({
         const globalLetters = ref([]);
         const loadGlobalLetters = async () => {
             try {
-                const snap = await db.collection('letters')
-                    .orderBy('timestamp', 'desc').limit(100).get();
-                globalLetters.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const res = await fetch('/api/letters');
+                globalLetters.value = await res.json();
             } catch(_) {}
         };
         const displayIslandItems = computed(() => {
@@ -3456,24 +3436,31 @@ createApp({
                     });
                 }
 
-                await db.collection('users').doc(uid).set({
-                    users: JSON.parse(JSON.stringify(users.value)),
-                    letters: JSON.parse(JSON.stringify(letters.value)),
-                    updatedAt: Date.now()
+                await fetch('/api/user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        users: JSON.parse(JSON.stringify(users.value)),
+                        letters: JSON.parse(JSON.stringify(letters.value)),
+                        updatedAt: Date.now()
+                    })
                 });
                 // 同步更新公開 profile（含 island items 供訪島用）
                 if (me) {
-                    await db.collection('profiles').doc(uid).set({
-                        id: uid,
-                        name: me.name || fbUser.value.displayName || '島民',
-                        email: me.email || fbUser.value.email || '',
-                        avatarUrl:  me.avatarUrl  || '',
-                        avatarPosX: me.avatarPosX ?? 50,
-                        avatarPosY: me.avatarPosY ?? 50,
-                        energy:     me.energy || 0,
-                        island:     JSON.parse(JSON.stringify(me.island || [])),
-                        updatedAt:  Date.now(),
-                    }, { merge: true });
+                    await fetch('/api/profiles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: uid,
+                            name: me.name || fbUser.value.displayName || '島民',
+                            email: me.email || fbUser.value.email || '',
+                            avatarUrl:  me.avatarUrl  || '',
+                            avatarPosX: me.avatarPosX ?? 50,
+                            avatarPosY: me.avatarPosY ?? 50,
+                            energy:     me.energy || 0,
+                            island:     JSON.parse(JSON.stringify(me.island || [])),
+                        })
+                    });
                 }
             } catch(e) {}
         };
@@ -3487,7 +3474,11 @@ createApp({
             try {
                 const tilesArr = eng.exportTiles ? eng.exportTiles() : null;
                 if (tilesArr) {
-                    await db.collection('tiles').doc(uid).set({ tiles: tilesArr, updatedAt: Date.now() });
+                    await fetch('/api/tiles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tiles: tilesArr, updatedAt: Date.now() })
+                    });
                 }
             } catch(e) {}
         };
@@ -3496,12 +3487,13 @@ createApp({
             // 暴露 fbUser 給引擎使用
             window._fbUser = fbUser.value;
             try {
-                const doc = await db.collection('users').doc(uid).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    if (data.users?.length) {
-                        users.value = data.users.map(u => ({ ...u, warehouse: u.warehouse || [] }));
-                        letters.value = (data.letters || []).map(l => ({ ...l, read: l.read ?? true }));
+                const userRes = await fetch('/api/user');
+                const userData = await userRes.json();
+
+                if (userData.exists) {
+                    if (userData.users?.length) {
+                        users.value = userData.users.map(u => ({ ...u, warehouse: u.warehouse || [] }));
+                        letters.value = (userData.letters || []).map(l => ({ ...l, read: l.read ?? true }));
                     }
                 } else {
                     // 新使用者：建立預設資料
@@ -3521,11 +3513,15 @@ createApp({
 
                     // 新帳號歡迎公告
                     try {
-                        await db.collection('announcements').add({
-                            type: 'welcome', uid,
-                            name: fbUser.value.displayName || '新島民',
-                            photoURL: fbUser.value.photoURL || '',
-                            timestamp: Date.now(),
+                        await fetch('/api/announcements', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'welcome', uid,
+                                name: fbUser.value.displayName || '新島民',
+                                photoURL: fbUser.value.photoURL || '',
+                                timestamp: Date.now(),
+                            })
                         });
                     } catch(_) {}
                 }
@@ -3533,23 +3529,26 @@ createApp({
                 // ── 寫入/更新自己的公開 profile（每次登入同步）──
                 try {
                     const me = users.value.find(u => u.id === uid);
-                    await db.collection('profiles').doc(uid).set({
-                        id: uid,
-                        name: me?.name || fbUser.value.displayName || '島民',
-                        email: me?.email || fbUser.value.email || '',
-                        avatarUrl:  me?.avatarUrl  || fbUser.value.photoURL || '',
-                        avatarPosX: me?.avatarPosX ?? 50,
-                        avatarPosY: me?.avatarPosY ?? 50,
-                        energy:     me?.energy || 0,
-                        tileCount:  me?.tileCount || 6,
-                        updatedAt:  Date.now(),
-                    }, { merge: true });
+                    await fetch('/api/profiles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: uid,
+                            name: me?.name || fbUser.value.displayName || '島民',
+                            email: me?.email || fbUser.value.email || '',
+                            avatarUrl:  me?.avatarUrl  || fbUser.value.photoURL || '',
+                            avatarPosX: me?.avatarPosX ?? 50,
+                            avatarPosY: me?.avatarPosY ?? 50,
+                            energy:     me?.energy || 0,
+                            tileCount:  me?.tileCount || 6,
+                        })
+                    });
                 } catch(_) {}
 
                 // ── 讀取所有使用者的公開 profile（給 Sea 群島用）──
                 try {
-                    const snap = await db.collection('profiles').get();
-                    allProfiles.value = snap.docs.map(d => d.data());
+                    const profRes = await fetch('/api/profiles');
+                    allProfiles.value = await profRes.json();
                 } catch(_) {}
 
                 // 設定當前使用者
@@ -3557,25 +3556,24 @@ createApp({
                 if (me) currentUserId.value = uid;
                 else currentUserId.value = users.value[0]?.id || uid;
 
-                // 載入地形（從 Firestore）
+                // 載入地形
                 try {
-                    const tilesDoc = await db.collection('tiles').doc(uid).get();
-                    if (tilesDoc.exists && tilesDoc.data().tiles?.length) {
-                        window.islandEngine?.importTiles(tilesDoc.data().tiles);
+                    const tilesRes = await fetch('/api/tiles');
+                    const tilesData = await tilesRes.json();
+                    if (tilesData.exists && tilesData.tiles?.length) {
+                        window.islandEngine?.importTiles(tilesData.tiles);
                         setTimeout(() => window.islandEngine?.center(), 200);
                     }
                 } catch(_te) {}
 
                 // ── 讀取 inbox，合併新信件和板塊道具 ──
                 try {
-                    const inboxSnap = await db.collection('inboxes').doc(uid)
-                        .collection('items').orderBy('timestamp', 'desc').get();
-                    if (!inboxSnap.empty) {
+                    const inboxRes = await fetch('/api/inbox');
+                    const inboxItems = await inboxRes.json();
+                    if (inboxItems.length) {
                         const me = users.value.find(u => u.id === uid);
                         const existingLetterIds = new Set(letters.value.map(l => String(l.id)));
-                        for (const docSnap of inboxSnap.docs) {
-                            const item = { id: docSnap.id, ...docSnap.data() };
-
+                        for (const item of inboxItems) {
                             if (item.type === 'letter') {
                                 // 合併新信件（避免重複）
                                 if (!existingLetterIds.has(item.id)) {
@@ -3603,9 +3601,11 @@ createApp({
                                                 claimed: false
                                             });
                                         }
-                                        await db.collection('inboxes').doc(uid)
-                                            .collection('items').doc(docSnap.id)
-                                            .update({ processed: true });
+                                        await fetch('/api/inbox/' + item.id, {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ processed: true })
+                                        });
                                     }
                                 }
                             }
@@ -3626,14 +3626,15 @@ createApp({
                                             claimed: false,
                                             timestamp: item.timestamp,
                                         };
-                                        // 物品類型：帶入完整 itemData
                                         if (item.itemData) {
                                             rewardEntry.itemData = item.itemData;
                                         }
                                         me.rewards.push(rewardEntry);
-                                        await db.collection('inboxes').doc(uid)
-                                            .collection('items').doc(docSnap.id)
-                                            .update({ processed: true });
+                                        await fetch('/api/inbox/' + item.id, {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ processed: true })
+                                        });
                                     }
                                 }
                             }
@@ -3670,7 +3671,7 @@ createApp({
         };
         const forceReset = async () => {
             if (!fbUser.value) return;
-            await db.collection('users').doc(fbUser.value.uid).delete();
+            await fetch('/api/user', { method: 'DELETE' });
             location.reload();
         };
 
@@ -3739,15 +3740,15 @@ createApp({
             switchTab('home');
             await new Promise(r => setTimeout(r, 300));
 
-            // 並行讀取對方的 tiles（規則需允許讀）和 island items（從 profiles 公開讀）
+            // 並行讀取對方的 tiles 和 island items（從 profiles 公開讀）
             const [tilesResult, profileResult] = await Promise.allSettled([
-                db.collection('tiles').doc(id).get(),
-                db.collection('profiles').doc(id).get(),
+                fetch('/api/tiles/' + id).then(r => r.json()),
+                fetch('/api/profiles/' + id).then(r => r.json()),
             ]);
 
             // 載入地形
             if (tilesResult.status === 'fulfilled' && tilesResult.value.exists) {
-                const td = tilesResult.value.data();
+                const td = tilesResult.value;
                 window.islandEngine?.importTiles(td.tiles?.length ? td.tiles : []);
             } else {
                 window.islandEngine?.importTiles([]);
@@ -3755,7 +3756,7 @@ createApp({
 
             // 載入島嶼物品（從 profiles）
             if (profileResult.status === 'fulfilled' && profileResult.value.exists) {
-                const islandItems = profileResult.value.data().island || [];
+                const islandItems = profileResult.value.island || [];
 
                 // 用最新卡池圖片即時同步（不需要等對方登入）
                 const imgMap = {};
@@ -3799,9 +3800,10 @@ createApp({
             window.islandEngine?.importTiles([]);
             try {
                 if (fbUser.value) {
-                    const doc = await db.collection('tiles').doc(fbUser.value.uid).get();
-                    if (doc.exists && doc.data().tiles?.length) {
-                        window.islandEngine?.importTiles(doc.data().tiles);
+                    const tilesRes = await fetch('/api/tiles');
+                    const tilesData = await tilesRes.json();
+                    if (tilesData.exists && tilesData.tiles?.length) {
+                        window.islandEngine?.importTiles(tilesData.tiles);
                     }
                 }
             } catch(_) {}
@@ -3898,21 +3900,24 @@ createApp({
             // ── 寫入收件人的 inbox（任何人可寫，本人可讀）──
             try {
                 const bonus = (Math.floor(Math.random() * 450) + 50) * cost;
-                const inboxItem = {
-                    type: 'letter',
-                    from: sender.id,
-                    fromName: sender.name || '',
-                    content: letterForm.content,
-                    timestamp: ts,
-                    cardCost: cost,
-                    energy: 100 * cost,
-                    bonus,
-                    tiles: cost,      // 板塊數量
-                    read: false,
-                    claimed: false,   // 板塊是否已領取
-                };
-                await db.collection('inboxes').doc(toId)
-                    .collection('items').add(inboxItem);
+                await fetch('/api/inbox', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        toUid: toId,
+                        type: 'letter',
+                        from: sender.id,
+                        fromName: sender.name || '',
+                        content: letterForm.content,
+                        timestamp: ts,
+                        cardCost: cost,
+                        energy: 100 * cost,
+                        bonus,
+                        tiles: cost,
+                        read: false,
+                        claimed: false,
+                    })
+                });
             } catch(e) {
                 console.warn('寫入收件人 inbox 失敗', e);
             }
@@ -3928,8 +3933,13 @@ createApp({
                 anon: anon,
             };
             try {
-                const docRef = await db.collection('letters').add(newLetter);
-                globalLetters.value.unshift({ id: docRef.id, ...newLetter });
+                const letRes = await fetch('/api/letters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newLetter)
+                });
+                const letData = await letRes.json();
+                globalLetters.value.unshift({ id: letData.id, ...newLetter });
             } catch(_) {}
 
             // ── 存自己的資料 ──
@@ -3987,15 +3997,18 @@ createApp({
             const uid  = currentUserId.value;
             const me   = users.value.find(u => u.id === uid);
             try {
-                await db.collection('feedbacks').add({
-                    uid,
-                    name:      me?.name || fbUser.value?.displayName || '未知',
-                    email:     me?.email || fbUser.value?.email || '',
-                    avatarUrl: me?.avatarUrl || fbUser.value?.photoURL || '',
-                    content:   feedbackContent.value,
-                    imgUrl:    feedbackImgUrl.value || '',
-                    timestamp: Date.now(),
-                    read:      false,
+                await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid,
+                        name:      me?.name || fbUser.value?.displayName || '未知',
+                        email:     me?.email || fbUser.value?.email || '',
+                        avatarUrl: me?.avatarUrl || fbUser.value?.photoURL || '',
+                        content:   feedbackContent.value,
+                        imgUrl:    feedbackImgUrl.value || '',
+                        timestamp: Date.now(),
+                    })
                 });
             } catch(e) { console.warn('反饋送出失敗', e); }
 
@@ -4036,10 +4049,14 @@ createApp({
             const idx = letter.likes.indexOf(uid);
             if (idx === -1) letter.likes.push(uid);
             else letter.likes.splice(idx, 1);
-            // 同步到 Firestore（只有 globalLetters 有真實 doc ID）
-            if (letter.id && typeof letter.id === 'string') {
+            // 同步到伺服器
+            if (letter.id) {
                 try {
-                    await db.collection('letters').doc(letter.id).update({ likes: letter.likes });
+                    await fetch('/api/letters/' + letter.id + '/likes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ likes: letter.likes })
+                    });
                 } catch(_) {}
             }
         };
@@ -4092,9 +4109,8 @@ createApp({
         // 讀取全站公告
         const loadAnnouncements = async () => {
             try {
-                const snap = await db.collection('announcements')
-                    .orderBy('timestamp', 'desc').limit(30).get();
-                announcements.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const res = await fetch('/api/announcements');
+                announcements.value = await res.json();
             } catch(_) {}
         };
 
@@ -5104,12 +5120,16 @@ window.initIslandEditorCanvas = function(){
 window.islandEngine={
   save(){
     save(); // localStorage
-    // 同步存 Firestore（若已登入）
+    // 同步存伺服器（若已登入）
     const user = window._fbUser;
     if(user){
-      db.collection('tiles').doc(user.uid).set({
-        tiles: [...tiles.values()].map(({tx,ty,cells})=>({tx,ty,cells:Array.from(cells)})),
-        updatedAt: Date.now()
+      fetch('/api/tiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tiles: [...tiles.values()].map(({tx,ty,cells})=>({tx,ty,cells:Array.from(cells)})),
+          updatedAt: Date.now()
+        })
       }).catch(()=>{});
     }
   },
