@@ -2156,11 +2156,34 @@
                     <div class="gacha-bg">🌳</div>
                 </div>
 
+                <!-- 特別卡池（後台動態新增）-->
+                <div v-for="spool in specialPools" :key="spool.id" class="gacha-card">
+                    <div class="gacha-card-header">
+                        <div>
+                            <div class="gacha-title">{{ spool.icon }} {{ spool.name }}</div>
+                            <div class="gacha-desc">{{ spool.desc || '特別限定卡池' }}</div>
+                        </div>
+                        <button @click="openPool(spool.id)" class="pool-preview-btn">卡池一覽</button>
+                    </div>
+                    <div class="btn-row">
+                        <button @click="triggerGacha(spool.id, false)" class="btn-primary" :disabled="(currentUser?.energy || 0) < 100">
+                            抽取 <span class="cost-badge">-100 ⚡</span>
+                        </button>
+                        <button @click="triggerGacha(spool.id, true)" class="btn-outline">測試</button>
+                    </div>
+                    <div class="btn-row" style="margin-top:8px;">
+                        <button @click="triggerGacha10(spool.id, false)" class="btn-primary btn-ten" :disabled="(currentUser?.energy || 0) < 900">
+                            ✨ 十連抽 <span class="cost-badge">-900 ⚡</span>
+                        </button>
+                    </div>
+                    <div class="gacha-bg">{{ spool.icon }}</div>
+                </div>
+
                 <!-- 卡池預覽彈窗 -->
                 <div v-if="poolPreview" class="pool-overlay" @click.self="closePool">
                     <div class="pool-modal">
                         <div class="pool-modal-header">
-                            <span class="pool-modal-title">{{ poolPreview === 'pet' ? '🐾 動物夥伴卡池' : '🏕️ 裝飾品卡池' }}</span>
+                            <span class="pool-modal-title">{{ poolPreviewTitle }}</span>
                             <button @click="closePool" class="pool-close">✕</button>
                         </div>
 
@@ -2865,8 +2888,10 @@ createApp({
         ];
 
         // ── 卡池（從 Firestore 動態載入）──
-        const shopItems  = ref([]); // 裝飾品卡池
-        const gachaPool  = ref([]); // 島民卡池
+        const shopItems    = ref([]); // 裝飾品卡池
+        const gachaPool    = ref([]); // 島民卡池
+        const allGachaItems = ref([]); // 所有扭蛋物品（含特別卡池物品）
+        const specialPools  = ref([]); // 後台新增的特別卡池
 
         // 預設卡池（Firestore 為空時初始化用）
         const DEFAULT_PETS = [
@@ -2920,13 +2945,18 @@ createApp({
                     });
                     gachaPool.value = DEFAULT_PETS;
                     shopItems.value  = DEFAULT_DECORS;
+                    allGachaItems.value = [...DEFAULT_PETS, ...DEFAULT_DECORS];
                 } else {
+                    allGachaItems.value = items;
                     gachaPool.value = items.filter(i => i.type === 'animal');
                     shopItems.value  = items.filter(i => i.type === 'decor');
                 }
+                const poolRes = await fetch('/api/gacha-pools');
+                specialPools.value = await poolRes.json();
             } catch(e) {
                 gachaPool.value = DEFAULT_PETS;
                 shopItems.value  = DEFAULT_DECORS;
+                allGachaItems.value = [...DEFAULT_PETS, ...DEFAULT_DECORS];
             }
         };
 
@@ -4503,7 +4533,7 @@ createApp({
         };
 
         const triggerGacha = (type = 'pet', isTest = false) => {
-            const cost = type === 'pet' ? 100 : 100;
+            const cost = 100;
             if (!isTest && (currentUser.value?.energy || 0) < cost) {
                 alert(`能量不足 (需要 ${cost} ⚡)`); return;
             }
@@ -4512,18 +4542,23 @@ createApp({
             isDrawing.value  = true;
             drawResult.value = null;
 
-            let pool = type === 'pet' ? [...gachaPool.value] : [...shopItems.value];
-
-            // 寵物：排除已擁有（島上 + 倉庫）的種類
+            let pool;
             if (type === 'pet') {
+                pool = [...gachaPool.value];
+                // 寵物：排除已擁有（島上 + 倉庫）的種類
                 const user = currentUser.value;
                 const owned = new Set([
                     ...(user.island    || []).filter(i => i.type === 'animal').map(i => i.name),
                     ...(user.warehouse || []).filter(i => i.type === 'animal').map(i => i.name),
                 ]);
                 const available = pool.filter(p => !owned.has(p.name));
-                // 若全部都有了，就不限制（讓全收藏玩家還是能抽）
                 if (available.length > 0) pool = available;
+            } else if (type === 'decor') {
+                pool = [...shopItems.value];
+            } else {
+                // 特別卡池：用 poolId 篩選物品
+                pool = allGachaItems.value.filter(i => i.poolId === type);
+                if (!pool.length) pool = [...allGachaItems.value];
             }
 
             setTimeout(() => { drawResult.value = weightedRandom(pool); }, 1800);
@@ -4537,7 +4572,7 @@ createApp({
                     name:   drawResult.value.name,
                     emoji:  drawResult.value.emoji,
                     imgUrl: drawResult.value.imgUrl || null,
-                    type:   drawType.value === 'pet' ? 'animal' : 'decor'
+                    type:   drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (drawResult.value.type || 'decor')
                 });
                 saveData();
             }
@@ -4546,7 +4581,7 @@ createApp({
         };
 
         const triggerGacha10 = (type = 'pet', isTest = false) => {
-            const cost = type === 'pet' ? 900 : 900;
+            const cost = 900;
             if (!isTest && (currentUser.value?.energy || 0) < cost) {
                 alert(`能量不足 (需要 ${cost} ⚡)`); return;
             }
@@ -4555,8 +4590,9 @@ createApp({
             isDrawing.value   = true;
             drawResult.value  = null;
             draw10Results.value = null;
-            let pool = type === 'pet' ? [...gachaPool.value] : [...shopItems.value];
+            let pool;
             if (type === 'pet') {
+                pool = [...gachaPool.value];
                 const user = currentUser.value;
                 const owned = new Set([
                     ...(user.island    || []).filter(i => i.type === 'animal').map(i => i.name),
@@ -4564,6 +4600,11 @@ createApp({
                 ]);
                 const available = pool.filter(p => !owned.has(p.name));
                 if (available.length > 0) pool = available;
+            } else if (type === 'decor') {
+                pool = [...shopItems.value];
+            } else {
+                pool = allGachaItems.value.filter(i => i.poolId === type);
+                if (!pool.length) pool = [...allGachaItems.value];
             }
             // 保底：10連至少1個稀有或以上
             setTimeout(() => {
@@ -4592,7 +4633,7 @@ createApp({
                         id: Date.now() + i,
                         name:  item.name, emoji: item.emoji,
                         imgUrl: item.imgUrl || null,
-                        type:  drawType.value === 'pet' ? 'animal' : 'decor'
+                        type:  drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (item.type || 'decor')
                     });
                 });
                 saveData();
@@ -4602,20 +4643,33 @@ createApp({
         };
 
         // ===== 卡池預覽 =====
-        const poolPreview       = ref(null);   // 'pet' | 'decor' | null
+        const poolPreview       = ref(null);   // 'pet' | 'decor' | pool.id | null
         const poolRarityFilter  = ref('all');
 
         const openPool  = (type) => { poolPreview.value = type; poolRarityFilter.value = 'all'; };
         const closePool = ()     => { poolPreview.value = null; };
 
+        const poolPreviewTitle = computed(() => {
+            if (poolPreview.value === 'pet') return '🐾 動物夥伴卡池';
+            if (poolPreview.value === 'decor') return '🏕️ 裝飾品卡池';
+            const p = specialPools.value.find(p => p.id === poolPreview.value);
+            return p ? `${p.icon} ${p.name}` : '特別卡池';
+        });
+
+        const getPoolItems = (type) => {
+            if (type === 'pet') return gachaPool.value;
+            if (type === 'decor') return shopItems.value;
+            return allGachaItems.value.filter(i => i.poolId === type);
+        };
+
         const filteredPoolItems = computed(() => {
-            const pool = poolPreview.value === 'pet' ? gachaPool.value : shopItems.value;
+            const pool = getPoolItems(poolPreview.value);
             if (poolRarityFilter.value === 'all') return pool;
             return pool.filter(i => i.rarity === poolRarityFilter.value);
         });
 
         const calcRate = (item, type) => {
-            const pool  = type === 'pet' ? gachaPool.value : shopItems.value;
+            const pool  = getPoolItems(type);
             const total = pool.reduce((s, g) => s + g.weight, 0);
             return ((item.weight / total) * 100).toFixed(1);
         };

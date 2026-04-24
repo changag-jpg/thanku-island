@@ -499,6 +499,7 @@ app.get('/api/gacha-items', async (req, res) => {
       rarity: r.rarity,
       weight: r.weight,
       type: r.type,
+      poolId: r.pool_id || null,
       imgUrl: r.img_url,
       spriteUrl: r.sprite_url,
       active: !!r.active,
@@ -539,6 +540,20 @@ app.post('/api/feedback', requireLogin, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// 公開：取得啟用中的特別卡池
+app.get('/api/gacha-pools', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM gacha_pools WHERE active=1 ORDER BY created_at DESC');
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      name: r.name,
+      icon: r.icon || '🎰',
+      desc: r.description || '',
+      endDate: r.end_date || '',
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ===== 管理員 Admin API =====
