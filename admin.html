@@ -357,8 +357,8 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               <div class="pool-card-name">{{ pool.icon }} {{ pool.name }}</div>
               <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId===pool.id).length }} 個物品</div>
               <span v-if="pool.endDate" class="pool-card-badge"
-                :style="new Date(pool.endDate)<new Date()?{background:'#FFF5F5',color:'var(--red)'}:{background:'#FFF8E0',color:'#B8860B'}">
-                {{ new Date(pool.endDate)<new Date()?'已結束':pool.endDate }}
+                :style="new Date() > new Date(pool.endDate)?{background:'#FFF5F5',color:'var(--red)'}:{background:'#FFF8E0',color:'#B8860B'}">
+                {{ new Date() > new Date(pool.endDate)?'已結束':pool.endDate }}
               </span>
               <div style="display:flex;gap:4px;margin-top:8px">
                 <button class="gc-btn gc-edit" style="flex:1;font-size:10px" @click.stop="openEditPool(pool)">設定</button>
