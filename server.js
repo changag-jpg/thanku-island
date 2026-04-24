@@ -149,6 +149,17 @@ app.use(session({
 }));
 
 app.use(express.json({ limit: '10mb' }));
+
+// HTML 檔不快取，確保使用者每次都拿到最新版本
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/' || req.path === '/admin') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname)));
 
 // 登入驗證 middleware
