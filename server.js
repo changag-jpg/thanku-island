@@ -62,7 +62,7 @@ async function initDB() {
       content TEXT,
       timestamp BIGINT,
       card_cost INT DEFAULT 1,
-      likes_json TEXT DEFAULT '[]',
+      likes_json TEXT,
       is_read TINYINT(1) DEFAULT 0,
       anon TINYINT(1) DEFAULT 0
     ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
