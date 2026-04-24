@@ -3851,7 +3851,7 @@ createApp({
                 if(tab==='island') window.initIslandEditorCanvas?.();
                 if(prev==='island' && tab!=='island'){
                     window.islandEngine?.save();
-                    setTimeout(()=>window.initIslandCanvas?.(), 50);
+                    setTimeout(() => { window.initIslandCanvas?.(); saveTiles(); }, 50);
                 }
             });
         };

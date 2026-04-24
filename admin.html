@@ -882,15 +882,17 @@ createApp({setup(){
   const loadGachaItems = async () => {
     gachaLoading.value = true;
     try {
-      const [items, pools, trash] = await Promise.all([
+      const [items, pools] = await Promise.all([
         api('/api/admin/gacha-items'),
         api('/api/admin/gacha-pools'),
-        api('/api/admin/gacha-pools/trash'),
       ]);
-      gachaItems.value = items;
-      specialPools.value = pools;
-      deletedPools.value = trash;
-    } catch(e) { console.error(e); }
+      gachaItems.value = Array.isArray(items) ? items : [];
+      specialPools.value = Array.isArray(pools) ? pools : [];
+    } catch(e) { console.error('loadGachaItems error:', e); }
+    try {
+      const trash = await api('/api/admin/gacha-pools/trash');
+      deletedPools.value = Array.isArray(trash) ? trash : [];
+    } catch(e) { deletedPools.value = []; }
     gachaLoading.value = false;
   };
 
