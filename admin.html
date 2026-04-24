@@ -369,6 +369,10 @@ input[type=range]{flex:1;accent-color:var(--pri)}
             <button class="pool-add-btn" @click="showPoolForm=true">
               <i class="fa-solid fa-plus"></i> 新增特別卡池
             </button>
+            <button class="pool-add-btn" style="background:var(--redlt);color:var(--red);border-color:var(--red)" @click="openTrash">
+              <i class="fa-solid fa-trash-can"></i> 垃圾桶
+              <span v-if="deletedPools.length" style="background:var(--red);color:#fff;border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px">{{ deletedPools.length }}</span>
+            </button>
           </div>
 
           <!-- 右側：物品管理 -->
@@ -674,6 +678,47 @@ input[type=range]{flex:1;accent-color:var(--pri)}
     </div>
   </div>
 
+  <!-- 刪除卡池確認彈窗 -->
+  <div v-if="showPoolDeleteModal" class="mov" @click.self="showPoolDeleteModal=false">
+    <div class="mb">
+      <div class="mtt">🗑️ 刪除卡池</div>
+      <div class="mbd">
+        確定要刪除卡池 <strong>{{ poolDeleteTarget?.icon }} {{ poolDeleteTarget?.name }}</strong>？<br><br>
+        · 卡池內的物品<strong>不會</strong>被刪除<br>
+        · 刪除後卡池將從主頁商鋪消失<br><br>
+        <span style="color:var(--pri);font-weight:700">✅ 7 天內可從垃圾桶復原</span>
+      </div>
+      <div class="mbt">
+        <button class="btn bg" @click="showPoolDeleteModal=false">取消</button>
+        <button class="btn bd" @click="confirmDeletePool">🗑️ 確認刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 垃圾桶（7日記錄）-->
+  <div v-if="showTrashModal" class="mov" @click.self="showTrashModal=false">
+    <div class="mb" style="max-width:480px">
+      <div class="mtt">♻️ 已刪除卡池（7 天內）</div>
+      <div v-if="!deletedPools.length" style="text-align:center;padding:24px 0;color:var(--sub);font-size:14px">
+        垃圾桶是空的
+      </div>
+      <div v-for="dp in deletedPools" :key="dp.id"
+        style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:28px">{{ dp.icon }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:800;font-size:14px">{{ dp.name }}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">
+            刪除於 {{ fmtDate(dp.deletedAt) }} · 剩 {{ daysLeft(dp.deletedAt) }} 天自動清除
+          </div>
+        </div>
+        <button class="btn bp bsm" @click="restorePool(dp)">復原</button>
+      </div>
+      <div class="mbt" style="margin-top:16px">
+        <button class="btn bg" @click="showTrashModal=false">關閉</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 刪除使用者確認彈窗 -->
   <div v-if="showDeleteModal" class="mov" @click.self="showDeleteModal=false">
     <div class="mb">
@@ -837,12 +882,14 @@ createApp({setup(){
   const loadGachaItems = async () => {
     gachaLoading.value = true;
     try {
-      const [items, pools] = await Promise.all([
+      const [items, pools, trash] = await Promise.all([
         api('/api/admin/gacha-items'),
         api('/api/admin/gacha-pools'),
+        api('/api/admin/gacha-pools/trash'),
       ]);
       gachaItems.value = items;
       specialPools.value = pools;
+      deletedPools.value = trash;
     } catch(e) { console.error(e); }
     gachaLoading.value = false;
   };
@@ -962,14 +1009,46 @@ createApp({setup(){
       editingPool.value = null;
     } catch(e){ toast('儲存失敗','err'); console.error(e); }
   };
-  const deletePool = async (pool) => {
-    if(!confirm(`確定刪除卡池「${pool.name}」？卡池內的物品不會被刪除`)) return;
+  const showPoolDeleteModal = ref(false);
+  const poolDeleteTarget    = ref(null);
+  const deletedPools        = ref([]);
+  const showTrashModal      = ref(false);
+
+  const deletePool = (pool) => {
+    poolDeleteTarget.value = pool;
+    showPoolDeleteModal.value = true;
+  };
+  const confirmDeletePool = async () => {
+    const pool = poolDeleteTarget.value;
+    if(!pool) return;
     try {
       await api(`/api/admin/gacha-pools/${pool.id}`, {method:'DELETE'});
       specialPools.value = specialPools.value.filter(p=>p.id!==pool.id);
       if(currentPool.value===pool.id) currentPool.value='animal';
-      toast('已刪除卡池 '+pool.name);
+      deletedPools.value.unshift({...pool, deletedAt: Date.now()});
+      toast('已移至垃圾桶：'+pool.name);
     } catch(e){ toast('刪除失敗','err'); }
+    showPoolDeleteModal.value = false;
+    poolDeleteTarget.value = null;
+  };
+  const openTrash = async () => {
+    try {
+      deletedPools.value = await api('/api/admin/gacha-pools/trash');
+    } catch(e){}
+    showTrashModal.value = true;
+  };
+  const restorePool = async (dp) => {
+    try {
+      await api(`/api/admin/gacha-pools/${dp.id}/restore`, {method:'POST'});
+      deletedPools.value = deletedPools.value.filter(p=>p.id!==dp.id);
+      const restored = await api('/api/admin/gacha-pools');
+      specialPools.value = restored.filter ? restored : [];
+      toast('✅ 已復原卡池：'+dp.name);
+    } catch(e){ toast('復原失敗','err'); }
+  };
+  const daysLeft = (deletedAt) => {
+    const remaining = 7 - Math.floor((Date.now() - deletedAt) / (24*60*60*1000));
+    return Math.max(0, remaining);
   };
 
   const adminAnns=computed(()=>anns.value.filter(a=>a.type==='admin'));
@@ -1107,7 +1186,9 @@ createApp({setup(){
     signIn,signOut,fmtDate,gname,toggleU,addWL,rmWL,
     openRC,doReward,openAC,doAnn,markRead,delFb,
     openNewItem,openEditItem,saveItem,toggleActive,deleteItem,onItemImgChange,copyUrl,
-    openEditPool,savePool,deletePool,openDeleteUser,confirmDeleteUser,
+    openEditPool,savePool,deletePool,confirmDeletePool,showPoolDeleteModal,poolDeleteTarget,
+    deletedPools,showTrashModal,openTrash,restorePool,daysLeft,
+    openDeleteUser,confirmDeleteUser,
   };
 }}).mount('#app');
 </script>

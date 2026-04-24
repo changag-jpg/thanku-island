@@ -131,6 +131,7 @@ async function initDB() {
       `ALTER TABLE announcements ADD COLUMN content LONGTEXT`,
       `ALTER TABLE announcements ADD COLUMN from_name VARCHAR(255)`,
       `ALTER TABLE gacha_items ADD COLUMN pool_id VARCHAR(50) DEFAULT NULL`,
+      `ALTER TABLE gacha_pools ADD COLUMN deleted_at BIGINT NULL DEFAULT NULL`,
     ]) { try { await pool.query(sql); } catch(e) {} }
 
     console.log('資料庫初始化完成');
@@ -545,7 +546,7 @@ app.post('/api/feedback', requireLogin, async (req, res) => {
 // 公開：取得啟用中的特別卡池
 app.get('/api/gacha-pools', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM gacha_pools WHERE active=1 ORDER BY created_at DESC');
+    const [rows] = await pool.query('SELECT * FROM gacha_pools WHERE active=1 AND (deleted_at IS NULL) ORDER BY created_at DESC');
     res.json(rows.map(r => ({
       id: String(r.id),
       name: r.name,
@@ -701,7 +702,7 @@ app.delete('/api/admin/gacha-items/:id', requireAdmin, async (req, res) => {
 
 app.get('/api/admin/gacha-pools', requireAdmin, async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM gacha_pools ORDER BY created_at DESC');
+    const [rows] = await pool.query('SELECT * FROM gacha_pools WHERE deleted_at IS NULL ORDER BY created_at DESC');
     res.json(rows.map(r => ({
       id: String(r.id),
       name: r.name,
@@ -738,7 +739,33 @@ app.patch('/api/admin/gacha-pools/:id', requireAdmin, async (req, res) => {
 
 app.delete('/api/admin/gacha-pools/:id', requireAdmin, async (req, res) => {
   try {
-    await pool.query('DELETE FROM gacha_pools WHERE id=?', [req.params.id]);
+    await pool.query('UPDATE gacha_pools SET deleted_at=? WHERE id=?', [Date.now(), req.params.id]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// 垃圾桶：取得 7 天內已刪除的卡池
+app.get('/api/admin/gacha-pools/trash', requireAdmin, async (req, res) => {
+  try {
+    const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const [rows] = await pool.query(
+      'SELECT * FROM gacha_pools WHERE deleted_at IS NOT NULL AND deleted_at >= ? ORDER BY deleted_at DESC',
+      [since]
+    );
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      name: r.name,
+      icon: r.icon || '🎰',
+      desc: r.description || '',
+      deletedAt: r.deleted_at,
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// 復原已刪除的卡池
+app.post('/api/admin/gacha-pools/:id/restore', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('UPDATE gacha_pools SET deleted_at=NULL WHERE id=?', [req.params.id]);
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
