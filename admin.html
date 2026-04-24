@@ -5,14 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>感恩小島 — 管理後台</title>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
-const firebaseConfig={apiKey:"AIzaSyC-JR80af8Vx7SHmyDUkGFVFD9HzlmpP8w",authDomain:"thanku-island-30428.firebaseapp.com",projectId:"thanku-island-30428",storageBucket:"thanku-island-30428.firebasestorage.app",messagingSenderId:"245260789354",appId:"1:245260789354:web:dfc729c0c0ea7cc4360c13"};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore(),auth=firebase.auth();
-</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -41,7 +33,7 @@ input,textarea,select{font-family:inherit}
 .lsb{font-size:13px;color:var(--sub);margin-bottom:28px}
 .le{font-size:13px;color:var(--red);font-weight:700;margin-top:12px}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:var(--rp);background:#fff;border:2px solid var(--border);font-size:14px;font-weight:800;color:var(--text);cursor:pointer;transition:all .2s}
-.gbtn:hover{border-color:#4285F4;transform:translateY(-1px)}
+.gbtn:hover{border-color:var(--pri);transform:translateY(-1px)}
 .ph{margin-bottom:28px}
 .pht{font-size:24px;font-weight:900;letter-spacing:-.02em}
 .phs{font-size:13px;color:var(--sub);margin-top:4px}
@@ -186,16 +178,15 @@ input[type=range]{flex:1;accent-color:var(--pri)}
     <div style="font-size:14px;color:var(--sub);font-weight:700">載入中...</div>
   </div>
 
-  <div v-else-if="!fbUser" class="lw">
+  <div v-else-if="!currentUser" class="lw">
     <div class="lc">
       <span class="li">🔐</span>
       <div class="ltt">感恩小島後台</div>
-      <div class="lsb">僅限授權管理員登入</div>
+      <div class="lsb">請先登入主網站，再回到此頁面</div>
       <button class="gbtn" @click="signIn">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        使用 Google 帳號登入
+        <span style="font-size:20px">🏝️</span>
+        前往主網站登入
       </button>
-      <div v-if="lerr" class="le">{{ lerr }}</div>
     </div>
   </div>
 
@@ -203,7 +194,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
     <div class="lc">
       <span class="li">⛔</span>
       <div class="ltt">無存取權限</div>
-      <div class="lsb">{{ fbUser.email }} 不在管理員名單內</div>
+      <div class="lsb">{{ currentUser.email }} 不在管理員名單內</div>
       <button class="gbtn" @click="signOut" style="margin-top:16px">登出</button>
     </div>
   </div>
@@ -223,7 +214,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         </button>
       </nav>
       <div class="sf">
-        <div style="font-size:11px;color:var(--sub);margin-bottom:6px;font-weight:600" class="nl">{{ fbUser.displayName }}</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:6px;font-weight:600" class="nl">{{ currentUser.name }}</div>
         <button class="btn bg bsm" @click="signOut" style="width:100%">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
           <span class="nl">登出</span>
@@ -301,7 +292,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
             <div class="fr" style="margin-bottom:8px">
               <label class="fl">選擇{{ rType==='pet'?'島民':'裝飾品' }}</label>
             </div>
-            <!-- 已選預覽 -->
             <div v-if="selectedItem" class="item-selected-preview">
               <div class="isp-emoji">{{ selectedItem.emoji }}</div>
               <div>
@@ -310,9 +300,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               </div>
               <button @click="selectedItem=null" style="margin-left:auto;color:var(--sub);font-size:16px;padding:4px">✕</button>
             </div>
-            <!-- 搜尋 -->
             <input v-model="itemSearch" class="fi" :placeholder="'🔍 搜尋'+(rType==='pet'?'島民':'裝飾品')+'名稱...'" style="margin-bottom:8px">
-            <!-- 物品格子 -->
             <div class="item-grid">
               <div v-for="item in filtItems" :key="item.id"
                 class="item-card" :class="{on:selectedItem?.id===item.id}"
@@ -351,7 +339,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           <div class="gacha-sidebar">
             <div style="font-size:12px;font-weight:800;color:var(--sub);margin-bottom:4px;letter-spacing:.05em">卡池列表</div>
 
-            <!-- 基礎卡池 -->
             <div class="pool-card" :class="{on:currentPool==='animal'}" @click="currentPool='animal';gachaSearch=''">
               <div class="pool-card-name">🐾 島民基礎卡池</div>
               <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId==='animal'||(!i.poolId&&i.type==='animal')).length }} 個物品</div>
@@ -363,7 +350,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               <span class="pool-card-badge" style="background:var(--prilt);color:var(--prih)">常駐</span>
             </div>
 
-            <!-- 特別卡池 -->
             <div v-if="specialPools.length" style="font-size:12px;font-weight:800;color:var(--sub);margin:8px 0 4px;letter-spacing:.05em">特別卡池</div>
             <div v-for="pool in specialPools" :key="pool.id"
               class="pool-card" :class="{on:currentPool===pool.id}"
@@ -387,7 +373,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
 
           <!-- 右側：物品管理 -->
           <div class="gacha-main">
-            <!-- 工具列 -->
             <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
               <input v-model="gachaSearch" class="fi" placeholder="🔍 搜尋物品名稱..." style="flex:1;min-width:120px">
               <button class="btn bp" @click="openNewItem">
@@ -395,7 +380,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               </button>
             </div>
 
-            <!-- 統計列 -->
             <div style="display:flex;gap:16px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
               <div style="font-size:12px;color:var(--sub);font-weight:600">
                 共 {{ filtGachaItems.length }} 個
@@ -405,7 +389,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               <div style="font-size:11px;color:var(--sub)">總權重 {{ filtGachaItems.filter(i=>i.active).reduce((s,i)=>s+i.weight,0) }}</div>
             </div>
 
-            <!-- 物品格子 -->
             <div v-if="gachaLoading" style="text-align:center;padding:64px;color:var(--sub)">載入中...</div>
             <div v-else-if="!filtGachaItems.length" class="empty">
               <div style="font-size:48px;margin-bottom:12px">✨</div>
@@ -414,7 +397,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
             <div v-else class="gacha-grid">
               <div v-for="item in filtGachaItems" :key="item.id"
                 class="gacha-card" :class="{inactive:!item.active}">
-                <!-- 圖片或 emoji -->
                 <img v-if="item.imgUrl" :src="item.imgUrl" class="gc-img" :alt="item.name" @error="$event.target.style.display='none'">
                 <span v-else class="gc-emoji">{{ item.emoji }}</span>
                 <div class="gc-name">{{ item.emoji }} {{ item.name }}</div>
@@ -498,13 +480,13 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           <div v-for="email in wl" :key="email" class="wi">
             <i class="fa-solid fa-envelope" style="color:var(--pri)"></i>
             <span class="we">{{ email }}</span>
-            <span v-if="email===fbUser.email" class="wb">你</span>
-            <button v-if="email!==fbUser.email" class="btn bd bsm" @click="rmWL(email)"><i class="fa-solid fa-trash"></i></button>
+            <span v-if="email===currentUser.email" class="wb">你</span>
+            <button v-if="email!==currentUser.email" class="btn bd bsm" @click="rmWL(email)"><i class="fa-solid fa-trash"></i></button>
           </div>
         </div>
         <div class="card">
           <div class="ct"><i class="fa-solid fa-plus"></i> 新增管理員</div>
-          <div class="fr"><label class="fl">信箱地址</label><input v-model="newWL" class="fi" placeholder="example@gmail.com" type="email"></div>
+          <div class="fr"><label class="fl">信箱地址</label><input v-model="newWL" class="fi" placeholder="example@garena.com" type="email"></div>
           <button class="btn bp" @click="addWL" :disabled="!newWL.includes('@')"><i class="fa-solid fa-plus"></i> 新增</button>
         </div>
       </div>
@@ -520,7 +502,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         <button @click="showItemForm=false" style="font-size:18px;color:var(--sub);padding:0;cursor:pointer">✕</button>
       </div>
 
-      <!-- 預覽 -->
       <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--s2);border-radius:var(--r);margin-bottom:20px">
         <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);border:2px solid var(--border);background:var(--surface);overflow:hidden;flex-shrink:0">
           <img v-if="itemForm.imgUrl" :src="itemForm.imgUrl" style="width:100%;height:100%;object-fit:contain">
@@ -563,7 +544,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               <div v-if="imgUploading==='idle'" style="position:absolute;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;border-radius:var(--r);font-weight:700;color:var(--pri);font-size:12px">上傳中...</div>
             </div>
             <div v-if="itemForm.imgUrl" style="margin-top:6px;display:flex;gap:6px;align-items:center">
-              <button @click="copyUrl(itemForm.imgUrl)" class="gc-btn gc-edit" style="font-size:11px;flex:1">📋 複製 URL</button>
+              <button @click="copyUrl(itemForm.imgUrl,'idle')" class="gc-btn gc-edit" style="font-size:11px;flex:1">📋 複製 URL</button>
               <button @click="itemForm.imgUrl=''" class="gc-btn gc-del" style="font-size:11px">✕</button>
             </div>
             <div v-if="copiedMsg==='idle'" style="font-size:11px;color:var(--pri);margin-top:4px;font-weight:700">✅ 已複製！</div>
@@ -585,7 +566,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               <div v-if="imgUploading==='sprite'" style="position:absolute;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;border-radius:var(--r);font-weight:700;color:var(--pri);font-size:12px">上傳中...</div>
             </div>
             <div v-if="itemForm.spriteUrl" style="margin-top:6px;display:flex;gap:6px;align-items:center">
-              <button @click="copyUrl(itemForm.spriteUrl)" class="gc-btn gc-edit" style="font-size:11px;flex:1">📋 複製 URL</button>
+              <button @click="copyUrl(itemForm.spriteUrl,'sprite')" class="gc-btn gc-edit" style="font-size:11px;flex:1">📋 複製 URL</button>
               <button @click="itemForm.spriteUrl=''" class="gc-btn gc-del" style="font-size:11px">✕</button>
             </div>
             <div v-if="copiedMsg==='sprite'" style="font-size:11px;color:var(--pri);margin-top:4px;font-weight:700">✅ 已複製！</div>
@@ -752,7 +733,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
 <script>
 const {createApp,ref,computed}=Vue;
 createApp({setup(){
-  const fbUser=ref(null),isAdmin=ref(false),loading=ref(true),lerr=ref(''),sending=ref(false);
+  const currentUser=ref(null),isAdmin=ref(false),loading=ref(true),sending=ref(false);
   const tab=ref('overview');
   const tabs=[
     {id:'overview',icon:'fa-solid fa-chart-line',label:'總覽'},
@@ -762,7 +743,7 @@ createApp({setup(){
     {id:'feedback',icon:'fa-solid fa-comment-dots',label:'使用者反饋'},
     {id:'whitelist',icon:'fa-solid fa-shield',label:'白名單'},
   ];
-  const profiles=ref([]),feedbacks=ref([]),anns=ref([]),wl=ref(['changag@garena.com']);
+  const profiles=ref([]),feedbacks=ref([]),anns=ref([]),wl=ref([]);
   const stats=ref({users:0,letters:0,ann:0}),toasts=ref([]),prevImg=ref(null);
   const rTarget=ref('all'),selUsers=ref([]),uQ=ref('');
   const rType=ref('energy'),rAmt=ref(100),rNote=ref(''),rShow=ref(false);
@@ -775,9 +756,7 @@ createApp({setup(){
     {id:'decor',icon:'🏕️',label:'指定裝飾',hint:'選擇要發放的裝飾品'},
   ];
 
-  // 所有可發放的島民和裝飾品清單（與主網頁同步）
   const itemSearch=ref(''),selectedItem=ref(null);
-  // 直接從已載入的 gachaItems 讀取，永遠是最新的
   const itemPool=computed(()=>{
     if(rType.value==='pet')   return gachaItems.value.filter(i=>i.type==='animal');
     if(rType.value==='decor') return gachaItems.value.filter(i=>i.type==='decor');
@@ -790,16 +769,15 @@ createApp({setup(){
   });
   const aTitle=ref(''),aContent=ref(''),aShow=ref(false),newWL=ref(''),fbF=ref('all');
 
-  // ── 卡池管理 ──
   const gachaItems   = ref([]);
-  const specialPools = ref([]);       // 特別卡池清單
-  const currentPool  = ref('animal'); // 目前選取的卡池
+  const specialPools = ref([]);
+  const currentPool  = ref('animal');
   const gachaSearch  = ref('');
   const gachaLoading = ref(false);
   const showItemForm = ref(false);
   const editingItem  = ref(null);
-  const imgUploading = ref('');   // '' | 'idle' | 'sprite'
-  const copiedMsg    = ref('');   // '' | 'idle' | 'sprite'
+  const imgUploading = ref('');
+  const copiedMsg    = ref('');
   const itemForm = Vue.reactive({
     name:'', emoji:'', imgUrl:'', spriteUrl:'', type:'animal',
     poolId:'animal', rarity:'common', weight:30, active:true,
@@ -813,11 +791,9 @@ createApp({setup(){
     {id:'legend',label:'傳說 ⭐',color:'#B8860B'},
   ];
 
-  // 依目前選取卡池篩選物品
   const filtGachaItems = computed(()=>{
     const q = gachaSearch.value.trim().toLowerCase();
     return gachaItems.value.filter(i => {
-      // 基礎卡池：用 poolId 或舊的 type 欄位判斷
       const poolMatch = currentPool.value==='animal'
         ? (i.poolId==='animal'||(!i.poolId&&i.type==='animal'))
         : currentPool.value==='decor'
@@ -827,20 +803,50 @@ createApp({setup(){
     });
   });
 
+  const api = async (url, opts={}) => {
+    const fetchOpts = { method: opts.method||'GET', headers:{'Content-Type':'application/json'} };
+    if (opts.body !== undefined) fetchOpts.body = JSON.stringify(opts.body);
+    const r = await fetch(url, fetchOpts);
+    return r.json();
+  };
+
+  const loadData = async () => {
+    try {
+      const [profs, lets, adminAnnsData, fbs] = await Promise.all([
+        api('/api/profiles'),
+        api('/api/letters'),
+        api('/api/admin/announcements'),
+        api('/api/admin/feedbacks'),
+      ]);
+      profiles.value = profs;
+      stats.value.users = profs.length;
+      stats.value.letters = lets.length;
+      anns.value = adminAnnsData;
+      stats.value.ann = adminAnnsData.filter(a=>a.type==='admin').length;
+      feedbacks.value = fbs;
+    } catch(e) { console.error(e); }
+  };
+
+  const loadWL = async () => {
+    try {
+      const d = await api('/api/admin/whitelist');
+      wl.value = d.emails || [];
+    } catch(e) {}
+  };
+
   const loadGachaItems = async () => {
     gachaLoading.value = true;
     try {
-      const [itemSnap, poolSnap] = await Promise.all([
-        db.collection('gacha_items').orderBy('createdAt','desc').get(),
-        db.collection('gacha_pools').orderBy('createdAt','desc').get(),
+      const [items, pools] = await Promise.all([
+        api('/api/admin/gacha-items'),
+        api('/api/admin/gacha-pools'),
       ]);
-      gachaItems.value  = itemSnap.docs.map(d=>({id:d.id,...d.data()}));
-      specialPools.value = poolSnap.docs.map(d=>({id:d.id,...d.data()}));
-    } catch(e){ console.error(e); }
+      gachaItems.value = items;
+      specialPools.value = pools;
+    } catch(e) { console.error(e); }
     gachaLoading.value = false;
   };
 
-  // 物品 CRUD
   const openNewItem = () => {
     editingItem.value = null;
     const pid = currentPool.value;
@@ -869,20 +875,19 @@ createApp({setup(){
     };
     try {
       if(editingItem.value) {
-        await db.collection('gacha_items').doc(editingItem.value.id).update(data);
+        await api(`/api/admin/gacha-items/${editingItem.value.id}`, {method:'PATCH', body:data});
         const idx = gachaItems.value.findIndex(i=>i.id===editingItem.value.id);
         if(idx>=0) gachaItems.value[idx] = {...gachaItems.value[idx],...data};
         toast('✅ 已更新 '+data.name);
       } else {
-        const ref = await db.collection('gacha_items').add({...data, createdAt:Date.now()});
-        gachaItems.value.unshift({id:ref.id,...data,createdAt:Date.now()});
+        const result = await api('/api/admin/gacha-items', {method:'POST', body:data});
+        gachaItems.value.unshift({id:result.id,...data,createdAt:Date.now()});
         toast('✅ 已新增 '+data.name);
       }
       showItemForm.value = false;
     } catch(e){ toast('儲存失敗','err'); console.error(e); }
   };
 
-  // 複製 URL
   const copyUrl = async (url, type) => {
     try {
       await navigator.clipboard.writeText(url);
@@ -892,7 +897,7 @@ createApp({setup(){
   };
   const toggleActive = async (item) => {
     try {
-      await db.collection('gacha_items').doc(item.id).update({active:!item.active});
+      await api(`/api/admin/gacha-items/${item.id}`, {method:'PATCH', body:{...item, active:!item.active}});
       item.active = !item.active;
       toast(item.active?'✅ 已上架 '+item.name:'已下架 '+item.name);
     } catch(e){ toast('操作失敗','err'); }
@@ -900,17 +905,15 @@ createApp({setup(){
   const deleteItem = async (item) => {
     if(!confirm(`確定刪除「${item.name}」？此操作無法復原`)) return;
     try {
-      await db.collection('gacha_items').doc(item.id).delete();
+      await api(`/api/admin/gacha-items/${item.id}`, {method:'DELETE'});
       gachaItems.value = gachaItems.value.filter(i=>i.id!==item.id);
       toast('已刪除 '+item.name);
     } catch(e){ toast('刪除失敗','err'); }
   };
 
-  // Cloudinary 設定
   const CLOUDINARY_CLOUD = 'djjbj67s5';
   const CLOUDINARY_PRESET = 'gsik1r4i';
 
-  // 圖片上傳（支援靜止圖 idle 和雪碧圖 sprite）
   const onItemImgChange = async (type, e) => {
     const file = e.target.files[0];
     if(!file) return;
@@ -936,7 +939,6 @@ createApp({setup(){
     }
   };
 
-  // 特別卡池 CRUD
   const openEditPool = (pool) => {
     editingPool.value = pool;
     Object.assign(poolForm,{name:pool.name,icon:pool.icon||'🎰',desc:pool.desc||'',endDate:pool.endDate||'',active:pool.active!==false});
@@ -947,13 +949,13 @@ createApp({setup(){
     const data = {name:poolForm.name.trim(),icon:poolForm.icon.trim(),desc:poolForm.desc||'',endDate:poolForm.endDate||'',active:poolForm.active};
     try {
       if(editingPool.value) {
-        await db.collection('gacha_pools').doc(editingPool.value.id).update(data);
+        await api(`/api/admin/gacha-pools/${editingPool.value.id}`, {method:'PATCH', body:data});
         const idx = specialPools.value.findIndex(p=>p.id===editingPool.value.id);
         if(idx>=0) specialPools.value[idx] = {...specialPools.value[idx],...data};
         toast('✅ 已更新卡池：'+data.name);
       } else {
-        const ref = await db.collection('gacha_pools').add({...data,createdAt:Date.now()});
-        specialPools.value.unshift({id:ref.id,...data,createdAt:Date.now()});
+        const result = await api('/api/admin/gacha-pools', {method:'POST', body:data});
+        specialPools.value.unshift({id:result.id,...data,createdAt:Date.now()});
         toast('✅ 已建立卡池：'+data.name);
       }
       showPoolForm.value = false;
@@ -963,12 +965,13 @@ createApp({setup(){
   const deletePool = async (pool) => {
     if(!confirm(`確定刪除卡池「${pool.name}」？卡池內的物品不會被刪除`)) return;
     try {
-      await db.collection('gacha_pools').doc(pool.id).delete();
+      await api(`/api/admin/gacha-pools/${pool.id}`, {method:'DELETE'});
       specialPools.value = specialPools.value.filter(p=>p.id!==pool.id);
       if(currentPool.value===pool.id) currentPool.value='animal';
       toast('已刪除卡池 '+pool.name);
     } catch(e){ toast('刪除失敗','err'); }
   };
+
   const adminAnns=computed(()=>anns.value.filter(a=>a.type==='admin'));
   const filtP=computed(()=>{const q=uQ.value.trim().toLowerCase();if(!q)return profiles.value;return profiles.value.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q));});
   const filtFb=computed(()=>{if(fbF.value==='unread')return feedbacks.value.filter(f=>!f.read);if(fbF.value==='read')return feedbacks.value.filter(f=>f.read);return feedbacks.value;});
@@ -977,112 +980,135 @@ createApp({setup(){
   const fmtDate=(ts)=>{if(!ts)return'';const d=new Date(ts);return d.toLocaleDateString('zh-TW')+' '+d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});};
   const gname=(uid)=>profiles.value.find(p=>p.id===uid)?.name||uid;
   const toggleU=(uid)=>{const i=selUsers.value.indexOf(uid);if(i>=0)selUsers.value.splice(i,1);else selUsers.value.push(uid);};
-  const signIn=async()=>{lerr.value='';try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(e){lerr.value='登入失敗';}};
-  const signOut=()=>auth.signOut();
-  const loadWL=async()=>{try{const d=await db.collection('admin_settings').doc('admin_config').get();if(d.exists&&d.data().emails?.length)wl.value=d.data().emails;else await db.collection('admin_settings').doc('admin_config').set({emails:['changag@garena.com']});}catch(e){}};
-  const loadData=async()=>{try{const[pS,lS,aS,fS]=await Promise.all([db.collection('profiles').get(),db.collection('letters').get(),db.collection('announcements').orderBy('timestamp','desc').get(),db.collection('feedback').orderBy('timestamp','desc').get()]);profiles.value=pS.docs.map(d=>({docId:d.id,...d.data()}));stats.value.users=profiles.value.length;stats.value.letters=lS.size;anns.value=aS.docs.map(d=>({id:d.id,...d.data()}));stats.value.ann=anns.value.filter(a=>a.type==='admin').length;feedbacks.value=fS.docs.map(d=>({id:d.id,...d.data()}));}catch(e){console.error(e);}};
-  auth.onAuthStateChanged(async(user)=>{fbUser.value=user;if(user){await loadWL();isAdmin.value=wl.value.includes(user.email);if(isAdmin.value){await loadData();await loadGachaItems();}}loading.value=false;});
-  const addWL=async()=>{const e=newWL.value.trim().toLowerCase();if(!e||wl.value.includes(e))return;wl.value.push(e);await db.collection('admin_settings').doc('admin_config').set({emails:wl.value});newWL.value='';toast('✅ 已新增 '+e);};
-  const rmWL=async(email)=>{if(email===fbUser.value?.email){toast('不能移除自己！','err');return;}wl.value=wl.value.filter(e=>e!==email);await db.collection('admin_settings').doc('admin_config').set({emails:wl.value});toast('已移除 '+email);};
-  const openRC=()=>{if(rTarget.value==='select'&&selUsers.value.length===0)return;rShow.value=true;};
-  const doReward=async()=>{sending.value=true;try{
-    const targets=rTarget.value==='all'?profiles.value.map(p=>p.id):selUsers.value;
-    const rt=rtypes.find(r=>r.id===rType.value);
-    const ts=Date.now();
-    const amt=rAmt.value;
-    const isItem=(rType.value==='pet'||rType.value==='decor');
-    const item=selectedItem.value;
 
-    for(const uid of targets){
-      try{
-        let inboxData;
-        if(isItem && item){
-          // 物品（島民/裝飾）：直接寫入倉庫物品，加入 inbox 通知
-          inboxData={
-            type:'admin_reward',
-            rewardType:rType.value,
-            amount:1,
-            itemData: JSON.parse(JSON.stringify(item)), // 完整物品資料
-            note:rNote.value||'',
-            timestamp:ts,
-            read:false,
-            processed:false,
-            title:'🎁 管理員送你 '+item.emoji+' '+item.name+'！',
-          };
-        } else {
-          inboxData={
-            type:'admin_reward',
-            rewardType:rType.value,
-            amount:amt,
-            note:rNote.value||'',
-            timestamp:ts,
-            read:false,
-            processed:false,
-            title:'🎁 管理員送你 '+rt.icon+rt.label+' ×'+amt+'！',
-          };
-        }
-        await db.collection('inboxes').doc(uid).collection('items').add(inboxData);
-      }catch(ue){console.warn(uid,ue);}
-    }
-    // 全站發放公告
-    if(rTarget.value==='all'){
-      const dispName=isItem&&item?item.emoji+' '+item.name:rt.icon+rt.label+(isItem?'':' ×'+amt);
-      await db.collection('announcements').add({
-        type:'admin_reward',
-        title:'🎁 全站發放！所有人都有 '+dispName,
-        content:'快去信箱的「領取道具」分頁領取你的獎勵！'+(rNote.value?'\n\n'+rNote.value:''),
-        timestamp:ts,
-      });
-    }
-    toast('✅ 已通知 '+targets.length+' 位使用者，他們登入後可在信箱領取！');
-    rShow.value=false;rNote.value='';selUsers.value=[];selectedItem.value=null;
-    await loadData();
-  }catch(e){toast('發放失敗','err');console.error(e);}
-  sending.value=false;};
-  const openAC=()=>{if(aTitle.value.trim()&&aContent.value.trim())aShow.value=true;};
-  const doAnn=async()=>{sending.value=true;try{await db.collection('announcements').add({type:'admin',title:aTitle.value.trim(),content:aContent.value.trim(),timestamp:Date.now(),fromName:'感恩小島官方'});toast('✅ 全站公告已發送！');aShow.value=false;aTitle.value='';aContent.value='';await loadData();}catch(e){toast('發送失敗','err');}sending.value=false;};
-  const markRead=async(fb)=>{try{await db.collection('feedback').doc(fb.id).update({read:true});fb.read=true;}catch(e){}};
-  const delFb=async(fb)=>{if(!confirm('確定刪除？'))return;try{await db.collection('feedback').doc(fb.id).delete();feedbacks.value=feedbacks.value.filter(f=>f.id!==fb.id);toast('已刪除');}catch(e){toast('刪除失敗','err');}};
+  const signIn=()=>{ window.location.href='/'; };
+  const signOut=()=>{ window.location.href='/auth/logout'; };
 
-  // ── 刪除使用者帳號 ──
-  const deleteTarget  = ref(null);
-  const showDeleteModal = ref(false);
-
-  const openDeleteUser = (p) => {
-    deleteTarget.value = p;
-    showDeleteModal.value = true;
+  const addWL=async()=>{
+    const e=newWL.value.trim().toLowerCase();
+    if(!e||wl.value.includes(e))return;
+    try {
+      await api('/api/admin/whitelist', {method:'POST', body:{email:e}});
+      wl.value.push(e);
+      newWL.value='';
+      toast('✅ 已新增 '+e);
+    } catch(err){ toast('新增失敗','err'); }
+  };
+  const rmWL=async(email)=>{
+    if(email===currentUser.value?.email){toast('不能移除自己！','err');return;}
+    try {
+      await api(`/api/admin/whitelist/${encodeURIComponent(email)}`, {method:'DELETE'});
+      wl.value=wl.value.filter(e=>e!==email);
+      toast('已移除 '+email);
+    } catch(err){ toast('移除失敗','err'); }
   };
 
+  const openRC=()=>{if(rTarget.value==='select'&&selUsers.value.length===0)return;rShow.value=true;};
+  const doReward=async()=>{
+    sending.value=true;
+    try{
+      const targets=rTarget.value==='all'?profiles.value.map(p=>p.id):selUsers.value;
+      const rt=rtypes.find(r=>r.id===rType.value);
+      const ts=Date.now();
+      const amt=rAmt.value;
+      const isItem=(rType.value==='pet'||rType.value==='decor');
+      const item=selectedItem.value;
+      for(const uid of targets){
+        try{
+          let inboxData;
+          if(isItem && item){
+            inboxData={type:'admin_reward',rewardType:rType.value,amount:1,itemData:JSON.parse(JSON.stringify(item)),note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+item.emoji+' '+item.name+'！'};
+          } else {
+            inboxData={type:'admin_reward',rewardType:rType.value,amount:amt,note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+rt.icon+rt.label+' ×'+amt+'！'};
+          }
+          await api('/api/inbox', {method:'POST', body:{toUid:uid,...inboxData}});
+        }catch(ue){console.warn(uid,ue);}
+      }
+      if(rTarget.value==='all'){
+        const dispName=isItem&&item?item.emoji+' '+item.name:rt.icon+rt.label+(isItem?'':' ×'+amt);
+        await api('/api/admin/announcements', {method:'POST', body:{type:'admin_reward',title:'🎁 全站發放！所有人都有 '+dispName,content:'快去信箱的「領取道具」分頁領取你的獎勵！'+(rNote.value?'\n\n'+rNote.value:''),timestamp:ts}});
+      }
+      toast('✅ 已通知 '+targets.length+' 位使用者，他們登入後可在信箱領取！');
+      rShow.value=false;rNote.value='';selUsers.value=[];selectedItem.value=null;
+      await loadData();
+    }catch(e){toast('發放失敗','err');console.error(e);}
+    sending.value=false;
+  };
+
+  const openAC=()=>{if(aTitle.value.trim()&&aContent.value.trim())aShow.value=true;};
+  const doAnn=async()=>{
+    sending.value=true;
+    try{
+      await api('/api/admin/announcements', {method:'POST', body:{type:'admin',title:aTitle.value.trim(),content:aContent.value.trim(),timestamp:Date.now(),fromName:'感恩小島官方'}});
+      toast('✅ 全站公告已發送！');
+      aShow.value=false;aTitle.value='';aContent.value='';
+      await loadData();
+    }catch(e){toast('發送失敗','err');}
+    sending.value=false;
+  };
+
+  const markRead=async(fb)=>{
+    try{
+      await api(`/api/admin/feedbacks/${fb.id}`, {method:'PATCH'});
+      fb.read=true;
+    }catch(e){}
+  };
+  const delFb=async(fb)=>{
+    if(!confirm('確定刪除？'))return;
+    try{
+      await api(`/api/admin/feedbacks/${fb.id}`, {method:'DELETE'});
+      feedbacks.value=feedbacks.value.filter(f=>f.id!==fb.id);
+      toast('已刪除');
+    }catch(e){toast('刪除失敗','err');}
+  };
+
+  const deleteTarget  = ref(null);
+  const showDeleteModal = ref(false);
+  const openDeleteUser = (p) => { deleteTarget.value=p; showDeleteModal.value=true; };
   const confirmDeleteUser = async () => {
     const p = deleteTarget.value;
     if(!p) return;
     try {
-      // docId 是 Firestore document ID（就是 uid），p.id 是資料裡的 id 欄位
-      const uid = p.docId || p.id;
-      // 刪除所有 Firestore 資料
-      // 注意：users/{uid} 規則只有本人能寫，需要在規則裡加管理員權限
-      const results = await Promise.allSettled([
-        db.collection('users').doc(uid).delete(),
-        db.collection('profiles').doc(uid).delete(),
-        db.collection('tiles').doc(uid).delete(),
-        db.collection('inboxes').doc(uid).collection('items').get().then(snap =>
-          Promise.all(snap.docs.map(d => d.ref.delete()))
-        ),
-      ]);
-      // 記錄哪些成功哪些失敗
-      const failed = results.filter(r=>r.status==='rejected');
-      if(failed.length > 0) {
-        console.warn('部分刪除失敗:', failed);
-      }
-      // 從本地清單移除
-      profiles.value = profiles.value.filter(u => (u.docId||u.id) !== uid);
+      await api(`/api/admin/users/${p.id}`, {method:'DELETE'});
+      profiles.value = profiles.value.filter(u=>u.id!==p.id);
       stats.value.users = profiles.value.length;
       toast(`🗑️ 已刪除 ${p.name} 的資料`);
-      showDeleteModal.value = false;
-      deleteTarget.value = null;
+      showDeleteModal.value=false;
+      deleteTarget.value=null;
     } catch(e){ toast('刪除失敗','err'); console.error(e); }
   };
-  return{fbUser,isAdmin,loading,lerr,tab,tabs,sending,profiles,feedbacks,anns,adminAnns,wl,stats,toasts,prevImg,rTarget,selUsers,uQ,rType,rAmt,rNote,rShow,rtypes,selectedItem,itemSearch,filtItems,aTitle,aContent,aShow,newWL,fbF,filtP,filtFb,unreadFb,gachaItems,specialPools,currentPool,gachaSearch,gachaLoading,showItemForm,editingItem,imgUploading,copiedMsg,itemForm,showPoolForm,editingPool,poolForm,rarityOpts,filtGachaItems,deleteTarget,showDeleteModal,signIn,signOut,fmtDate,gname,toggleU,addWL,rmWL,openRC,doReward,openAC,doAnn,markRead,delFb,openNewItem,openEditItem,saveItem,toggleActive,deleteItem,onItemImgChange,copyUrl,openEditPool,savePool,deletePool,openDeleteUser,confirmDeleteUser};
+
+  const checkAuth = async () => {
+    try {
+      const me = await fetch('/api/me').then(r=>r.json());
+      if (!me.success) { loading.value=false; return; }
+      currentUser.value = me.user;
+      const check = await fetch('/api/admin/check').then(r=>r.json());
+      isAdmin.value = check.isAdmin||false;
+      if (isAdmin.value) {
+        await loadWL();
+        await Promise.all([loadData(), loadGachaItems()]);
+      }
+    } catch(e) { console.error(e); }
+    loading.value = false;
+  };
+  checkAuth();
+
+  return{
+    currentUser,isAdmin,loading,sending,tab,tabs,
+    profiles,feedbacks,anns,adminAnns,wl,stats,toasts,prevImg,
+    rTarget,selUsers,uQ,rType,rAmt,rNote,rShow,rtypes,
+    selectedItem,itemSearch,filtItems,
+    aTitle,aContent,aShow,newWL,fbF,filtP,filtFb,unreadFb,
+    gachaItems,specialPools,currentPool,gachaSearch,gachaLoading,
+    showItemForm,editingItem,imgUploading,copiedMsg,itemForm,
+    showPoolForm,editingPool,poolForm,rarityOpts,filtGachaItems,
+    deleteTarget,showDeleteModal,
+    signIn,signOut,fmtDate,gname,toggleU,addWL,rmWL,
+    openRC,doReward,openAC,doAnn,markRead,delFb,
+    openNewItem,openEditItem,saveItem,toggleActive,deleteItem,onItemImgChange,copyUrl,
+    openEditPool,savePool,deletePool,openDeleteUser,confirmDeleteUser,
+  };
 }}).mount('#app');
 </script>
 </body>

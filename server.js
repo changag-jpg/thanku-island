@@ -109,6 +109,30 @@ async function initDB() {
       is_read TINYINT(1) DEFAULT 0
     ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS gacha_pools (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255),
+      icon VARCHAR(50),
+      description TEXT,
+      end_date VARCHAR(20),
+      active TINYINT(1) DEFAULT 1,
+      created_at BIGINT DEFAULT 0
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS admin_whitelist (
+      email VARCHAR(255) PRIMARY KEY
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+
+    await pool.query(`INSERT IGNORE INTO admin_whitelist (email) VALUES ('changag@garena.com')`);
+
+    // 補欄位（若已存在會安靜失敗）
+    for (const sql of [
+      `ALTER TABLE announcements ADD COLUMN title TEXT`,
+      `ALTER TABLE announcements ADD COLUMN content LONGTEXT`,
+      `ALTER TABLE announcements ADD COLUMN from_name VARCHAR(255)`,
+      `ALTER TABLE gacha_items ADD COLUMN pool_id VARCHAR(50) DEFAULT NULL`,
+    ]) { try { await pool.query(sql); } catch(e) {} }
+
     console.log('資料庫初始化完成');
   } catch (err) {
     console.error('資料庫初始化失敗:', err.message);
@@ -130,6 +154,16 @@ app.use(express.static(path.join(__dirname)));
 function requireLogin(req, res, next) {
   if (req.session.user) return next();
   res.status(401).json({ error: 'unauthorized' });
+}
+
+// 管理員驗證 middleware
+async function requireAdmin(req, res, next) {
+  if (!req.session.user) return res.status(401).json({ error: 'unauthorized' });
+  try {
+    const [rows] = await pool.query('SELECT 1 FROM admin_whitelist WHERE email=?', [req.session.user.email]);
+    if (rows.length === 0) return res.status(403).json({ error: 'forbidden' });
+    next();
+  } catch(e) { res.status(500).json({ error: e.message }); }
 }
 
 // ===== SeaTalk OAuth =====
@@ -431,6 +465,9 @@ app.get('/api/announcements', async (req, res) => {
       uid: r.uid,
       name: r.name,
       photoURL: r.photo_url,
+      title: r.title || '',
+      content: r.content || '',
+      fromName: r.from_name || '',
       timestamp: r.timestamp
     })));
   } catch (err) {
@@ -502,6 +539,206 @@ app.post('/api/feedback', requireLogin, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ===== 管理員 Admin API =====
+app.get('/api/admin/check', async (req, res) => {
+  if (!req.session.user) return res.json({ isAdmin: false });
+  try {
+    const [rows] = await pool.query('SELECT 1 FROM admin_whitelist WHERE email=?', [req.session.user.email]);
+    res.json({ isAdmin: rows.length > 0 });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/whitelist', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT email FROM admin_whitelist');
+    res.json({ emails: rows.map(r => r.email) });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/whitelist', requireAdmin, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  try {
+    await pool.query('INSERT IGNORE INTO admin_whitelist (email) VALUES (?)', [email.toLowerCase().trim()]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/whitelist/:email', requireAdmin, async (req, res) => {
+  const email = decodeURIComponent(req.params.email);
+  if (email === req.session.user.email) return res.status(400).json({ error: 'cannot remove self' });
+  try {
+    await pool.query('DELETE FROM admin_whitelist WHERE email=?', [email]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/feedbacks', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM feedbacks ORDER BY timestamp DESC');
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      uid: r.uid,
+      fromName: r.name,
+      fromEmail: r.email,
+      avatarUrl: r.avatar_url,
+      content: r.content,
+      imgUrl: r.img_url,
+      timestamp: r.timestamp,
+      read: !!r.is_read
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/admin/feedbacks/:id', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('UPDATE feedbacks SET is_read=1 WHERE id=?', [req.params.id]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/feedbacks/:id', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM feedbacks WHERE id=?', [req.params.id]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/announcements', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM announcements ORDER BY timestamp DESC LIMIT 50');
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      type: r.type,
+      uid: r.uid || '',
+      name: r.name || '',
+      title: r.title || '',
+      content: r.content || '',
+      fromName: r.from_name || '',
+      photoURL: r.photo_url || '',
+      timestamp: r.timestamp
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/announcements', requireAdmin, async (req, res) => {
+  const { type, title, content, fromName, timestamp } = req.body;
+  try {
+    await pool.query(
+      'INSERT INTO announcements (type, title, content, from_name, timestamp) VALUES (?, ?, ?, ?, ?)',
+      [type || 'admin', title || '', content || '', fromName || '感恩小島官方', timestamp || Date.now()]
+    );
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/gacha-items', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM gacha_items ORDER BY created_at DESC');
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      name: r.name,
+      emoji: r.emoji,
+      rarity: r.rarity,
+      weight: r.weight,
+      type: r.type,
+      poolId: r.pool_id || (r.type === 'animal' ? 'animal' : 'decor'),
+      imgUrl: r.img_url || '',
+      spriteUrl: r.sprite_url || '',
+      active: !!r.active,
+      createdAt: r.created_at
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/gacha-items', requireAdmin, async (req, res) => {
+  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, active } = req.body;
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO gacha_items (name, emoji, rarity, weight, type, pool_id, img_url, sprite_url, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [name, emoji || '', rarity || 'common', weight || 30, type || 'animal', poolId || null,
+       imgUrl || '', spriteUrl || '', active !== false ? 1 : 0, Date.now()]
+    );
+    res.json({ success: true, id: String(result.insertId) });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/admin/gacha-items/:id', requireAdmin, async (req, res) => {
+  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, active } = req.body;
+  try {
+    await pool.query(
+      'UPDATE gacha_items SET name=?, emoji=?, rarity=?, weight=?, type=?, pool_id=?, img_url=?, sprite_url=?, active=? WHERE id=?',
+      [name, emoji || '', rarity || 'common', weight || 30, type || 'animal', poolId || null,
+       imgUrl || '', spriteUrl || '', active !== false ? 1 : 0, req.params.id]
+    );
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/gacha-items/:id', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM gacha_items WHERE id=?', [req.params.id]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/gacha-pools', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM gacha_pools ORDER BY created_at DESC');
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      name: r.name,
+      icon: r.icon,
+      desc: r.description || '',
+      endDate: r.end_date || '',
+      active: !!r.active,
+      createdAt: r.created_at
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/gacha-pools', requireAdmin, async (req, res) => {
+  const { name, icon, desc, endDate, active } = req.body;
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO gacha_pools (name, icon, description, end_date, active, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, icon || '🎰', desc || '', endDate || '', active !== false ? 1 : 0, Date.now()]
+    );
+    res.json({ success: true, id: String(result.insertId) });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/admin/gacha-pools/:id', requireAdmin, async (req, res) => {
+  const { name, icon, desc, endDate, active } = req.body;
+  try {
+    await pool.query(
+      'UPDATE gacha_pools SET name=?, icon=?, description=?, end_date=?, active=? WHERE id=?',
+      [name, icon || '🎰', desc || '', endDate || '', active !== false ? 1 : 0, req.params.id]
+    );
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/gacha-pools/:id', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM gacha_pools WHERE id=?', [req.params.id]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/users/:uid', requireAdmin, async (req, res) => {
+  const uid = req.params.uid;
+  try {
+    await Promise.all([
+      pool.query('DELETE FROM user_data WHERE uid=?', [uid]),
+      pool.query('DELETE FROM profiles WHERE id=?', [uid]),
+      pool.query('DELETE FROM tiles WHERE uid=?', [uid]),
+      pool.query('DELETE FROM inbox_items WHERE uid=?', [uid]),
+    ]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ===== 頁面路由 =====
