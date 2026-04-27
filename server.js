@@ -132,6 +132,7 @@ async function initDB() {
       `ALTER TABLE announcements ADD COLUMN from_name VARCHAR(255)`,
       `ALTER TABLE gacha_items ADD COLUMN pool_id VARCHAR(50) DEFAULT NULL`,
       `ALTER TABLE gacha_pools ADD COLUMN deleted_at BIGINT NULL DEFAULT NULL`,
+      `ALTER TABLE user_data ADD COLUMN last_daily_login DATE NULL DEFAULT NULL`,
     ]) { try { await pool.query(sql); } catch(e) {} }
 
     console.log('資料庫初始化完成');
@@ -463,6 +464,38 @@ app.patch('/api/inbox/:id', requireLogin, async (req, res) => {
     await pool.query('UPDATE inbox_items SET item_json=? WHERE id=?', [JSON.stringify(updated), req.params.id]);
     res.json({ success: true });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== 每日登入禮物 =====
+app.post('/api/daily-login', requireLogin, async (req, res) => {
+  const uid = req.session.user.employee_code;
+  // 以 UTC+8 (Asia/Singapore) 計算今天日期
+  const now = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const today = now.toISOString().slice(0, 10);
+  try {
+    const [rows] = await pool.query('SELECT last_daily_login FROM user_data WHERE uid=?', [uid]);
+    if (rows.length === 0) return res.json({ given: false });
+    const last = rows[0].last_daily_login;
+    const lastStr = last ? (typeof last === 'string' ? last.slice(0,10) : last.toISOString().slice(0,10)) : null;
+    if (lastStr === today) return res.json({ given: false });
+    const ts = Date.now();
+    const inboxData = {
+      type: 'admin_reward',
+      rewardType: 'energy',
+      amount: 200,
+      note: '',
+      timestamp: ts,
+      read: false,
+      processed: false,
+      title: '🌅 每日登入禮物！領取 ⚡200 能量！',
+      isDailyLogin: true,
+    };
+    await pool.query('INSERT INTO inbox_items (uid, item_json, timestamp) VALUES (?,?,?)', [uid, JSON.stringify(inboxData), ts]);
+    await pool.query('UPDATE user_data SET last_daily_login=? WHERE uid=?', [today, uid]);
+    res.json({ given: true });
+  } catch(err) {
     res.status(500).json({ error: err.message });
   }
 });

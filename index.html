@@ -124,12 +124,10 @@
         .feedback-sidebar-btn {
             width: 100%; display: flex; align-items: center; gap: 10px;
             padding: 10px 14px; border-radius: var(--radius);
-            font-size: 13px; font-weight: 700; color: var(--accent);
-            transition: all 0.18s; margin-top: 4px;
-            border: 1.5px dashed rgba(232,168,124,0.5);
-            background: #FFF8F2;
+            font-size: 13px; font-weight: 700; color: var(--text-sub);
+            transition: all 0.15s; border: none; background: none; text-align: left;
         }
-        .feedback-sidebar-btn:hover { background: #FFF0E0; border-color: var(--accent); transform: translateX(2px); }
+        .feedback-sidebar-btn:hover { background: rgba(123,174,138,0.12); color: var(--primary-h); transform: translateX(2px); }
         .feedback-sidebar-btn i { width: 18px; text-align: center; font-size: 15px; }
 
         /* 反饋彈窗 */
@@ -1797,7 +1795,7 @@
             <button @click="switchTab('inbox')" class="inbox-btn" :class="{ active: currentTab === 'inbox' }">
                 <i class="fa-regular fa-envelope"></i>
                 <span class="nav-label">我的信箱</span>
-                <div v-if="unreadCount > 0" class="badge-dot"></div>
+                <div v-if="totalInboxUnread > 0" class="badge-dot"></div>
             </button>
             <div v-if="unreadCount > 0 && currentTab !== 'inbox'" style="position:relative;margin-top:4px;text-align:center;">
                 <div class="unread-bubble">有人發來感謝！🎉</div>
@@ -1893,7 +1891,7 @@
                         <div v-for="(item, index) in displayIslandItems" :key="item.id || index"
                              class="float-item"
                              :class="{
-                                 'animal-roam': item.type === 'animal' && !isDragging(item.id) && !isEditMode,
+                                 'animal-roam': item.type === 'animal' && !isDragging(item.id) && !isEditMode && !homePan,
                                  'is-dragging': isDragging(item.id),
                                  'edit-highlight': isEditMode && selectedLayerItem?.id === item.id,
                                  'highland-jump-up':   jumpStates[item.id]==='up',
@@ -2433,9 +2431,10 @@
                 <div class="inbox-tabs">
                     <button v-for="t in [{id:'letter',label:'💌 感謝信'},{id:'notice',label:'📢 官方公告'},{id:'reward',label:'🎁 領取道具'}]"
                         :key="t.id" class="inbox-tab" :class="{active: inboxTab===t.id}"
-                        @click="inboxTab=t.id">
+                        @click="switchInboxTab(t.id)">
                         {{ t.label }}
                         <span v-if="t.id==='letter' && unreadLetterCount > 0" class="inbox-tab-badge">{{ unreadLetterCount }}</span>
+                        <span v-if="t.id==='notice' && unreadNoticeCount > 0" class="inbox-tab-badge">{{ unreadNoticeCount }}</span>
                         <span v-if="t.id==='reward' && unclaimedRewards.length > 0" class="inbox-tab-badge">{{ unclaimedRewards.length }}</span>
                     </button>
                 </div>
@@ -4167,6 +4166,36 @@ createApp({
             return (currentUser.value?.rewards || []).filter(r => !r.claimed);
         });
 
+        // 信箱未讀：所有分頁合計（badge dot 用）
+        const lastSeenNoticeTime = ref(0);
+        const unreadNoticeCount = computed(() =>
+            announcements.value.filter(a => a.timestamp > lastSeenNoticeTime.value).length
+        );
+        const totalInboxUnread = computed(() =>
+            myLetters.value.filter(l => !l.read).length +
+            (currentUser.value?.rewards || []).filter(r => !r.claimed).length +
+            unreadNoticeCount.value
+        );
+        const switchInboxTab = (tab) => {
+            inboxTab.value = tab;
+            if (tab === 'notice') lastSeenNoticeTime.value = Date.now();
+        };
+
+        // 每日登入禮物
+        const checkDailyLogin = async () => {
+            try {
+                const r = await fetch('/api/daily-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}'
+                });
+                const d = await r.json();
+                if (d.given && fbUser.value) {
+                    await initData(fbUser.value.uid);
+                }
+            } catch(e) {}
+        };
+
         const claimReward = async (reward) => {
             const user = currentUser.value;
             if (!user) return;
@@ -4184,16 +4213,18 @@ createApp({
             } else if (reward.type === 'shells') {
                 user.shells = (user.shells || 0) + amt;
             } else if ((reward.type === 'pet' || reward.type === 'decor') && reward.itemData) {
-                // 物品：加入倉庫
+                // 物品：加入倉庫（支援 amount > 1）
                 if (!user.warehouse) user.warehouse = [];
-                user.warehouse.push({
-                    id: Date.now(),
-                    name:   reward.itemData.name,
-                    emoji:  reward.itemData.emoji,
-                    imgUrl: reward.itemData.imgUrl || null,
-                    type:   reward.itemData.type || (reward.type === 'pet' ? 'animal' : 'decor'),
-                    rarity: reward.itemData.rarity || 'common',
-                });
+                for (let i = 0; i < amt; i++) {
+                    user.warehouse.push({
+                        id: Date.now() + i,
+                        name:   reward.itemData.name,
+                        emoji:  reward.itemData.emoji,
+                        imgUrl: reward.itemData.imgUrl || null,
+                        type:   reward.itemData.type || (reward.type === 'pet' ? 'animal' : 'decor'),
+                        rarity: reward.itemData.rarity || 'common',
+                    });
+                }
             }
             await saveData();
         };
@@ -4297,6 +4328,14 @@ createApp({
                     '這裡展示獲得最多感謝的島民排行榜！',
                     '未來將開放「前往參觀」功能，讓你探索別人的島嶼 ⛵',
                     '被更多人感謝，你的島嶼也會變得更有名氣！',
+                ]
+            },
+            {
+                icon: '🌅', title: '每日登入禮物',
+                lines: [
+                    '每天第一次登入感恩小島，就會自動獲得 ⚡200 能量！',
+                    '禮物會出現在信箱的「🎁 領取道具」分頁，點擊「領取！」就能入帳。',
+                    '每日禮物不會累積到隔天，記得每天來領哦 🎁',
                 ]
             },
         ];
@@ -4700,6 +4739,7 @@ createApp({
                             Promise.race([promise, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
 
                         await withTimeout(initData(user.uid)).catch(e=>console.warn('initData:', e));
+                        checkDailyLogin();
                         await withTimeout(loadAnnouncements()).catch(e=>console.warn('announcements:', e));
                         await withTimeout(loadGlobalLetters()).catch(e=>console.warn('globalLetters:', e));
                         await withTimeout(loadGachaItems()).catch(e=>console.warn('gachaItems:', e));
@@ -4735,7 +4775,7 @@ createApp({
             seaTab, seaSearch, seaFilteredUsers, seaUserStats,
             allProfiles, getProfileAvatar,
             announcements, globalLetters,
-            animalStates, jumpStates, spriteFrames, myLetters, unreadCount,
+            animalStates, jumpStates, spriteFrames, myLetters, unreadCount, totalInboxUnread, homePan,
             getUserById, getDisplayName, getDisplayInitial, getUserAvatar, getLetterName, formatDate,
             switchUser, visitUser, stopVisiting, switchTab,
             sendLetter, adjustCardCost, markAsRead, toggleLike, isLiked,
@@ -4759,7 +4799,7 @@ createApp({
             isEditMode, toggleEditMode, warehouseCollapsed, warehouseItems, groupedWarehouse,
             helpTab, openHelpSecs, helpTitles, helpSections, helpContents, openHelp, toggleHelpSec,
             firstLoginHelp,
-            inboxTab, unreadLetterCount, unclaimedRewards, claimReward,
+            inboxTab, unreadLetterCount, unclaimedRewards, claimReward, switchInboxTab, unreadNoticeCount,
             warehouseFilter, filteredWarehouse,
             placeOnIsland, removeFromIsland,
             getFlip, toggleFlip, getHighlandLift, getTerrainAt,
