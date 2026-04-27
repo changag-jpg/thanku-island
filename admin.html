@@ -357,11 +357,31 @@ input[type=range]{flex:1;accent-color:var(--pri)}
               <div class="pool-card-name">🐾 島民基礎卡池</div>
               <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId==='animal'||(!i.poolId&&i.type==='animal')).length }} 個物品</div>
               <span class="pool-card-badge" style="background:var(--prilt);color:var(--prih)">常駐</span>
+              <!-- 封面圖 -->
+              <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+                <div class="img-upload-area" style="width:40px;height:40px;border-radius:50%;overflow:hidden;padding:0;flex-shrink:0;position:relative" @click.stop="$refs.animalCoverInput.click()">
+                  <input ref="animalCoverInput" type="file" accept="image/*" style="display:none" @change="onPoolCoverChange('animal',$event)">
+                  <img v-if="poolSettings.animal_pool_cover" :src="poolSettings.animal_pool_cover" style="width:100%;height:100%;object-fit:cover">
+                  <div v-else style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px">🖼️</div>
+                  <div v-if="poolCoverUploading==='animal'" style="position:absolute;inset:0;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--pri)">...</div>
+                </div>
+                <span style="font-size:10px;color:var(--sub);font-weight:600">{{ poolSettings.animal_pool_cover?'更換封面':'設定封面' }}</span>
+              </div>
             </div>
             <div class="pool-card" :class="{on:currentPool==='decor'}" @click="currentPool='decor';gachaSearch=''">
               <div class="pool-card-name">🏕️ 裝飾基礎卡池</div>
               <div class="pool-card-meta">{{ gachaItems.filter(i=>i.poolId==='decor'||(!i.poolId&&i.type==='decor')).length }} 個物品</div>
               <span class="pool-card-badge" style="background:var(--prilt);color:var(--prih)">常駐</span>
+              <!-- 封面圖 -->
+              <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+                <div class="img-upload-area" style="width:40px;height:40px;border-radius:50%;overflow:hidden;padding:0;flex-shrink:0;position:relative" @click.stop="$refs.decorCoverInput.click()">
+                  <input ref="decorCoverInput" type="file" accept="image/*" style="display:none" @change="onPoolCoverChange('decor',$event)">
+                  <img v-if="poolSettings.decor_pool_cover" :src="poolSettings.decor_pool_cover" style="width:100%;height:100%;object-fit:cover">
+                  <div v-else style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px">🖼️</div>
+                  <div v-if="poolCoverUploading==='decor'" style="position:absolute;inset:0;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--pri)">...</div>
+                </div>
+                <span style="font-size:10px;color:var(--sub);font-weight:600">{{ poolSettings.decor_pool_cover?'更換封面':'設定封面' }}</span>
+              </div>
             </div>
 
             <div v-if="specialPools.length" style="font-size:12px;font-weight:800;color:var(--sub);margin:8px 0 4px;letter-spacing:.05em">特別卡池</div>
@@ -682,9 +702,27 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           {{ poolForm.active ? '✅ 開放中' : '⏸ 暫停' }}
         </button>
       </div>
+      <div class="fr">
+        <label class="fl">商鋪封面圖 <span style="color:var(--sub);font-weight:400">（選填，顯示於主頁商鋪右側）</span></label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="img-upload-area" style="width:80px;height:80px;border-radius:50%;overflow:hidden;padding:0;flex-shrink:0" @click="$refs.poolCoverInput.click()">
+            <input ref="poolCoverInput" type="file" accept="image/*" style="display:none" @change="onPoolCoverChange('special',$event)">
+            <img v-if="poolForm.coverImg" :src="poolForm.coverImg" style="width:100%;height:100%;object-fit:cover">
+            <div v-else style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
+              <span style="font-size:22px">🖼️</span>
+              <span style="font-size:9px;color:var(--sub);font-weight:700">上傳</span>
+            </div>
+            <div v-if="poolCoverUploading==='special'" style="position:absolute;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px;font-weight:700;color:var(--pri)">上傳中</div>
+          </div>
+          <div v-if="poolForm.coverImg" style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:11px;color:var(--sub)">已設定封面圖</span>
+            <button @click="poolForm.coverImg=''" style="font-size:11px;color:var(--red);padding:0;cursor:pointer;background:none;border:none">✕ 移除</button>
+          </div>
+        </div>
+      </div>
       <div style="display:flex;gap:10px;margin-top:8px">
         <button class="btn bg" @click="showPoolForm=false" style="flex:1">取消</button>
-        <button class="btn bpu" @click="savePool" :disabled="!poolForm.name.trim()||!poolForm.icon.trim()" style="flex:2">
+        <button class="btn bpu" @click="savePool" :disabled="!poolForm.name.trim()||!poolForm.icon.trim()||poolCoverUploading==='special'" style="flex:2">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           {{ editingPool ? '儲存變更' : '建立卡池' }}
         </button>
@@ -857,7 +895,9 @@ createApp({setup(){
   });
   const showPoolForm = ref(false);
   const editingPool  = ref(null);
-  const poolForm = Vue.reactive({name:'',icon:'🎰',desc:'',endDate:'',active:true});
+  const poolForm = Vue.reactive({name:'',icon:'🎰',desc:'',endDate:'',active:true,coverImg:''});
+  const poolCoverUploading = ref(''); // 'special'|'animal'|'decor'|''
+  const poolSettings = Vue.reactive({animal_pool_cover:'',decor_pool_cover:''});
   const rarityOpts = [
     {id:'common',label:'普通',color:'#555'},
     {id:'rare',label:'稀有 💎',color:'#5B6AB5'},
@@ -921,6 +961,7 @@ createApp({setup(){
       const trash = await api('/api/admin/gacha-pools/trash');
       deletedPools.value = Array.isArray(trash) ? trash : [];
     } catch(e) { deletedPools.value = []; }
+    loadPoolSettings();
     gachaLoading.value = false;
   };
 
@@ -1016,14 +1057,47 @@ createApp({setup(){
     }
   };
 
+  const loadPoolSettings = async () => {
+    try {
+      const d = await api('/api/pool-settings');
+      if(d.animal_pool_cover) poolSettings.animal_pool_cover = d.animal_pool_cover;
+      if(d.decor_pool_cover)  poolSettings.decor_pool_cover  = d.decor_pool_cover;
+    } catch(e){}
+  };
+
+  const onPoolCoverChange = async (type, e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    e.target.value = '';
+    poolCoverUploading.value = type;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST',body:fd});
+      const data = await res.json();
+      if(data.secure_url) {
+        if(type==='special') {
+          poolForm.coverImg = data.secure_url;
+        } else {
+          const key = type==='animal' ? 'animal_pool_cover' : 'decor_pool_cover';
+          await api('/api/admin/pool-settings', {method:'POST', body:{key, value:data.secure_url}});
+          poolSettings[key] = data.secure_url;
+          toast('✅ 封面圖已更新！');
+        }
+      } else { toast('上傳失敗','err'); }
+    } catch(e){ toast('圖片上傳失敗','err'); }
+    poolCoverUploading.value = '';
+  };
+
   const openEditPool = (pool) => {
     editingPool.value = pool;
-    Object.assign(poolForm,{name:pool.name,icon:pool.icon||'🎰',desc:pool.desc||'',endDate:pool.endDate||'',active:pool.active!==false});
+    Object.assign(poolForm,{name:pool.name,icon:pool.icon||'🎰',desc:pool.desc||'',endDate:pool.endDate||'',active:pool.active!==false,coverImg:pool.coverImg||''});
     showPoolForm.value = true;
   };
   const savePool = async () => {
     if(!poolForm.name.trim()||!poolForm.icon.trim()) return;
-    const data = {name:poolForm.name.trim(),icon:poolForm.icon.trim(),desc:poolForm.desc||'',endDate:poolForm.endDate||'',active:poolForm.active};
+    const data = {name:poolForm.name.trim(),icon:poolForm.icon.trim(),desc:poolForm.desc||'',endDate:poolForm.endDate||'',active:poolForm.active,coverImg:poolForm.coverImg||''};
     try {
       if(editingPool.value) {
         await api(`/api/admin/gacha-pools/${editingPool.value.id}`, {method:'PATCH', body:data});
@@ -1221,6 +1295,7 @@ createApp({setup(){
     openRC,doReward,openAC,doAnn,markRead,delFb,
     openNewItem,openEditItem,saveItem,toggleActive,deleteItem,onItemImgChange,copyUrl,
     openEditPool,savePool,deletePool,confirmDeletePool,showPoolDeleteModal,poolDeleteTarget,
+    poolCoverUploading,poolSettings,onPoolCoverChange,
     deletedPools,showTrashModal,openTrash,restorePool,daysLeft,
     openDeleteUser,confirmDeleteUser,
   };

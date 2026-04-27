@@ -123,6 +123,11 @@ async function initDB() {
       email VARCHAR(255) PRIMARY KEY
     ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS site_settings (
+      \`key\` VARCHAR(100) PRIMARY KEY,
+      \`value\` TEXT
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+
     await pool.query(`INSERT IGNORE INTO admin_whitelist (email) VALUES ('changag@garena.com')`);
 
     // 補欄位（若已存在會安靜失敗）
@@ -133,6 +138,7 @@ async function initDB() {
       `ALTER TABLE gacha_items ADD COLUMN pool_id VARCHAR(50) DEFAULT NULL`,
       `ALTER TABLE gacha_pools ADD COLUMN deleted_at BIGINT NULL DEFAULT NULL`,
       `ALTER TABLE user_data ADD COLUMN last_daily_login DATE NULL DEFAULT NULL`,
+      `ALTER TABLE gacha_pools ADD COLUMN cover_img TEXT NULL DEFAULT NULL`,
     ]) { try { await pool.query(sql); } catch(e) {} }
 
     console.log('資料庫初始化完成');
@@ -597,7 +603,18 @@ app.get('/api/gacha-pools', async (req, res) => {
       icon: r.icon || '🎰',
       desc: r.description || '',
       endDate: r.end_date || '',
+      coverImg: r.cover_img || '',
     })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// 公開：取得卡池封面設定（基礎卡池）
+app.get('/api/pool-settings', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT `key`, `value` FROM site_settings WHERE `key` IN (?,?)', ['animal_pool_cover','decor_pool_cover']);
+    const result = {};
+    rows.forEach(r => { result[r.key] = r.value; });
+    res.json(result);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -754,29 +771,41 @@ app.get('/api/admin/gacha-pools', requireAdmin, async (req, res) => {
       desc: r.description || '',
       endDate: r.end_date || '',
       active: !!r.active,
-      createdAt: r.created_at
+      createdAt: r.created_at,
+      coverImg: r.cover_img || '',
     })));
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/admin/gacha-pools', requireAdmin, async (req, res) => {
-  const { name, icon, desc, endDate, active } = req.body;
+  const { name, icon, desc, endDate, active, coverImg } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO gacha_pools (name, icon, description, end_date, active, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, icon || '🎰', desc || '', endDate || '', active !== false ? 1 : 0, Date.now()]
+      'INSERT INTO gacha_pools (name, icon, description, end_date, active, created_at, cover_img) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, icon || '🎰', desc || '', endDate || '', active !== false ? 1 : 0, Date.now(), coverImg || null]
     );
     res.json({ success: true, id: String(result.insertId) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.patch('/api/admin/gacha-pools/:id', requireAdmin, async (req, res) => {
-  const { name, icon, desc, endDate, active } = req.body;
+  const { name, icon, desc, endDate, active, coverImg } = req.body;
   try {
     await pool.query(
-      'UPDATE gacha_pools SET name=?, icon=?, description=?, end_date=?, active=? WHERE id=?',
-      [name, icon || '🎰', desc || '', endDate || '', active !== false ? 1 : 0, req.params.id]
+      'UPDATE gacha_pools SET name=?, icon=?, description=?, end_date=?, active=?, cover_img=? WHERE id=?',
+      [name, icon || '🎰', desc || '', endDate || '', active !== false ? 1 : 0, coverImg || null, req.params.id]
     );
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// 管理員：設定基礎卡池封面
+app.post('/api/admin/pool-settings', requireAdmin, async (req, res) => {
+  const { key, value } = req.body;
+  const allowed = ['animal_pool_cover', 'decor_pool_cover'];
+  if (!allowed.includes(key)) return res.status(400).json({ error: 'invalid key' });
+  try {
+    await pool.query('INSERT INTO site_settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value`=?', [key, value, value]);
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

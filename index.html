@@ -426,6 +426,14 @@
         }
         .gacha-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
         .gacha-bg { position: absolute; right: -8px; bottom: -8px; font-size: 88px; opacity: 0.07; pointer-events: none; }
+        .gacha-cover {
+            position: absolute; right: -12px; bottom: -12px;
+            width: 130px; height: 130px; border-radius: 50%;
+            overflow: hidden; pointer-events: none;
+            box-shadow: 0 4px 20px rgba(100,80,60,0.15);
+            opacity: 0.88;
+        }
+        .gacha-cover img { width: 100%; height: 100%; object-fit: cover; }
         .gacha-title { font-size: 17px; font-weight: 900; color: var(--text); margin-bottom: 6px; letter-spacing: -0.01em; }
         .gacha-desc { font-size: 13px; font-weight: 500; color: var(--text-sub); margin-bottom: 20px; line-height: 1.7; }
         .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -2128,7 +2136,10 @@
                             ✨ 十連邀請 <span class="cost-badge">-900 ⚡</span>
                         </button>
                     </div>
-                    <div class="gacha-bg">🦊</div>
+                    <div v-if="poolSettings.animal_pool_cover" class="gacha-cover">
+                        <img :src="poolSettings.animal_pool_cover">
+                    </div>
+                    <div v-else class="gacha-bg">🦊</div>
                 </div>
 
                 <!-- 裝飾品抽卡 -->
@@ -2151,7 +2162,10 @@
                             ✨ 十連探索 <span class="cost-badge">-900 ⚡</span>
                         </button>
                     </div>
-                    <div class="gacha-bg">🌳</div>
+                    <div v-if="poolSettings.decor_pool_cover" class="gacha-cover">
+                        <img :src="poolSettings.decor_pool_cover">
+                    </div>
+                    <div v-else class="gacha-bg">🌳</div>
                 </div>
 
                 <!-- 特別卡池（後台動態新增）-->
@@ -2174,7 +2188,10 @@
                             ✨ 十連抽 <span class="cost-badge">-900 ⚡</span>
                         </button>
                     </div>
-                    <div class="gacha-bg">{{ spool.icon }}</div>
+                    <div v-if="spool.coverImg" class="gacha-cover">
+                        <img :src="spool.coverImg">
+                    </div>
+                    <div v-else class="gacha-bg">{{ spool.icon }}</div>
                 </div>
 
                 <!-- 卡池預覽彈窗 -->
@@ -2957,6 +2974,17 @@ createApp({
                 shopItems.value  = DEFAULT_DECORS;
                 allGachaItems.value = [...DEFAULT_PETS, ...DEFAULT_DECORS];
             }
+        };
+
+        // 基礎卡池封面圖設定
+        const poolSettings = Vue.reactive({ animal_pool_cover: '', decor_pool_cover: '' });
+        const loadPoolSettings = async () => {
+            try {
+                const res = await fetch('/api/pool-settings');
+                const d = await res.json();
+                if (d.animal_pool_cover) poolSettings.animal_pool_cover = d.animal_pool_cover;
+                if (d.decor_pool_cover)  poolSettings.decor_pool_cover  = d.decor_pool_cover;
+            } catch(e) {}
         };
 
         // ── 同步物品圖片 ──
@@ -4743,6 +4771,7 @@ createApp({
                         await withTimeout(loadAnnouncements()).catch(e=>console.warn('announcements:', e));
                         await withTimeout(loadGlobalLetters()).catch(e=>console.warn('globalLetters:', e));
                         await withTimeout(loadGachaItems()).catch(e=>console.warn('gachaItems:', e));
+                        loadPoolSettings();
                         syncItemImages();
                         initAnimalStates();
                         if (!roamInterval) roamInterval = setInterval(moveAnimals, 4500);
@@ -4795,7 +4824,7 @@ createApp({
             tiles_used,
             poolPreview, poolRarityFilter, openPool, closePool,
             filteredPoolItems, calcRate, poolPreviewTitle,
-            specialPools, allGachaItems,
+            specialPools, allGachaItems, poolSettings,
             isEditMode, toggleEditMode, warehouseCollapsed, warehouseItems, groupedWarehouse,
             helpTab, openHelpSecs, helpTitles, helpSections, helpContents, openHelp, toggleHelpSec,
             firstLoginHelp,
