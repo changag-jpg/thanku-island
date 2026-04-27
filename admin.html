@@ -287,39 +287,44 @@ input[type=range]{flex:1;accent-color:var(--pri)}
             </div>
           </div>
 
-          <!-- 島民 / 裝飾品選取 -->
+          <!-- 島民 / 裝飾品選取（最多5個不同道具） -->
           <div v-if="rType==='pet'||rType==='decor'" style="margin-bottom:16px">
             <div class="fr" style="margin-bottom:8px;gap:8px;flex-wrap:wrap">
-              <label class="fl">選擇{{ rType==='pet'?'島民':'裝飾品' }}</label>
+              <label class="fl">選擇{{ rType==='pet'?'島民':'裝飾品' }}
+                <span style="font-size:11px;font-weight:400;color:var(--sub)">（最多 5 個不同道具）</span>
+              </label>
               <select v-model="itemPoolFilter" class="fi" style="max-width:180px;margin-bottom:0">
                 <option value="">全部卡池</option>
                 <option :value="rType==='pet'?'animal':'decor'">{{ rType==='pet'?'🐾 基礎島民池':'🏕️ 基礎裝飾池' }}</option>
                 <option v-for="p in specialPools" :key="p.id" :value="String(p.id)">{{ p.icon }} {{ p.name }}</option>
               </select>
             </div>
-            <div v-if="selectedItem" class="item-selected-preview">
-              <div class="isp-emoji">{{ selectedItem.emoji }}</div>
-              <div>
-                <div class="isp-name">{{ selectedItem.name }}</div>
-                <div class="isp-rarity">{{ {common:'普通',rare:'💎 稀有',legend:'⭐ 傳說'}[selectedItem.rarity] }}</div>
+            <!-- 已選道具清單 -->
+            <div v-if="selectedItems.length > 0" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+              <div v-for="it in selectedItems" :key="it.id" class="item-selected-preview" style="min-width:0;flex:0 0 auto">
+                <div class="isp-emoji">{{ it.emoji }}</div>
+                <div style="min-width:0">
+                  <div class="isp-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px">{{ it.name }}</div>
+                  <div class="isp-rarity">{{ {common:'普通',rare:'💎稀有',legend:'⭐傳說'}[it.rarity] }}</div>
+                </div>
+                <button @click="toggleSelectedItem(it)" style="margin-left:auto;color:var(--sub);font-size:14px;padding:2px 4px">✕</button>
               </div>
-              <button @click="selectedItem=null" style="margin-left:auto;color:var(--sub);font-size:16px;padding:4px">✕</button>
             </div>
+            <div v-if="selectedItems.length >= 5" style="font-size:12px;color:var(--red);margin-bottom:8px;font-weight:700">✅ 已選滿 5 個道具</div>
             <input v-model="itemSearch" class="fi" :placeholder="'🔍 搜尋'+(rType==='pet'?'島民':'裝飾品')+'名稱...'" style="margin-bottom:8px">
             <div class="item-grid">
               <div v-for="item in filtItems" :key="item.id"
-                class="item-card" :class="{on:selectedItem?.id===item.id}"
-                @click="selectedItem=item">
+                class="item-card"
+                :class="{on:isItemSelected(item.id), disabled:!isItemSelected(item.id)&&selectedItems.length>=5}"
+                :style="!isItemSelected(item.id)&&selectedItems.length>=5?{opacity:'0.4',cursor:'not-allowed'}:{}"
+                @click="toggleSelectedItem(item)">
                 <div class="item-card-emoji">{{ item.emoji }}</div>
                 <div class="item-card-name">{{ item.name }}</div>
                 <div :class="'item-card-rarity r-'+item.rarity">
                   {{ {common:'普通',rare:'稀有',legend:'傳說'}[item.rarity] }}
                 </div>
+                <div v-if="isItemSelected(item.id)" style="font-size:16px;margin-top:2px">✅</div>
               </div>
-            </div>
-            <div class="fr" style="margin-top:12px">
-              <label class="fl">數量（最多 5 個）</label>
-              <input v-model.number="itemQty" type="number" min="1" max="5" class="fi" style="max-width:100px">
             </div>
           </div>
 
@@ -329,7 +334,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           </div>
           <div class="fr"><label class="fl">備註 <span style="color:var(--sub);font-weight:400">（收件者看得到，選填）</span></label><input v-model="rNote" class="fi" placeholder="例如：感謝你參與本月活動！🎉"></div>
           <button class="btn bp" @click="openRC"
-            :disabled="(rTarget==='select'&&selUsers.length===0)||(rType!=='pet'&&rType!=='decor'&&rAmt<1)||((rType==='pet'||rType==='decor')&&!selectedItem)">
+            :disabled="(rTarget==='select'&&selUsers.length===0)||(rType!=='pet'&&rType!=='decor'&&rAmt<1)||((rType==='pet'||rType==='decor')&&selectedItems.length===0)">
             <i class="fa-solid fa-paper-plane"></i>
             {{ rTarget==='all'?'發放給全站':'發放給 '+selUsers.length+' 位使用者' }}
           </button>
@@ -753,7 +758,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
     <div class="mb">
       <div class="mtt">🎁 確認發放？</div>
       <div class="mbd">對象：{{ rTarget==='all'?'全站 '+profiles.length+' 位使用者':selUsers.map(gname).join('、') }}
-道具：{{ rtypes.find(r=>r.id===rType)?.icon }} {{ rtypes.find(r=>r.id===rType)?.label }}{{ selectedItem?' — '+selectedItem.emoji+' '+selectedItem.name:' ×'+rAmt }}{{ rNote?'\n備註：'+rNote:'' }}</div>
+道具：<span v-if="rType==='pet'||rType==='decor'">{{ selectedItems.map(i=>i.emoji+' '+i.name).join('、') }}</span><span v-else>{{ rtypes.find(r=>r.id===rType)?.icon }} {{ rtypes.find(r=>r.id===rType)?.label }} ×{{ rAmt }}</span>{{ rNote?'\n備註：'+rNote:'' }}</div>
       <div class="mbt">
         <button class="btn bg" @click="rShow=false">取消</button>
         <button class="btn bp" @click="doReward" :disabled="sending">{{ sending?'發送中...':'確認發放' }}</button>
@@ -785,7 +790,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
 
 </div>
 <script>
-const {createApp,ref,computed}=Vue;
+const {createApp,ref,computed,watch}=Vue;
 createApp({setup(){
   const currentUser=ref(null),isAdmin=ref(false),loading=ref(true),sending=ref(false);
   const tab=ref('overview');
@@ -810,7 +815,7 @@ createApp({setup(){
     {id:'decor',icon:'🏕️',label:'指定裝飾',hint:'選擇要發放的裝飾品'},
   ];
 
-  const itemSearch=ref(''),selectedItem=ref(null),itemQty=ref(1),itemPoolFilter=ref('');
+  const itemSearch=ref(''),selectedItem=ref(null),selectedItems=ref([]),itemPoolFilter=ref('');
   const itemPool=computed(()=>{
     if(rType.value==='pet')   return gachaItems.value.filter(i=>i.type==='animal');
     if(rType.value==='decor') return gachaItems.value.filter(i=>i.type==='decor');
@@ -826,6 +831,15 @@ createApp({setup(){
     if(!q)return items;
     return items.filter(i=>i.name.toLowerCase().includes(q));
   });
+  const isItemSelected=(id)=>selectedItems.value.some(i=>i.id===id);
+  const toggleSelectedItem=(item)=>{
+    const idx=selectedItems.value.findIndex(i=>i.id===item.id);
+    if(idx>=0){ selectedItems.value.splice(idx,1); }
+    else if(selectedItems.value.length<5){ selectedItems.value.push(JSON.parse(JSON.stringify(item))); }
+  };
+  // 切換道具類型時清空已選
+  watch(rType,()=>{ selectedItems.value=[]; selectedItem.value=null; itemSearch.value=''; itemPoolFilter.value=''; });
+
   const aTitle=ref(''),aContent=ref(''),aShow=ref(false),newWL=ref(''),fbF=ref('all');
 
   const gachaItems   = ref([]);
@@ -1107,26 +1121,28 @@ createApp({setup(){
       const ts=Date.now();
       const amt=rAmt.value;
       const isItem=(rType.value==='pet'||rType.value==='decor');
-      const item=selectedItem.value;
-      const qty=isItem?Math.min(5,Math.max(1,itemQty.value||1)):1;
+      const items=selectedItems.value;
       for(const uid of targets){
         try{
-          let inboxData;
-          if(isItem && item){
-            const qtyLabel=qty>1?' ×'+qty:'';
-            inboxData={type:'admin_reward',rewardType:rType.value,amount:qty,itemData:JSON.parse(JSON.stringify(item)),note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+item.emoji+' '+item.name+qtyLabel+'！'};
+          if(isItem){
+            // 每個選中的道具各建一筆 inbox
+            for(let si=0;si<items.length;si++){
+              const it=items[si];
+              const inboxData={type:'admin_reward',rewardType:rType.value,amount:1,itemData:JSON.parse(JSON.stringify(it)),note:rNote.value||'',timestamp:ts+si,read:false,processed:false,title:'🎁 管理員送你 '+it.emoji+' '+it.name+'！'};
+              await api('/api/inbox', {method:'POST', body:{toUid:uid,...inboxData}});
+            }
           } else {
-            inboxData={type:'admin_reward',rewardType:rType.value,amount:amt,note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+rt.icon+rt.label+' ×'+amt+'！'};
+            const inboxData={type:'admin_reward',rewardType:rType.value,amount:amt,note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+rt.icon+rt.label+' ×'+amt+'！'};
+            await api('/api/inbox', {method:'POST', body:{toUid:uid,...inboxData}});
           }
-          await api('/api/inbox', {method:'POST', body:{toUid:uid,...inboxData}});
         }catch(ue){console.warn(uid,ue);}
       }
       if(rTarget.value==='all'){
-        const dispName=isItem&&item?item.emoji+' '+item.name+(qty>1?' ×'+qty:''):rt.icon+rt.label+(isItem?'':' ×'+amt);
+        const dispName=isItem?items.map(i=>i.emoji+' '+i.name).join('、'):rt.icon+rt.label+' ×'+amt;
         await api('/api/admin/announcements', {method:'POST', body:{type:'admin_reward',title:'🎁 全站發放！所有人都有 '+dispName,content:'快去信箱的「領取道具」分頁領取你的獎勵！'+(rNote.value?'\n\n'+rNote.value:''),timestamp:ts}});
       }
       toast('✅ 已通知 '+targets.length+' 位使用者，他們登入後可在信箱領取！');
-      rShow.value=false;rNote.value='';selUsers.value=[];selectedItem.value=null;itemQty.value=1;itemPoolFilter.value='';
+      rShow.value=false;rNote.value='';selUsers.value=[];selectedItems.value=[];selectedItem.value=null;itemPoolFilter.value='';
       await loadData();
     }catch(e){toast('發放失敗','err');console.error(e);}
     sending.value=false;
@@ -1195,7 +1211,7 @@ createApp({setup(){
     currentUser,isAdmin,loading,sending,tab,tabs,
     profiles,feedbacks,anns,adminAnns,wl,stats,toasts,prevImg,
     rTarget,selUsers,uQ,rType,rAmt,rNote,rShow,rtypes,
-    selectedItem,itemSearch,filtItems,itemQty,itemPoolFilter,
+    selectedItem,selectedItems,itemSearch,filtItems,itemPoolFilter,isItemSelected,toggleSelectedItem,
     aTitle,aContent,aShow,newWL,fbF,filtP,filtFb,unreadFb,
     gachaItems,specialPools,currentPool,gachaSearch,gachaLoading,
     showItemForm,editingItem,imgUploading,copiedMsg,itemForm,
