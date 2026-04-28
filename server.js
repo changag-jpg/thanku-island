@@ -42,6 +42,7 @@ async function initDB() {
       avatar_pos_x INT DEFAULT 50,
       avatar_pos_y INT DEFAULT 50,
       energy INT DEFAULT 0,
+      shells INT DEFAULT 0,
       tile_count INT DEFAULT 6,
       island_json LONGTEXT,
       updated_at BIGINT DEFAULT 0
@@ -128,6 +129,17 @@ async function initDB() {
       \`value\` TEXT
     ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS legend_exchanges (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uid VARCHAR(255),
+      name VARCHAR(255),
+      email VARCHAR(255),
+      amount INT DEFAULT 0,
+      note TEXT,
+      timestamp BIGINT,
+      INDEX idx_uid (uid)
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+
     await pool.query(`INSERT IGNORE INTO admin_whitelist (email) VALUES ('changag@garena.com')`);
 
     // 補欄位（若已存在會安靜失敗）
@@ -139,6 +151,9 @@ async function initDB() {
       `ALTER TABLE gacha_pools ADD COLUMN deleted_at BIGINT NULL DEFAULT NULL`,
       `ALTER TABLE user_data ADD COLUMN last_daily_login DATE NULL DEFAULT NULL`,
       `ALTER TABLE gacha_pools ADD COLUMN cover_img TEXT NULL DEFAULT NULL`,
+      `ALTER TABLE profiles ADD COLUMN shells INT DEFAULT 0`,
+      `ALTER TABLE gacha_items ADD COLUMN idle_sprite_url TEXT`,
+      `ALTER TABLE gacha_items ADD COLUMN idle_sprite_frames INT DEFAULT 4`,
     ]) { try { await pool.query(sql); } catch(e) {} }
 
     console.log('資料庫初始化完成');
@@ -302,6 +317,7 @@ app.get('/api/profiles', async (req, res) => {
       avatarPosX: r.avatar_pos_x,
       avatarPosY: r.avatar_pos_y,
       energy: r.energy,
+      shells: r.shells || 0,
       tileCount: r.tile_count,
       island: JSON.parse(r.island_json || '[]'),
       updatedAt: r.updated_at
@@ -336,16 +352,16 @@ app.get('/api/profiles/:id', async (req, res) => {
 
 app.post('/api/profiles', requireLogin, async (req, res) => {
   const uid = req.session.user.employee_code;
-  const { name, email, avatarUrl, avatarPosX, avatarPosY, energy, tileCount, island } = req.body;
+  const { name, email, avatarUrl, avatarPosX, avatarPosY, energy, shells, tileCount, island } = req.body;
   try {
     await pool.query(
-      `INSERT INTO profiles (id, name, email, avatar_url, avatar_pos_x, avatar_pos_y, energy, tile_count, island_json, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO profiles (id, name, email, avatar_url, avatar_pos_x, avatar_pos_y, energy, shells, tile_count, island_json, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), avatar_url=VALUES(avatar_url),
        avatar_pos_x=VALUES(avatar_pos_x), avatar_pos_y=VALUES(avatar_pos_y),
-       energy=VALUES(energy), tile_count=VALUES(tile_count), island_json=VALUES(island_json), updated_at=VALUES(updated_at)`,
+       energy=VALUES(energy), shells=VALUES(shells), tile_count=VALUES(tile_count), island_json=VALUES(island_json), updated_at=VALUES(updated_at)`,
       [uid, name || '', email || '', avatarUrl || '', avatarPosX ?? 50, avatarPosY ?? 50,
-       energy || 0, tileCount || 6, JSON.stringify(island || []), Date.now()]
+       energy || 0, shells || 0, tileCount || 6, JSON.stringify(island || []), Date.now()]
     );
     res.json({ success: true });
   } catch (err) {
@@ -553,6 +569,8 @@ app.get('/api/gacha-items', async (req, res) => {
       poolId: r.pool_id || null,
       imgUrl: r.img_url,
       spriteUrl: r.sprite_url,
+      idleSpriteUrl: r.idle_sprite_url || '',
+      idleSpriteFrames: r.idle_sprite_frames || 4,
       active: !!r.active,
       createdAt: r.created_at
     })));
@@ -724,6 +742,8 @@ app.get('/api/admin/gacha-items', requireAdmin, async (req, res) => {
       poolId: r.pool_id || (r.type === 'animal' ? 'animal' : 'decor'),
       imgUrl: r.img_url || '',
       spriteUrl: r.sprite_url || '',
+      idleSpriteUrl: r.idle_sprite_url || '',
+      idleSpriteFrames: r.idle_sprite_frames || 4,
       active: !!r.active,
       createdAt: r.created_at
     })));
@@ -731,24 +751,24 @@ app.get('/api/admin/gacha-items', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/gacha-items', requireAdmin, async (req, res) => {
-  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, active } = req.body;
+  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, idleSpriteUrl, idleSpriteFrames, active } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO gacha_items (name, emoji, rarity, weight, type, pool_id, img_url, sprite_url, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO gacha_items (name, emoji, rarity, weight, type, pool_id, img_url, sprite_url, idle_sprite_url, idle_sprite_frames, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [name, emoji || '', rarity || 'common', weight || 30, type || 'animal', poolId || null,
-       imgUrl || '', spriteUrl || '', active !== false ? 1 : 0, Date.now()]
+       imgUrl || '', spriteUrl || '', idleSpriteUrl || '', idleSpriteFrames || 4, active !== false ? 1 : 0, Date.now()]
     );
     res.json({ success: true, id: String(result.insertId) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.patch('/api/admin/gacha-items/:id', requireAdmin, async (req, res) => {
-  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, active } = req.body;
+  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, idleSpriteUrl, idleSpriteFrames, active } = req.body;
   try {
     await pool.query(
-      'UPDATE gacha_items SET name=?, emoji=?, rarity=?, weight=?, type=?, pool_id=?, img_url=?, sprite_url=?, active=? WHERE id=?',
+      'UPDATE gacha_items SET name=?, emoji=?, rarity=?, weight=?, type=?, pool_id=?, img_url=?, sprite_url=?, idle_sprite_url=?, idle_sprite_frames=?, active=? WHERE id=?',
       [name, emoji || '', rarity || 'common', weight || 30, type || 'animal', poolId || null,
-       imgUrl || '', spriteUrl || '', active !== false ? 1 : 0, req.params.id]
+       imgUrl || '', spriteUrl || '', idleSpriteUrl || '', idleSpriteFrames || 4, active !== false ? 1 : 0, req.params.id]
     );
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -852,6 +872,50 @@ app.delete('/api/admin/users/:uid', requireAdmin, async (req, res) => {
       pool.query('DELETE FROM tiles WHERE uid=?', [uid]),
       pool.query('DELETE FROM inbox_items WHERE uid=?', [uid]),
     ]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ===== 傳說點券兌換 =====
+app.post('/api/legend-exchange', requireLogin, async (req, res) => {
+  const uid = req.session.user.employee_code;
+  const { amount, note } = req.body;
+  if (!amount || amount <= 0) return res.status(400).json({ error: 'invalid amount' });
+  try {
+    const [rows] = await pool.query('SELECT users_json FROM user_data WHERE uid=?', [uid]);
+    if (!rows.length) return res.status(400).json({ error: 'user not found' });
+    const usersArr = JSON.parse(rows[0].users_json || '[]');
+    const me = usersArr.find(u => u.id === uid) || usersArr[0];
+    if (!me) return res.status(400).json({ error: 'user data not found' });
+    if ((me.shells || 0) < amount) return res.status(400).json({ error: 'insufficient shells' });
+    me.shells = (me.shells || 0) - amount;
+    await pool.query('UPDATE user_data SET users_json=? WHERE uid=?', [JSON.stringify(usersArr), uid]);
+    await pool.query(
+      'INSERT INTO legend_exchanges (uid, name, email, amount, note, timestamp) VALUES (?,?,?,?,?,?)',
+      [uid, me.name || req.session.user.name || '', me.email || req.session.user.email || '', amount, note || '', Date.now()]
+    );
+    res.json({ success: true, shells: me.shells });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/legend-exchanges', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM legend_exchanges ORDER BY timestamp DESC');
+    res.json(rows.map(r => ({
+      id: String(r.id),
+      uid: r.uid,
+      name: r.name,
+      email: r.email,
+      amount: r.amount,
+      note: r.note || '',
+      timestamp: r.timestamp
+    })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/legend-exchanges', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM legend_exchanges');
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

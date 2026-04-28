@@ -237,12 +237,13 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           <div class="ct"><i class="fa-solid fa-users"></i> 使用者清單</div>
           <div v-if="!profiles.length" class="empty"><div style="font-size:48px;margin-bottom:12px">👥</div><div style="font-size:14px;font-weight:600">暫無使用者</div></div>
           <table v-else class="tbl">
-            <thead><tr><th>使用者</th><th>信箱</th><th style="text-align:center">能量</th><th style="text-align:center">操作</th></tr></thead>
+            <thead><tr><th>使用者</th><th>信箱</th><th style="text-align:center">能量</th><th style="text-align:center">傳說點券</th><th style="text-align:center">操作</th></tr></thead>
             <tbody>
               <tr v-for="p in profiles" :key="p.id">
                 <td><div style="display:flex;align-items:center;gap:8px"><div class="uav"><img v-if="p.avatarUrl" :src="p.avatarUrl"><span v-else>{{ (p.name||'?')[0] }}</span></div><span style="font-weight:700">{{ p.name }}</span></div></td>
                 <td style="color:var(--sub);font-size:12px">{{ p.email }}</td>
                 <td style="text-align:center;font-weight:700">⚡ {{ p.energy||0 }}</td>
+                <td style="text-align:center;font-weight:700">🎫 {{ p.shells||0 }}</td>
                 <td style="text-align:center">
                   <button class="btn bd bsm" @click="openDeleteUser(p)">
                     <i class="fa-solid fa-trash"></i> 刪除
@@ -510,6 +511,33 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         </div>
       </div>
 
+      <!-- 傳說點券兌換申請 -->
+      <div v-if="tab==='exchange'">
+        <div class="ph"><div class="pht">🎫 傳說點券兌換申請</div><div class="phs">查看使用者送出的兌換記錄</div></div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <div class="ct" style="margin:0;border:none;padding:0">🎫 兌換記錄（共 {{ exchanges.length }} 筆）</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn bg bsm" @click="exportExchangesCSV"><i class="fa-solid fa-download"></i> 匯出 CSV</button>
+              <button class="btn bd bsm" @click="confirmClearExchanges"><i class="fa-solid fa-trash"></i> 清空所有</button>
+            </div>
+          </div>
+          <div v-if="!exchanges.length" class="empty"><div style="font-size:48px;margin-bottom:12px">🎫</div><div style="font-size:14px;font-weight:600">目前沒有兌換記錄</div></div>
+          <table v-else class="tbl">
+            <thead><tr><th>使用者</th><th>信箱</th><th style="text-align:center">點券</th><th>備註</th><th style="text-align:center">時間</th></tr></thead>
+            <tbody>
+              <tr v-for="ex in exchanges" :key="ex.id">
+                <td style="font-weight:700">{{ ex.name }}</td>
+                <td style="color:var(--sub);font-size:12px">{{ ex.email }}</td>
+                <td style="text-align:center;font-weight:900;color:var(--prih)">🎫 {{ ex.amount }}</td>
+                <td style="font-size:13px;color:var(--sub)">{{ ex.note || '—' }}</td>
+                <td style="text-align:center;font-size:12px;color:var(--sub)">{{ fmtTs(ex.timestamp) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- 白名單 -->
       <div v-if="tab==='whitelist'">
         <div class="ph"><div class="pht">🔐 白名單管理</div><div class="phs">管理有後台權限的信箱</div></div>
@@ -612,6 +640,44 @@ input[type=range]{flex:1;accent-color:var(--pri)}
 
         </div>
         <div style="font-size:11px;color:var(--sub);margin-top:8px">💡 靜止時顯示靜止圖，移動時自動切換走路動畫。沒有圖片則顯示 emoji。</div>
+      </div>
+
+      <!-- 閒置動畫 -->
+      <div class="fr">
+        <label class="fl">閒置動畫雪碧圖 <span style="font-weight:400;color:var(--sub);font-size:11px">（選填）</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">閒置動畫 <span style="font-weight:400">4幀或9幀橫排 PNG</span></div>
+            <div class="img-upload-area" @click="$refs.idleSpriteInput.click()" style="padding:16px">
+              <input ref="idleSpriteInput" type="file" accept="image/png" style="display:none" @change="onItemImgChange('idleSprite',$event)">
+              <div v-if="itemForm.idleSpriteUrl">
+                <img :src="itemForm.idleSpriteUrl" style="width:100%;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border)">
+                <div style="font-size:11px;color:var(--sub);margin-top:4px">點擊更換</div>
+              </div>
+              <div v-else>
+                <div style="font-size:28px;margin-bottom:4px">✨</div>
+                <div style="font-size:12px;font-weight:700;color:var(--sub)">上傳閒置動畫</div>
+              </div>
+              <div v-if="imgUploading==='idleSprite'" style="position:absolute;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;border-radius:var(--r);font-weight:700;color:var(--pri);font-size:12px">上傳中...</div>
+            </div>
+            <div v-if="itemForm.idleSpriteUrl" style="margin-top:6px;display:flex;gap:6px;align-items:center">
+              <button @click="copyUrl(itemForm.idleSpriteUrl,'idleSprite')" class="gc-btn gc-edit" style="font-size:11px;flex:1">📋 複製 URL</button>
+              <button @click="itemForm.idleSpriteUrl=''" class="gc-btn gc-del" style="font-size:11px">✕</button>
+            </div>
+            <div v-if="copiedMsg==='idleSprite'" style="font-size:11px;color:var(--pri);margin-top:4px;font-weight:700">✅ 已複製！</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">幀數</div>
+            <div style="display:flex;gap:8px">
+              <button v-for="f in [4,9]" :key="f"
+                @click="itemForm.idleSpriteFrames=f"
+                :style="{padding:'8px 18px',borderRadius:'var(--r)',border:'2px solid',borderColor:itemForm.idleSpriteFrames===f?'var(--pri)':'var(--border)',background:itemForm.idleSpriteFrames===f?'var(--prilt)':'var(--surface)',color:itemForm.idleSpriteFrames===f?'var(--prih)':'var(--sub)',fontWeight:800,cursor:'pointer'}">
+                {{ f }} 幀
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--sub);margin-top:8px">每幀 96×96px，隨機播放 5 次後停止</div>
+          </div>
+        </div>
       </div>
 
       <div class="fr">
@@ -771,6 +837,18 @@ input[type=range]{flex:1;accent-color:var(--pri)}
     </div>
   </div>
 
+  <!-- 清空兌換記錄確認 -->
+  <div v-if="showClearExchangeModal" class="mov" @click.self="showClearExchangeModal=false">
+    <div class="mb">
+      <div class="mtt">🗑️ 清空兌換記錄</div>
+      <div class="mbd">確定要清空全部 {{ exchanges.length }} 筆兌換記錄？<br><br><span style="color:var(--red);font-weight:800">此操作無法復原。</span></div>
+      <div class="mbt">
+        <button class="btn bg" @click="showClearExchangeModal=false">取消</button>
+        <button class="btn bd" @click="doClearExchanges">🗑️ 確認清空</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 刪除使用者確認彈窗 -->
   <div v-if="showDeleteModal" class="mov" @click.self="showDeleteModal=false">
     <div class="mb">
@@ -838,9 +916,11 @@ createApp({setup(){
     {id:'gacha',icon:'fa-solid fa-wand-magic-sparkles',label:'卡池管理'},
     {id:'announce',icon:'fa-solid fa-bullhorn',label:'全站公告'},
     {id:'feedback',icon:'fa-solid fa-comment-dots',label:'使用者反饋'},
+    {id:'exchange',icon:'fa-solid fa-ticket-simple',label:'兌換申請'},
     {id:'whitelist',icon:'fa-solid fa-shield',label:'白名單'},
   ];
-  const profiles=ref([]),feedbacks=ref([]),anns=ref([]),wl=ref([]);
+  const profiles=ref([]),feedbacks=ref([]),anns=ref([]),wl=ref([]),exchanges=ref([]);
+  const showClearExchangeModal=ref(false);
   const stats=ref({users:0,letters:0,ann:0}),toasts=ref([]),prevImg=ref(null);
   const rTarget=ref('all'),selUsers=ref([]),uQ=ref('');
   const rType=ref('energy'),rAmt=ref(100),rNote=ref(''),rShow=ref(false);
@@ -848,7 +928,7 @@ createApp({setup(){
     {id:'energy',icon:'⚡',label:'能量',hint:'直接加入使用者能量'},
     {id:'cards',icon:'💌',label:'感謝卡',hint:'上限6張'},
     {id:'tiles',icon:'🏝️',label:'島嶼板塊',hint:'擴張地形用'},
-    {id:'shells',icon:'🪙',label:'貝殼幣',hint:'未來功能用'},
+    {id:'shells',icon:'🎫',label:'傳說點券',hint:'傳說點券兌換用'},
     {id:'pet',icon:'🐾',label:'指定島民',hint:'選擇要發放的動物夥伴'},
     {id:'decor',icon:'🏕️',label:'指定裝飾',hint:'選擇要發放的裝飾品'},
   ];
@@ -890,8 +970,8 @@ createApp({setup(){
   const imgUploading = ref('');
   const copiedMsg    = ref('');
   const itemForm = Vue.reactive({
-    name:'', emoji:'', imgUrl:'', spriteUrl:'', type:'animal',
-    poolId:'animal', rarity:'common', weight:30, active:true,
+    name:'', emoji:'', imgUrl:'', spriteUrl:'', idleSpriteUrl:'', idleSpriteFrames:4,
+    type:'animal', poolId:'animal', rarity:'common', weight:30, active:true,
   });
   const showPoolForm = ref(false);
   const editingPool  = ref(null);
@@ -925,17 +1005,19 @@ createApp({setup(){
 
   const loadData = async () => {
     try {
-      const [profs, lets, adminAnnsData, fbs] = await Promise.all([
+      const [profs, lets, adminAnnsData, fbs, exs] = await Promise.all([
         api('/api/profiles'),
         api('/api/letters'),
         api('/api/admin/announcements'),
         api('/api/admin/feedbacks'),
+        api('/api/admin/legend-exchanges'),
       ]);
       profiles.value = profs;
       stats.value.users = profs.length;
       stats.value.letters = lets.length;
       anns.value = adminAnnsData;
       stats.value.ann = adminAnnsData.filter(a=>a.type==='admin').length;
+      exchanges.value = exs;
       feedbacks.value = fbs;
     } catch(e) { console.error(e); }
   };
@@ -969,7 +1051,7 @@ createApp({setup(){
     editingItem.value = null;
     const pid = currentPool.value;
     const defaultType = pid==='animal'?'animal':pid==='decor'?'decor':'animal';
-    Object.assign(itemForm,{name:'',emoji:'',imgUrl:'',spriteUrl:'',type:defaultType,poolId:pid,rarity:'common',weight:30,active:true});
+    Object.assign(itemForm,{name:'',emoji:'',imgUrl:'',spriteUrl:'',idleSpriteUrl:'',idleSpriteFrames:4,type:defaultType,poolId:pid,rarity:'common',weight:30,active:true});
     showItemForm.value = true;
   };
   const openEditItem = (item) => {
@@ -977,6 +1059,7 @@ createApp({setup(){
     Object.assign(itemForm,{
       name:item.name, emoji:item.emoji,
       imgUrl:item.imgUrl||'', spriteUrl:item.spriteUrl||'',
+      idleSpriteUrl:item.idleSpriteUrl||'', idleSpriteFrames:item.idleSpriteFrames||4,
       type:item.type, poolId:item.poolId||(item.type==='animal'?'animal':'decor'),
       rarity:item.rarity, weight:item.weight, active:item.active,
     });
@@ -987,6 +1070,7 @@ createApp({setup(){
     const data = {
       name:itemForm.name.trim(), emoji:itemForm.emoji.trim(),
       imgUrl:itemForm.imgUrl||'', spriteUrl:itemForm.spriteUrl||'',
+      idleSpriteUrl:itemForm.idleSpriteUrl||'', idleSpriteFrames:Number(itemForm.idleSpriteFrames)||4,
       type:itemForm.type, poolId:itemForm.poolId,
       rarity:itemForm.rarity, weight:Number(itemForm.weight)||30,
       active:itemForm.active,
@@ -1044,8 +1128,9 @@ createApp({setup(){
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST',body:fd});
       const data = await res.json();
       if(data.secure_url) {
-        if(type==='idle') itemForm.imgUrl = data.secure_url;
-        else              itemForm.spriteUrl = data.secure_url;
+        if(type==='idle')       itemForm.imgUrl = data.secure_url;
+        else if(type==='idleSprite') itemForm.idleSpriteUrl = data.secure_url;
+        else                    itemForm.spriteUrl = data.secure_url;
         toast('✅ 圖片已上傳！');
       } else {
         toast('上傳失敗：'+JSON.stringify(data),'err');
@@ -1161,7 +1246,25 @@ createApp({setup(){
   const unreadFb=computed(()=>feedbacks.value.filter(f=>!f.read).length);
   const toast=(msg,type='ok')=>{const id=Date.now();toasts.value.push({id,msg,type});setTimeout(()=>{toasts.value=toasts.value.filter(t=>t.id!==id);},3500);};
   const fmtDate=(ts)=>{if(!ts)return'';const d=new Date(ts);return d.toLocaleDateString('zh-TW')+' '+d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});};
+  const fmtTs=(ts)=>{if(!ts)return'';const d=new Date(ts);return(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
   const gname=(uid)=>profiles.value.find(p=>p.id===uid)?.name||uid;
+
+  const confirmClearExchanges=()=>{ showClearExchangeModal.value=true; };
+  const doClearExchanges=async()=>{
+    try{
+      await api('/api/admin/legend-exchanges',{method:'DELETE'});
+      exchanges.value=[];
+      toast('✅ 兌換記錄已清空');
+      showClearExchangeModal.value=false;
+    }catch(e){toast('清空失敗','err');}
+  };
+  const exportExchangesCSV=()=>{
+    if(!exchanges.value.length){toast('沒有記錄可匯出');return;}
+    const rows=[['ID','姓名','信箱','點券','備註','時間'],...exchanges.value.map(e=>[e.id,e.name,e.email,e.amount,e.note||'',fmtDate(e.timestamp)])];
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='legend_exchanges.csv';a.click();
+  };
   const toggleU=(uid)=>{const i=selUsers.value.indexOf(uid);if(i>=0)selUsers.value.splice(i,1);else selUsers.value.push(uid);};
 
   const signIn=()=>{ window.location.href='/'; };
@@ -1298,6 +1401,7 @@ createApp({setup(){
     poolCoverUploading,poolSettings,onPoolCoverChange,
     deletedPools,showTrashModal,openTrash,restorePool,daysLeft,
     openDeleteUser,confirmDeleteUser,
+    exchanges,showClearExchangeModal,confirmClearExchanges,doClearExchanges,exportExchangesCSV,fmtTs,
   };
 }}).mount('#app');
 </script>

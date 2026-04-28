@@ -1796,6 +1796,9 @@
             <button @click="switchTab('rank')"   class="nav-btn" :class="{ active: currentTab === 'rank' }">
                 <i class="fa-solid fa-list-ol"></i><span class="nav-label">Sea群島</span>
             </button>
+            <button @click="switchTab('exchange')" class="nav-btn" :class="{ active: currentTab === 'exchange' }">
+                <i class="fa-solid fa-ticket-simple"></i><span class="nav-label">傳說兌換</span>
+            </button>
         </nav>
 
         <div class="sidebar-bottom">
@@ -1826,8 +1829,8 @@
             <div class="sidebar-user-level">Level {{ currentUser.level || 1 }}</div>
             <div class="sidebar-stats">
                 <div class="sidebar-stat">
-                    <span class="sidebar-stat-label">Coins</span>
-                    <span class="sidebar-stat-val"><i class="fa-solid fa-coins"></i>{{ currentUser.shells }}</span>
+                    <span class="sidebar-stat-label">傳說點券</span>
+                    <span class="sidebar-stat-val">🎫{{ currentUser.shells }}</span>
                 </div>
                 <div class="sidebar-stat">
                     <span class="sidebar-stat-label">Energy</span>
@@ -1850,7 +1853,7 @@
         <!-- 頂部標題列 -->
         <div class="topbar">
             <span class="topbar-title">
-                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : '收件匣' }}
+                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 傳說兌換' : '收件匣' }}
             </span>
             <div v-if="currentTab === 'home'" class="topbar-actions">
                 <button @click="toggleEditMode" class="topbar-btn" :class="{ active: isEditMode }">
@@ -1922,6 +1925,14 @@
                                     :style="{
                                         backgroundImage: 'url('+item.spriteUrl+')',
                                         backgroundPositionX: '-'+(( spriteFrames[item.id]||0 )*96)+'px'
+                                    }">
+                                </div>
+                                <!-- 閒置動畫（有 idleSpriteUrl 且 idleStates active） -->
+                                <div v-else-if="item.idleSpriteUrl && idleStates[item.id]?.active"
+                                    class="sprite-anim"
+                                    :style="{
+                                        backgroundImage: 'url('+item.idleSpriteUrl+')',
+                                        backgroundPositionX: '-'+((idleStates[item.id]?.frame||0)*96)+'px'
                                     }">
                                 </div>
                                 <!-- 靜止圖（有 spriteUrl 時用 imgUrl 當靜止，無 spriteUrl 就一般顯示） -->
@@ -2442,6 +2453,57 @@
                 </div>
             </div>
 
+            <!-- 傳說兌換 -->
+            <div v-else-if="currentTab === 'exchange'" key="exchange" class="tab-content">
+                <div class="sea-hero" style="margin-bottom:24px;">
+                    <div class="sea-hero-icon">🎫</div>
+                    <h2 class="sea-hero-title">傳說兌換</h2>
+                    <p class="sea-hero-sub">使用傳說點券送出兌換申請</p>
+                </div>
+
+                <div class="letter-card" style="max-width:520px;margin:0 auto;">
+                    <div class="letter-header" style="margin-bottom:16px;">
+                        <div>
+                            <div class="letter-from" style="font-size:16px;font-weight:800;">🎫 我的傳說點券</div>
+                            <div class="letter-time" style="font-size:22px;font-weight:900;color:var(--primary);margin-top:4px;">{{ currentUser?.shells || 0 }} 點</div>
+                        </div>
+                    </div>
+
+                    <div v-if="exchangeSuccess" class="empty-state" style="padding:20px 0;">
+                        <div style="font-size:40px;margin-bottom:8px;">✅</div>
+                        <div style="font-weight:800;color:var(--primary);">兌換申請送出成功！</div>
+                        <div style="font-size:13px;margin-top:6px;color:var(--text-sub);">管理員收到後會盡快處理 🌿</div>
+                        <button @click="exchangeSuccess=false" class="btn-primary" style="margin-top:16px;padding:10px 24px;">再次兌換</button>
+                    </div>
+
+                    <div v-else>
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:13px;font-weight:800;display:block;margin-bottom:6px;">兌換數量</label>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <button @click="exchangeAmt=Math.max(1,exchangeAmt-1)" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface-2);font-size:18px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+                                <input v-model.number="exchangeAmt" type="number" min="1" :max="currentUser?.shells||0" style="width:80px;text-align:center;padding:8px;border:2px solid var(--border);border-radius:var(--radius);font-size:18px;font-weight:800;font-family:inherit;">
+                                <button @click="exchangeAmt=Math.min(currentUser?.shells||0,exchangeAmt+1)" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface-2);font-size:18px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">＋</button>
+                                <button @click="exchangeAmt=currentUser?.shells||0" style="padding:8px 14px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface-2);font-size:12px;font-weight:800;cursor:pointer;color:var(--text-sub);">全部</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:20px;">
+                            <label style="font-size:13px;font-weight:800;display:block;margin-bottom:6px;">備註（選填）</label>
+                            <textarea v-model="exchangeNote" placeholder="例如：要兌換什麼獎品..." style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;resize:vertical;min-height:80px;outline:none;"></textarea>
+                        </div>
+
+                        <div v-if="exchangeError" style="color:var(--danger);font-size:13px;font-weight:700;margin-bottom:12px;">{{ exchangeError }}</div>
+
+                        <button @click="submitExchange"
+                            class="btn-primary" style="width:100%;padding:14px;"
+                            :disabled="exchangeAmt<=0||(currentUser?.shells||0)<=0||exchangeSubmitting">
+                            {{ exchangeSubmitting ? '送出中...' : `🎫 送出兌換申請（${exchangeAmt} 點）` }}
+                        </button>
+                        <div style="font-size:12px;color:var(--text-sub);margin-top:10px;text-align:center;">送出後點券會立即扣除，管理員確認後完成兌換</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Inbox -->
             <div v-else-if="currentTab === 'inbox'" key="inbox" class="tab-content">
                 <div class="inbox-tabs">
@@ -2537,7 +2599,7 @@
                     <div v-else class="letters-grid">
                         <div v-for="reward in unclaimedRewards" :key="reward.id" class="letter-card reward-card">
                             <div class="reward-card-icon">
-                                {{ reward.itemData ? reward.itemData.emoji : ({tile:'🏝️', tiles:'🏝️', energy:'⚡', cards:'💌', shells:'🪙', pet:'🐾', decor:'🏕️'}[reward.type] || '🎁') }}
+                                {{ reward.itemData ? reward.itemData.emoji : ({tile:'🏝️', tiles:'🏝️', energy:'⚡', cards:'💌', shells:'🎫', pet:'🐾', decor:'🏕️'}[reward.type] || '🎁') }}
                             </div>
                             <div class="reward-card-title">{{ reward.title }}</div>
                             <div class="reward-card-desc">{{ reward.desc }}</div>
@@ -2986,6 +3048,41 @@ createApp({
             } catch(e) {}
         };
 
+        // ── 傳說點券兌換 ──
+        const exchangeAmt = ref(1);
+        const exchangeNote = ref('');
+        const exchangeError = ref('');
+        const exchangeSuccess = ref(false);
+        const exchangeSubmitting = ref(false);
+        const submitExchange = async () => {
+            exchangeError.value = '';
+            const me = currentUser.value;
+            if (!me) return;
+            if (exchangeAmt.value <= 0 || exchangeAmt.value > (me.shells || 0)) {
+                exchangeError.value = '點券數量不足或無效';
+                return;
+            }
+            exchangeSubmitting.value = true;
+            try {
+                const res = await fetch('/api/legend-exchange', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: exchangeAmt.value, note: exchangeNote.value })
+                });
+                const d = await res.json();
+                if (!d.success) { exchangeError.value = d.error || '送出失敗，請稍後再試'; return; }
+                me.shells = d.shells;
+                await saveData();
+                exchangeSuccess.value = true;
+                exchangeAmt.value = 1;
+                exchangeNote.value = '';
+            } catch(e) {
+                exchangeError.value = '網路錯誤，請稍後再試';
+            } finally {
+                exchangeSubmitting.value = false;
+            }
+        };
+
         // ── 同步物品圖片 ──
         // 登入後用 Firestore 最新的 imgUrl / spriteUrl 更新倉庫和島上的舊物品
         // 比對方式：物品名稱相符就更新圖片（不影響位置、稀有度等其他資料）
@@ -3040,6 +3137,9 @@ createApp({
         const animalStates  = ref({});
         const jumpStates    = reactive({}); // itemId -> 'up'|'down'|null
         const prevHL        = {}; // 記錄每個物品上次的高地層數，用於偵測高度變化
+        const idleStates    = reactive({}); // itemId -> { active: bool, frame: int, cycle: int }
+        let idleFrameTimer  = null;
+        let idleScheduleTimer = null;
         const letterForm    = reactive({ toId: '', content: '', cost: 1 });
 
         // ── 收件人建議清單 ──
@@ -3514,6 +3614,7 @@ createApp({
                             avatarPosX: me.avatarPosX ?? 50,
                             avatarPosY: me.avatarPosY ?? 50,
                             energy:     me.energy || 0,
+                            shells:     me.shells || 0,
                             island:     JSON.parse(JSON.stringify(me.island || [])),
                         })
                     });
@@ -3596,6 +3697,7 @@ createApp({
                             avatarPosX: me?.avatarPosX ?? 50,
                             avatarPosY: me?.avatarPosY ?? 50,
                             energy:     me?.energy || 0,
+                            shells:     me?.shells || 0,
                             tileCount:  me?.tileCount || 6,
                         })
                     });
@@ -3672,7 +3774,7 @@ createApp({
                                     if (!me.rewards) me.rewards = [];
                                     const alreadyIn = me.rewards.some(r => r.id === `admin_${item.id}`);
                                     if (!alreadyIn) {
-                                        const rewardIcon = { energy:'⚡', cards:'💌', tiles:'🏝️', shells:'🪙', pet:'🐾', decor:'🏕️' }[item.rewardType] || '🎁';
+                                        const rewardIcon = { energy:'⚡', cards:'💌', tiles:'🏝️', shells:'🎫', pet:'🐾', decor:'🏕️' }[item.rewardType] || '🎁';
                                         const rewardEntry = {
                                             id: `admin_${item.id}`,
                                             type: item.rewardType || 'energy',
@@ -4319,15 +4421,15 @@ createApp({
                 lines: [
                     '感恩小島是一個讓你把感謝說出口的地方！',
                     '每個月你有 3 張感謝卡，可以送給讓你感動的隊友或同事。',
-                    '收到感謝的人會獲得能量 ⚡ 和貝殼幣 🪙，用來打造自己的小島！',
+                    '收到感謝的人會獲得能量 ⚡ 和傳說點券 🎫，用來打造自己的小島！',
                     '讓好事循環流動，讓正能量在團隊裡發光 ✨',
                 ]
             },
             {
-                icon: '⚡', title: '能量與貝殼幣怎麼用？',
+                icon: '⚡', title: '能量與傳說點券怎麼用？',
                 lines: [
                     '能量 ⚡ 是抽卡的燃料 — 去「感恩商鋪」召喚動物夥伴和島嶼裝飾！',
-                    '貝殼幣 🪙 未來將用於更多功能（敬請期待 🔮）',
+                    '傳說點券 🎫 可在「傳說兌換」窗口送出兌換申請！',
                     '每收到一張感謝卡，你會獲得 100 能量！',
                     '收到更多感謝 = 能量更多 = 島嶼更豐富！',
                 ]
@@ -4774,6 +4876,32 @@ createApp({
                         syncItemImages();
                         initAnimalStates();
                         if (!roamInterval) roamInterval = setInterval(moveAnimals, 4500);
+                        // 閒置動畫：每 150ms 推進 frame
+                        if (!idleFrameTimer) idleFrameTimer = setInterval(() => {
+                            for (const id of Object.keys(idleStates)) {
+                                const s = idleStates[id];
+                                if (!s?.active) continue;
+                                const item = displayIslandItems.value.find(i => i.id === id);
+                                const frames = item?.idleSpriteFrames || 4;
+                                s.frame = (s.frame + 1) % frames;
+                                if (s.frame === 0) {
+                                    s.cycle = (s.cycle || 0) + 1;
+                                    if (s.cycle >= 5) { s.active = false; s.cycle = 0; }
+                                }
+                            }
+                        }, 150);
+                        // 閒置動畫：每 10s 隨機觸發
+                        if (!idleScheduleTimer) idleScheduleTimer = setInterval(() => {
+                            const eligible = (displayIslandItems.value || []).filter(i => i.idleSpriteUrl && !(idleStates[i.id]?.active) && !(animalStates.value[i.id]?.moving));
+                            if (!eligible.length) return;
+                            const pick = eligible[Math.floor(Math.random() * eligible.length)];
+                            if (Math.random() < 0.35) {
+                                if (!idleStates[pick.id]) idleStates[pick.id] = { active: false, frame: 0, cycle: 0 };
+                                idleStates[pick.id].active = true;
+                                idleStates[pick.id].frame = 0;
+                                idleStates[pick.id].cycle = 0;
+                            }
+                        }, 10000);
                         setTimeout(() => {
                             window.initIslandCanvas?.();
                             setTimeout(() => updateCamBase(), 300);
@@ -4783,6 +4911,8 @@ createApp({
                     }
                 } else {
                     if (roamInterval) { clearInterval(roamInterval); roamInterval = null; }
+                    if (idleFrameTimer) { clearInterval(idleFrameTimer); idleFrameTimer = null; }
+                    if (idleScheduleTimer) { clearInterval(idleScheduleTimer); idleScheduleTimer = null; }
                 }
             } catch(e) {
                 console.error('/api/me 失敗：', e);
@@ -4792,6 +4922,8 @@ createApp({
         });
         onUnmounted(() => {
             if (roamInterval) clearInterval(roamInterval);
+            if (idleFrameTimer) clearInterval(idleFrameTimer);
+            if (idleScheduleTimer) clearInterval(idleScheduleTimer);
             if (islandAnimFrame) cancelAnimationFrame(islandAnimFrame);
         });
 
@@ -4835,7 +4967,9 @@ createApp({
             selectedLayerItem, selectLayerItem, moveLayer, getItemZIndex,
             showIslandEditor, openIslandEditor, closeIslandEditor,
             islandTool, islandBrush, islandTools, islandEditorHint,
-            islandAddTile, islandCenterView, islandReset, islandEditMode
+            islandAddTile, islandCenterView, islandReset, islandEditMode,
+            idleStates,
+            exchangeAmt, exchangeNote, exchangeError, exchangeSuccess, exchangeSubmitting, submitExchange,
         };
     }
 }).mount('#app');
