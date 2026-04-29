@@ -794,11 +794,20 @@
         }
         .write-form-col { display: flex; flex-direction: column; }
         .write-form-col .write-card { max-width: none; margin: 0; }
-        .write-form-col .write-hero { padding: 20px 0 18px; }
+
+        /* 表單卡片 header */
+        .write-card-header {
+            display: flex; align-items: center; gap: 14px;
+            padding-bottom: 20px; margin-bottom: 4px;
+            border-bottom: 1px solid var(--line);
+        }
+        .write-card-header-icon { font-size: 36px; line-height: 1; flex-shrink: 0; }
+        .write-card-header-title { font-size: 18px; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
+        .write-card-header-sub { font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 3px; }
 
         /* 右側規則說明欄 */
         .write-rules-panel {
-            position: sticky; top: 80px;
+            position: sticky; top: 84px;
             background: #fff; border: 1px solid var(--line);
             border-radius: var(--radius-lg); overflow: hidden;
             box-shadow: var(--shadow-sm);
@@ -2508,13 +2517,14 @@
 
                     <!-- 左：寫信表單 -->
                     <div class="write-form-col">
-                        <div class="write-hero">
-                            <div class="write-hero-icon">💌</div>
-                            <h2 class="write-hero-title">寄出感謝</h2>
-                            <p class="write-hero-sub">把感謝化作能量，送給讓你感動的人 🌿</p>
-                        </div>
-
                         <div class="write-card">
+                            <div class="write-card-header">
+                                <div class="write-card-header-icon">💌</div>
+                                <div>
+                                    <div class="write-card-header-title">寄出感謝</div>
+                                    <div class="write-card-header-sub">把感謝化作能量，送給讓你感動的人 🌿</div>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="form-label">✉️ 收件人</label>
                                 <div class="recipient-wrap">
@@ -2623,9 +2633,6 @@
                             <div class="wrp-reminder">
                                 <p>感恩小島沒有嚴格的發卡門檻。只要你想把一份感謝具體說出來，都歡迎寄出一張小卡。</p>
                                 <p>同時，小島也希望鼓勵夥伴之間彼此看見，讓那些平常容易被忽略的支持與幫助，有機會被好好記下來，推薦優先把小卡留給平常和你併肩作戰的同學們。</p>
-                                <div class="wrp-note">
-                                    如果想感謝主管在工作上的照顧與指導，建議用私訊或當面表達 🥹 會更直接也更真誠，也能避免感謝卡被誤會成其他壓力或期待。
-                                </div>
                             </div>
                         </div>
                     </aside>
