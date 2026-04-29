@@ -2155,7 +2155,7 @@
                                  top:    getPos(item, index).y + '%',
                                  zIndex: isDragging(item.id) ? 999 : getItemZIndex(item, index)
                              }"
-                             @mousedown.prevent="(item.type==='animal' || isEditMode) && onDragStart($event, item)"
+                             @mousedown="(item.type==='animal' || isEditMode) && onDragStart($event, item)"
                              @touchstart.prevent="(item.type==='animal' || isEditMode) && onDragStart($event, item)"
                              @click="!isEditMode && triggerIdleAnim(item)">
                             <div :style="{
@@ -3676,6 +3676,7 @@ createApp({
         const onDragStart = (e, item) => {
             // 裝飾品只有在 isEditMode 才能拖曳
             if (item.type !== 'animal' && !isEditMode.value) return;
+            e.preventDefault();
             const touch = e.touches ? e.touches[0] : e;
             const index = displayIslandItems.value.indexOf(item);
             // 取原始存儲值（不含 cam 偏移），作為拖曳的基準點
@@ -3706,6 +3707,7 @@ createApp({
             const rect  = container.getBoundingClientRect();
             const dx    = touch.clientX - dragState.value.startMouseX;
             const dy    = touch.clientY - dragState.value.startMouseY;
+            if (dx * dx + dy * dy > 64) dragState.value.moved = true;
             const dxPct = (dx / rect.width)  * 100;
             const dyPct = (dy / rect.height) * 100;
 
@@ -3739,7 +3741,8 @@ createApp({
 
         const onDragEnd = () => {
             if (!dragState.value) return;
-            const item = dragState.value.item;
+            const item    = dragState.value.item;
+            const wasTap  = !dragState.value.moved;
             const container = document.getElementById('island-container');
 
             // 島民：放開時如果不在島上，彈回原始位置
@@ -3758,6 +3761,8 @@ createApp({
 
             dragState.value = null;
             saveData();
+            // 觸控輕觸（沒有實際拖曳）→ 觸發待機動畫
+            if (wasTap && !isEditMode.value) triggerIdleAnim(item);
         };
 
         // ── Home canvas pan（拖曳移動視角） ──
