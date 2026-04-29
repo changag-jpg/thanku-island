@@ -2170,12 +2170,14 @@
                                         backgroundPositionX: '-'+(( spriteFrames[item.id]||0 )*96)+'px'
                                     }">
                                 </div>
-                                <!-- 閒置動畫（有 idleSpriteUrl 且 idleStates active） -->
+                                <!-- 閒置動畫（有 idleSpriteUrl 且 idleStates active，9幀 3x3 雪碧圖 768×768px） -->
                                 <div v-else-if="item.idleSpriteUrl && idleStates[item.id]?.active"
                                     class="sprite-anim"
                                     :style="{
                                         backgroundImage: 'url('+item.idleSpriteUrl+')',
-                                        backgroundPositionX: '-'+((idleStates[item.id]?.frame||0)*96)+'px'
+                                        backgroundSize: '288px 288px',
+                                        backgroundPositionX: '-'+((idleStates[item.id]?.frame||0)%3*96)+'px',
+                                        backgroundPositionY: '-'+(Math.floor((idleStates[item.id]?.frame||0)/3)*96)+'px'
                                     }">
                                 </div>
                                 <!-- 靜止圖（有 spriteUrl 時用 imgUrl 當靜止，無 spriteUrl 就一般顯示） -->
@@ -5204,7 +5206,7 @@ createApp({
                                 const s = idleStates[id];
                                 if (!s?.active) continue;
                                 const item = displayIslandItems.value.find(i => i.id === id);
-                                const frames = item?.idleSpriteFrames || 4;
+                                const frames = item?.idleSpriteFrames || 9;
                                 s.frame = (s.frame + 1) % frames;
                                 if (s.frame === 0) {
                                     s.cycle = (s.cycle || 0) + 1;
