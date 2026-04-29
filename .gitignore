@@ -1,3 +1,6 @@
 node_modules/
 CLAUDE.secret.md
 CLAUDE.md
+FRONTEND_SPEC.md
+ui-preview.html
+*-preview.html
