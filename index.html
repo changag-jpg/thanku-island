@@ -512,7 +512,7 @@
             border-radius: var(--radius-pill); backdrop-filter: blur(6px);
             border: 2px solid rgba(255,255,255,0.9);
         }
-        .float-item { position: absolute; transition: transform 0.2s ease; }
+        .float-item { position: absolute; transition: transform 0.2s ease; user-select: none; -webkit-user-select: none; }
         .float-item:hover { transform: scale(1.12) translateY(-6px); z-index: 50 !important; }
         .float-item.is-dragging { transform: scale(1.15); cursor: grabbing; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
         .float-item:not(.is-dragging) { cursor: grab; }
@@ -2155,9 +2155,8 @@
                                  top:    getPos(item, index).y + '%',
                                  zIndex: isDragging(item.id) ? 999 : getItemZIndex(item, index)
                              }"
-                             @mousedown="(item.type==='animal' || isEditMode) && onDragStart($event, item)"
-                             @touchstart.prevent="(item.type==='animal' || isEditMode) && onDragStart($event, item)"
-                             @click="!isEditMode && triggerIdleAnim(item)">
+                             @mousedown="onDragStart($event, item)"
+                             @touchstart.prevent="onDragStart($event, item)">
                             <div :style="{
                                 transform: getFlip(item) + ' scale(' + (item.scale || 1) + ')' + getHighlandLift(item, index),
                                 transition: isDragging(item.id) ? 'none' : 'transform 0.4s ease',
@@ -3674,9 +3673,6 @@ createApp({
         const isDragging = (itemId) => dragState.value?.item?.id === itemId;
 
         const onDragStart = (e, item) => {
-            // 裝飾品只有在 isEditMode 才能拖曳
-            if (item.type !== 'animal' && !isEditMode.value) return;
-            e.preventDefault();
             const touch = e.touches ? e.touches[0] : e;
             const index = displayIslandItems.value.indexOf(item);
             // 取原始存儲值（不含 cam 偏移），作為拖曳的基準點
@@ -3708,6 +3704,10 @@ createApp({
             const dx    = touch.clientX - dragState.value.startMouseX;
             const dy    = touch.clientY - dragState.value.startMouseY;
             if (dx * dx + dy * dy > 64) dragState.value.moved = true;
+
+            // 裝飾品只有在 isEditMode 才能實際移動
+            const dragItem = dragState.value.item;
+            if (dragItem.type !== 'animal' && !isEditMode.value) return;
             const dxPct = (dx / rect.width)  * 100;
             const dyPct = (dy / rect.height) * 100;
 
