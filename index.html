@@ -661,7 +661,7 @@
 
         /* ── 說明彈窗 ── */
         .help-overlay {
-            position: fixed; inset: 0; z-index: 500;
+            position: fixed; inset: 0; z-index: 2000;
             background: rgba(50,40,30,0.45); backdrop-filter: blur(4px);
             display: flex; align-items: center; justify-content: center; padding: 20px;
         }
@@ -3419,8 +3419,10 @@ createApp({
             [...gachaPool.value, ...shopItems.value].forEach(g => {
                 if (g.name) {
                     imgMap[g.name] = {
-                        imgUrl:    g.imgUrl    || '',
-                        spriteUrl: g.spriteUrl || '',
+                        imgUrl:          g.imgUrl          || '',
+                        spriteUrl:       g.spriteUrl       || '',
+                        idleSpriteUrl:   g.idleSpriteUrl   || '',
+                        idleSpriteFrames: g.idleSpriteFrames || 9,
                     };
                 }
             });
@@ -3431,8 +3433,10 @@ createApp({
             (me.warehouse || []).forEach(item => {
                 const latest = imgMap[item.name];
                 if (latest) {
-                    if (item.imgUrl    !== latest.imgUrl)    { item.imgUrl    = latest.imgUrl;    changed = true; }
-                    if (item.spriteUrl !== latest.spriteUrl) { item.spriteUrl = latest.spriteUrl; changed = true; }
+                    if (item.imgUrl           !== latest.imgUrl)           { item.imgUrl           = latest.imgUrl;           changed = true; }
+                    if (item.spriteUrl        !== latest.spriteUrl)        { item.spriteUrl        = latest.spriteUrl;        changed = true; }
+                    if (item.idleSpriteUrl    !== latest.idleSpriteUrl)    { item.idleSpriteUrl    = latest.idleSpriteUrl;    changed = true; }
+                    if (item.idleSpriteFrames !== latest.idleSpriteFrames) { item.idleSpriteFrames = latest.idleSpriteFrames; changed = true; }
                 }
             });
 
@@ -3440,8 +3444,10 @@ createApp({
             (me.island || []).forEach(item => {
                 const latest = imgMap[item.name];
                 if (latest) {
-                    if (item.imgUrl    !== latest.imgUrl)    { item.imgUrl    = latest.imgUrl;    changed = true; }
-                    if (item.spriteUrl !== latest.spriteUrl) { item.spriteUrl = latest.spriteUrl; changed = true; }
+                    if (item.imgUrl           !== latest.imgUrl)           { item.imgUrl           = latest.imgUrl;           changed = true; }
+                    if (item.spriteUrl        !== latest.spriteUrl)        { item.spriteUrl        = latest.spriteUrl;        changed = true; }
+                    if (item.idleSpriteUrl    !== latest.idleSpriteUrl)    { item.idleSpriteUrl    = latest.idleSpriteUrl;    changed = true; }
+                    if (item.idleSpriteFrames !== latest.idleSpriteFrames) { item.idleSpriteFrames = latest.idleSpriteFrames; changed = true; }
                 }
             });
 
