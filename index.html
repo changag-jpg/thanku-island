@@ -785,6 +785,69 @@
         .shop-item-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
         .shop-item-price { font-size: 12px; color: var(--primary); font-weight: 700; }
 
+        /* ===== Write 兩欄版型 ===== */
+        .write-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            gap: 28px;
+            align-items: start;
+        }
+        .write-form-col { display: flex; flex-direction: column; }
+        .write-form-col .write-card { max-width: none; margin: 0; }
+        .write-form-col .write-hero { padding: 20px 0 18px; }
+
+        /* 右側規則說明欄 */
+        .write-rules-panel {
+            position: sticky; top: 80px;
+            background: #fff; border: 1px solid var(--line);
+            border-radius: var(--radius-lg); overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .wrp-head {
+            padding: 20px 20px 16px;
+            background: linear-gradient(135deg, rgba(143,169,155,.12), rgba(251,250,246,.9));
+            border-bottom: 1px solid var(--line);
+        }
+        .wrp-greeting {
+            font-size: 16px; font-weight: 900; color: var(--ink);
+            letter-spacing: -0.01em; margin-bottom: 8px;
+        }
+        .wrp-intro {
+            font-size: 12.5px; color: var(--text-sub); line-height: 1.8; font-weight: 500;
+        }
+        .wrp-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+        .wrp-section:last-child { border-bottom: 0; }
+        .wrp-section-title {
+            font-size: 13px; font-weight: 800; color: var(--sage-deep);
+            margin-bottom: 10px;
+        }
+        .wrp-items { display: flex; flex-direction: column; gap: 8px; }
+        .wrp-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: var(--paper); border-radius: 9px;
+            padding: 10px 12px; border: 1px solid var(--line);
+        }
+        .wrp-star { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+        .wrp-item-text {
+            font-size: 12px; color: var(--text); line-height: 1.75; font-weight: 500;
+        }
+        .wrp-item-text strong {
+            color: var(--ink); font-weight: 700;
+            display: block; margin-bottom: 2px; font-size: 12.5px;
+        }
+        .wrp-reminder { display: flex; flex-direction: column; gap: 8px; }
+        .wrp-reminder p {
+            font-size: 12px; color: var(--text); line-height: 1.8; font-weight: 500;
+        }
+        .wrp-note {
+            background: rgba(217,139,120,.08); border-radius: 8px;
+            padding: 10px 12px; border-left: 3px solid var(--coral);
+            font-size: 11.5px; color: var(--text-sub); line-height: 1.75;
+        }
+
         /* ===== Write ===== */
         .form-group { margin-bottom: 24px; }
         .form-label { display: block; font-size: 12px; font-weight: 800; color: var(--text-sub); letter-spacing: 0.04em; margin-bottom: 8px; }
@@ -1466,80 +1529,6 @@
         .reward-card-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
         .reward-card-desc { font-size: 12px; color: var(--text-sub); font-weight: 600; line-height: 1.6; }
 
-        /* ── 感謝規則說明彈窗 ── */
-        .write-rules-overlay {
-            position: fixed; inset: 0; z-index: 850;
-            background: rgba(41,48,47,.48); backdrop-filter: blur(6px);
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .write-rules-modal {
-            background: var(--surface); border-radius: 24px;
-            border: 1px solid var(--line); width: 100%; max-width: 520px;
-            max-height: 88vh; display: flex; flex-direction: column;
-            box-shadow: 0 32px 80px rgba(41,48,47,.2);
-            animation: popReveal 0.32s cubic-bezier(0.175,0.885,0.32,1.275);
-            overflow: hidden;
-        }
-        .write-rules-head {
-            padding: 28px 28px 20px;
-            background: linear-gradient(135deg, rgba(143,169,155,.14), rgba(251,250,246,.9));
-            border-bottom: 1px solid var(--line);
-            flex-shrink: 0;
-        }
-        .write-rules-greeting {
-            font-size: 20px; font-weight: 900; color: var(--ink);
-            letter-spacing: -0.01em; margin-bottom: 10px;
-        }
-        .write-rules-intro {
-            font-size: 13px; color: var(--text-sub); line-height: 1.8; font-weight: 500;
-        }
-        .write-rules-body {
-            flex: 1; overflow-y: auto; padding: 20px 28px 24px;
-            display: flex; flex-direction: column; gap: 20px;
-        }
-        .write-rules-body::-webkit-scrollbar { width: 4px; }
-        .write-rules-body::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
-        .write-rules-section-title {
-            font-size: 14px; font-weight: 800; color: var(--sage-deep);
-            margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
-        }
-        .write-rules-items { display: flex; flex-direction: column; gap: 10px; }
-        .write-rules-item {
-            display: flex; align-items: flex-start; gap: 12px;
-            background: var(--paper); border-radius: 10px;
-            padding: 12px 14px; border: 1px solid var(--line);
-        }
-        .write-rules-star { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-        .write-rules-item-text { font-size: 13px; color: var(--text); line-height: 1.75; font-weight: 500; }
-        .write-rules-item-text strong { color: var(--ink); font-weight: 700; display: block; margin-bottom: 2px; }
-        .write-rules-reminder {
-            background: rgba(201,186,150,.1); border-radius: 10px;
-            padding: 14px 16px; border: 1px solid rgba(194,163,90,.25);
-        }
-        .write-rules-reminder p {
-            font-size: 13px; color: var(--text); line-height: 1.8; font-weight: 500;
-            margin-bottom: 10px;
-        }
-        .write-rules-reminder p:last-child { margin-bottom: 0; }
-        .write-rules-reminder .note-highlight {
-            background: rgba(217,139,120,.1); border-radius: 8px;
-            padding: 10px 12px; border-left: 3px solid var(--coral);
-            font-size: 12px; color: var(--text-sub); line-height: 1.75;
-        }
-        .write-rules-footer {
-            padding: 16px 28px 24px; flex-shrink: 0;
-            border-top: 1px solid var(--line); background: var(--surface);
-        }
-        .write-rules-ok {
-            width: 100%; padding: 13px;
-            background: var(--sage-deep); color: #fff; border: none;
-            border-radius: var(--radius-pill);
-            font-size: 14px; font-weight: 800; cursor: pointer;
-            transition: all 0.18s; font-family: 'Noto Sans TC', sans-serif;
-            box-shadow: 0 4px 14px rgba(89,117,104,.35);
-        }
-        .write-rules-ok:hover { background: var(--primary-h); transform: translateY(-1px); }
-
         /* ── 送出感謝確認彈窗 ── */
         .send-confirm-overlay {
             position: fixed; inset: 0; z-index: 800;
@@ -1989,65 +1978,6 @@
                 </div>
             </div>
             <button @click="finishDraw10" class="btn-primary" style="margin-top:24px;min-width:200px;">全部收入倉庫 🎒</button>
-        </div>
-    </div>
-
-    <!-- 感謝規則彈窗 -->
-    <div v-if="showWriteRulesModal" class="write-rules-overlay" @click.self="closeWriteRules">
-        <div class="write-rules-modal">
-
-            <div class="write-rules-head">
-                <div class="write-rules-greeting">Hi Dear 島民們 🏝️</div>
-                <p class="write-rules-intro">
-                    感恩小島是一個讓大家把「謝謝」好好說出口的地方 💌 如果某個瞬間讓你覺得「還好有他在」，歡迎打開感恩小島，寫下一張小卡，把這份感謝送到對方手上 🌿
-                </p>
-            </div>
-
-            <div class="write-rules-body">
-
-                <div>
-                    <div class="write-rules-section-title">✨ 什麼時候適合寄出一張感謝小卡？</div>
-                    <div class="write-rules-items">
-                        <div class="write-rules-item">
-                            <span class="write-rules-star">🌟</span>
-                            <div class="write-rules-item-text">
-                                <strong>當對方幫你解決了一個卡點</strong>
-                                也許他給了你一個關鍵建議、分享了實用技巧，或在你卡住時拉了你一把，讓事情順利往前推進。
-                            </div>
-                        </div>
-                        <div class="write-rules-item">
-                            <span class="write-rules-star">🌟</span>
-                            <div class="write-rules-item-text">
-                                <strong>當對方讓你感受到被支持、被接住</strong>
-                                可能是一個提醒、一份協助、一次即時支援，雖然不一定轟轟烈烈，卻剛好幫上了你的忙。
-                            </div>
-                        </div>
-                        <div class="write-rules-item">
-                            <span class="write-rules-star">🌟</span>
-                            <div class="write-rules-item-text">
-                                <strong>當他的分享或行動讓你受益良多</strong>
-                                不論是經驗、方法、資源，還是一句讓你少走彎路的提醒，只要你真心覺得被幫助了，都很值得被好好感謝。
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="write-rules-section-title">💛 小島的小提醒</div>
-                    <div class="write-rules-reminder">
-                        <p>感恩小島沒有嚴格的發卡門檻。只要你想把一份感謝具體說出來，都歡迎寄出一張小卡。</p>
-                        <p>同時，小島也希望鼓勵夥伴之間彼此看見，讓那些平常容易被忽略的支持與幫助，有機會被好好記下來，推薦優先把小卡留給平常和你併肩作戰的同學們。</p>
-                        <div class="note-highlight">
-                            如果想感謝主管在工作上的照顧與指導，建議用私訊或當面表達 🥹 會更直接也更真誠，也能避免感謝卡被誤會成其他壓力或期待。
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="write-rules-footer">
-                <button class="write-rules-ok" @click="closeWriteRules">我知道了，開始寫感謝 🌿</button>
-            </div>
         </div>
     </div>
 
@@ -2574,77 +2504,132 @@
 
             <!-- Write -->
             <div v-else-if="currentTab === 'write'" key="write" class="tab-content">
-                <div class="write-hero">
-                    <div class="write-hero-icon">💌</div>
-                    <h2 class="write-hero-title">寄出感謝</h2>
-                    <p class="write-hero-sub">把感謝化作能量，送給讓你感動的人 🌿</p>
-                </div>
+                <div class="write-layout">
 
-                <div class="write-card">
-                    <div class="form-group">
-                        <label class="form-label">✉️ 收件人</label>
-                        <div class="recipient-wrap">
-                            <input
-                                v-model="recipientInput"
-                                @input="onRecipientInput"
-                                @focus="showSuggestions=true"
-                                @blur="hideSuggestions"
-                                class="form-input"
-                                placeholder="輸入名稱或信箱..."
-                                autocomplete="off"
-                            />
-                            <button class="recipient-arrow" @click.prevent="showSuggestions=!showSuggestions">
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </button>
-                            <div v-if="showSuggestions && filteredSuggestions.length" class="suggestion-list">
-                                <div v-for="u in filteredSuggestions" :key="u.id"
-                                     class="suggestion-item"
-                                     @mousedown.prevent="selectRecipient(u)">
-                                    <div class="suggestion-avatar">
-                                        <img v-if="getProfileAvatar(u.id)" :src="getProfileAvatar(u.id).url"
-                                             :style="{objectPosition: getProfileAvatar(u.id).posX+'% '+getProfileAvatar(u.id).posY+'%', width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%'}">
-                                        <span v-else>{{ (u.name||'?')[0] }}</span>
-                                    </div>
-                                    <div>
-                                        <div class="suggestion-name">{{ u.name }}</div>
-                                        <div class="suggestion-email">{{ u.email }}</div>
+                    <!-- 左：寫信表單 -->
+                    <div class="write-form-col">
+                        <div class="write-hero">
+                            <div class="write-hero-icon">💌</div>
+                            <h2 class="write-hero-title">寄出感謝</h2>
+                            <p class="write-hero-sub">把感謝化作能量，送給讓你感動的人 🌿</p>
+                        </div>
+
+                        <div class="write-card">
+                            <div class="form-group">
+                                <label class="form-label">✉️ 收件人</label>
+                                <div class="recipient-wrap">
+                                    <input
+                                        v-model="recipientInput"
+                                        @input="onRecipientInput"
+                                        @focus="showSuggestions=true"
+                                        @blur="hideSuggestions"
+                                        class="form-input"
+                                        placeholder="輸入名稱或信箱..."
+                                        autocomplete="off"
+                                    />
+                                    <button class="recipient-arrow" @click.prevent="showSuggestions=!showSuggestions">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                    <div v-if="showSuggestions && filteredSuggestions.length" class="suggestion-list">
+                                        <div v-for="u in filteredSuggestions" :key="u.id"
+                                             class="suggestion-item"
+                                             @mousedown.prevent="selectRecipient(u)">
+                                            <div class="suggestion-avatar">
+                                                <img v-if="getProfileAvatar(u.id)" :src="getProfileAvatar(u.id).url"
+                                                     :style="{objectPosition: getProfileAvatar(u.id).posX+'% '+getProfileAvatar(u.id).posY+'%', width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%'}">
+                                                <span v-else>{{ (u.name||'?')[0] }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="suggestion-name">{{ u.name }}</div>
+                                                <div class="suggestion-email">{{ u.email }}</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">🌟 感謝卡數量 <span class="cards-left">（剩餘 {{ currentUser?.cards || 0 }} 張）</span></label>
+                                <div class="qty-row">
+                                    <button @click="adjustCardCost(-1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
+                                    <div class="qty-display">{{ letterForm.cost }}</div>
+                                    <button @click="adjustCardCost(1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">📝 感謝訊息</label>
+                                <textarea v-model="letterForm.content" rows="5" class="form-input" placeholder="說說你想感謝的事...✨"></textarea>
+                            </div>
+
+                            <div class="send-btn-row">
+                                <button @click="openSendConfirm"
+                                    :disabled="!letterForm.toId || !letterForm.content.trim() || (currentUser?.cards || 0) < letterForm.cost"
+                                    class="send-btn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    送出感謝 (消耗 {{ letterForm.cost }} 張卡)
+                                </button>
+                                <button @click="openAnonConfirm"
+                                    :disabled="!letterForm.toId || !letterForm.content.trim() || (currentUser?.cards || 0) < letterForm.cost"
+                                    class="anon-btn">
+                                    <i class="fa-solid fa-mask"></i>
+                                    匿名感謝
+                                </button>
+                            </div>
+                            <div class="anon-hint" @click="isAnon=false; showAnonInfo=true">
+                                <i class="fa-solid fa-circle-info"></i> 什麼是匿名感謝？
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">🌟 感謝卡數量 <span class="cards-left">（剩餘 {{ currentUser?.cards || 0 }} 張）</span></label>
-                        <div class="qty-row">
-                            <button @click="adjustCardCost(-1)" class="qty-btn"><i class="fa-solid fa-minus"></i></button>
-                            <div class="qty-display">{{ letterForm.cost }}</div>
-                            <button @click="adjustCardCost(1)" class="qty-btn"><i class="fa-solid fa-plus"></i></button>
+                    <!-- 右：感謝規則說明欄 -->
+                    <aside class="write-rules-panel">
+                        <div class="wrp-head">
+                            <div class="wrp-greeting">Hi Dear 島民們 🏝️</div>
+                            <p class="wrp-intro">
+                                感恩小島是一個讓大家把「謝謝」好好說出口的地方 💌 如果某個瞬間讓你覺得「還好有他在」，歡迎打開感恩小島，寫下一張小卡，把這份感謝送到對方手上 🌿
+                            </p>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="form-label">📝 感謝訊息</label>
-                        <textarea v-model="letterForm.content" rows="5" class="form-input" placeholder="說說你想感謝的事...✨"></textarea>
-                    </div>
+                        <div class="wrp-section">
+                            <div class="wrp-section-title">✨ 什麼時候適合寄出一張感謝小卡？</div>
+                            <div class="wrp-items">
+                                <div class="wrp-item">
+                                    <span class="wrp-star">🌟</span>
+                                    <div class="wrp-item-text">
+                                        <strong>當對方幫你解決了一個卡點</strong>
+                                        也許他給了你一個關鍵建議、分享了實用技巧，或在你卡住時拉了你一把，讓事情順利往前推進。
+                                    </div>
+                                </div>
+                                <div class="wrp-item">
+                                    <span class="wrp-star">🌟</span>
+                                    <div class="wrp-item-text">
+                                        <strong>當對方讓你感受到被支持、被接住</strong>
+                                        可能是一個提醒、一份協助、一次即時支援，雖然不一定轟轟烈烈，卻剛好幫上了你的忙。
+                                    </div>
+                                </div>
+                                <div class="wrp-item">
+                                    <span class="wrp-star">🌟</span>
+                                    <div class="wrp-item-text">
+                                        <strong>當他的分享或行動讓你受益良多</strong>
+                                        不論是經驗、方法、資源，還是一句讓你少走彎路的提醒，只要你真心覺得被幫助了，都很值得被好好感謝。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="send-btn-row">
-                        <button @click="openSendConfirm"
-                            :disabled="!letterForm.toId || !letterForm.content.trim() || (currentUser?.cards || 0) < letterForm.cost"
-                            class="send-btn">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            送出感謝 (消耗 {{ letterForm.cost }} 張卡)
-                        </button>
-                        <button @click="openAnonConfirm"
-                            :disabled="!letterForm.toId || !letterForm.content.trim() || (currentUser?.cards || 0) < letterForm.cost"
-                            class="anon-btn">
-                            <i class="fa-solid fa-mask"></i>
-                            匿名感謝
-                        </button>
-                    </div>
-                    <div class="anon-hint" @click="isAnon=false; showAnonInfo=true">
-                        <i class="fa-solid fa-circle-info"></i> 什麼是匿名感謝？
-                    </div>
+                        <div class="wrp-section">
+                            <div class="wrp-section-title">💛 小島的小提醒</div>
+                            <div class="wrp-reminder">
+                                <p>感恩小島沒有嚴格的發卡門檻。只要你想把一份感謝具體說出來，都歡迎寄出一張小卡。</p>
+                                <p>同時，小島也希望鼓勵夥伴之間彼此看見，讓那些平常容易被忽略的支持與幫助，有機會被好好記下來，推薦優先把小卡留給平常和你併肩作戰的同學們。</p>
+                                <div class="wrp-note">
+                                    如果想感謝主管在工作上的照顧與指導，建議用私訊或當面表達 🥹 會更直接也更真誠，也能避免感謝卡被誤會成其他壓力或期待。
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
                 </div>
             </div>
 
@@ -4300,13 +4285,9 @@ createApp({
                 setTimeout(() => window.islandEngine?.center(), 300);
             }, 50);
         };
-        const showWriteRulesModal = ref(false);
         const switchTab  = (tab) => {
             const prev = currentTab.value;
             currentTab.value = tab;
-            if (tab === 'write' && !sessionStorage.getItem('writeRulesSeen')) {
-                showWriteRulesModal.value = true;
-            }
             nextTick(() => {
                 document.getElementById('main-content')?.scrollTo(0, 0);
                 if(tab==='home')   window.initIslandCanvas?.();
@@ -4316,10 +4297,6 @@ createApp({
                     setTimeout(() => { window.initIslandCanvas?.(); saveTiles(); }, 50);
                 }
             });
-        };
-        const closeWriteRules = () => {
-            showWriteRulesModal.value = false;
-            sessionStorage.setItem('writeRulesSeen', '1');
         };
 
         // ── 送出感謝：確認彈窗 + 動畫 ──
