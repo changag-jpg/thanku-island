@@ -633,7 +633,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
 
           <!-- Sprite Sheet -->
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">走路動畫 <span style="font-weight:400">1280×256px，4幀橫排</span></div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">走路動畫 <span style="font-weight:400">1024×256px，4幀橫排</span></div>
             <div class="img-upload-area" @click="$refs.spriteFileInput.click()" style="padding:16px">
               <input ref="spriteFileInput" type="file" accept="image/png" style="display:none" @change="onItemImgChange('sprite',$event)">
               <div v-if="itemForm.spriteUrl">
@@ -662,7 +662,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         <label class="fl">閒置動畫雪碧圖 <span style="font-weight:400;color:var(--sub);font-size:11px">（選填）</span></label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">閒置動畫 <span style="font-weight:400">4幀或9幀橫排 PNG</span></div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">閒置動畫 <span style="font-weight:400">PNG（4幀橫排 或 9幀3×3）</span></div>
             <div class="img-upload-area" @click="$refs.idleSpriteInput.click()" style="padding:16px">
               <input ref="idleSpriteInput" type="file" accept="image/png" style="display:none" @change="onItemImgChange('idleSprite',$event)">
               <div v-if="itemForm.idleSpriteUrl">
@@ -690,7 +690,11 @@ input[type=range]{flex:1;accent-color:var(--pri)}
                 {{ f }} 幀
               </button>
             </div>
-            <div style="font-size:11px;color:var(--sub);margin-top:8px">每幀 96×96px，隨機播放 5 次後停止</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:8px">
+              <span v-if="itemForm.idleSpriteFrames===4">圖片尺寸：1024×256px（4幀橫排）</span>
+              <span v-else>圖片尺寸：768×768px（3×3 排列）</span>
+              <br>隨機播放 5 次後停止
+            </div>
           </div>
         </div>
       </div>
