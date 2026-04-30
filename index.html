@@ -513,10 +513,11 @@
             border: 2px solid rgba(255,255,255,0.9);
         }
         .float-item { position: absolute; transition: transform 0.2s ease; user-select: none; -webkit-user-select: none; }
+        .unique-badge { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#f7c948,#e8a020); color: #fff; font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px; white-space: nowrap; letter-spacing: .04em; box-shadow: 0 2px 6px rgba(232,160,32,.45); pointer-events: none; z-index: 10; }
         .float-item:hover { transform: scale(1.12) translateY(-6px); z-index: 50 !important; }
         .float-item.is-dragging { transform: scale(1.15); cursor: grabbing; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
         .float-item:not(.is-dragging) { cursor: grab; }
-        .animal-roam { transition: left 4s ease-in-out, top 4s ease-in-out; }
+        .animal-roam { transition: left 3s ease-in-out, top 3s ease-in-out; }
         .float-item img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.12)); }
         .float-item .emoji-icon { font-size: 56px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); line-height: 1; }
 
@@ -2184,6 +2185,7 @@
                                 <img v-else-if="item.imgUrl" :src="item.imgUrl" @error="handleImageError(item)" :alt="item.name">
                                 <span v-else class="emoji-icon">{{ item.emoji }}</span>
                             </div>
+                            <div v-if="item.isUnique && !isEditMode" class="unique-badge">✦ 獨一無二</div>
                             <div v-if="isEditMode" class="item-edit-btns">
                                 <button @click.stop="toggleFlip(item)" class="flip-btn" title="左右鏡射"><i class="fa-solid fa-right-left"></i></button>
                                 <button v-if="item.type === 'decor'" @click.stop="scaleItem(item, -0.15)" class="scale-btn" title="縮小"><i class="fa-solid fa-minus"></i></button>
@@ -2401,8 +2403,8 @@
                 <div class="gacha-card">
                     <div class="gacha-card-header">
                         <div>
-                            <div class="gacha-title">🐾 邀請動物朋友</div>
-                            <div class="gacha-desc">招募可愛動物來到你的營地</div>
+                            <div class="gacha-title">🐾 邀請島嶼居民</div>
+                            <div class="gacha-desc">招募可愛夥伴來到你的小島定居</div>
                         </div>
                         <button @click="openPool('pet')" class="pool-preview-btn">卡池一覽</button>
                     </div>
@@ -2414,7 +2416,7 @@
                     </div>
                     <div class="btn-row" style="margin-top:8px;">
                         <button @click="triggerGacha10('pet', false)" class="btn-primary btn-ten" :disabled="(currentUser?.energy || 0) < 900">
-                            ✨ 十連邀請 <span class="cost-badge">-900 ⚡</span>
+                            ✨ 十連邀請 <span class="cost-badge">-900 ⚡ 九折</span>
                         </button>
                     </div>
                     <div v-if="poolSettings.animal_pool_cover" class="gacha-cover">
@@ -2440,7 +2442,7 @@
                     </div>
                     <div class="btn-row" style="margin-top:8px;">
                         <button @click="triggerGacha10('decor', false)" class="btn-primary btn-ten" :disabled="(currentUser?.energy || 0) < 900">
-                            ✨ 十連探索 <span class="cost-badge">-900 ⚡</span>
+                            ✨ 十連探索 <span class="cost-badge">-900 ⚡ 九折</span>
                         </button>
                     </div>
                     <div v-if="poolSettings.decor_pool_cover" class="gacha-cover">
@@ -3419,10 +3421,11 @@ createApp({
             [...gachaPool.value, ...shopItems.value].forEach(g => {
                 if (g.name) {
                     imgMap[g.name] = {
-                        imgUrl:          g.imgUrl          || '',
-                        spriteUrl:       g.spriteUrl       || '',
-                        idleSpriteUrl:   g.idleSpriteUrl   || '',
+                        imgUrl:           g.imgUrl           || '',
+                        spriteUrl:        g.spriteUrl        || '',
+                        idleSpriteUrl:    g.idleSpriteUrl    || '',
                         idleSpriteFrames: g.idleSpriteFrames || 9,
+                        isUnique:         g.isUnique         || false,
                     };
                 }
             });
@@ -3437,6 +3440,7 @@ createApp({
                     if (item.spriteUrl        !== latest.spriteUrl)        { item.spriteUrl        = latest.spriteUrl;        changed = true; }
                     if (item.idleSpriteUrl    !== latest.idleSpriteUrl)    { item.idleSpriteUrl    = latest.idleSpriteUrl;    changed = true; }
                     if (item.idleSpriteFrames !== latest.idleSpriteFrames) { item.idleSpriteFrames = latest.idleSpriteFrames; changed = true; }
+                    if (item.isUnique         !== latest.isUnique)         { item.isUnique         = latest.isUnique;         changed = true; }
                 }
             });
 
@@ -3448,6 +3452,7 @@ createApp({
                     if (item.spriteUrl        !== latest.spriteUrl)        { item.spriteUrl        = latest.spriteUrl;        changed = true; }
                     if (item.idleSpriteUrl    !== latest.idleSpriteUrl)    { item.idleSpriteUrl    = latest.idleSpriteUrl;    changed = true; }
                     if (item.idleSpriteFrames !== latest.idleSpriteFrames) { item.idleSpriteFrames = latest.idleSpriteFrames; changed = true; }
+                    if (item.isUnique         !== latest.isUnique)         { item.isUnique         = latest.isUnique;         changed = true; }
                 }
             });
 
@@ -3847,14 +3852,14 @@ createApp({
             animalStates.value[id].moving = true;
             startSpriteAnim(id);
 
-            // CSS transition 是 4s，等 4.1s 後確認停止
+            // CSS transition 是 3s，等 3.1s 後確認停止
             movingTimers[id] = setTimeout(() => {
                 if (animalStates.value[id]) {
                     animalStates.value[id].moving = false;
                 }
                 stopSpriteAnim(id);
                 delete movingTimers[id];
-            }, 4100);
+            }, 3100);
         };
 
         const triggerIdleAnim = (item) => {
@@ -3867,39 +3872,48 @@ createApp({
 
         const moveAnimals = () => {
             if (currentTab.value !== 'home') return;
-            displayIslandItems.value.forEach(item => {
-                if (item.type === 'animal' && animalStates.value[item.id]) {
-                    if (Math.random() > 0.35) {
-                        const oldX  = animalStates.value[item.id].x;
-                        const oldHL = prevHL[item.id] ?? 0;
-                        let newX, newY, tries = 0;
-                        do {
-                            newX = 12 + Math.random() * 60;
-                            newY = 10 + Math.random() * 50;
-                            const t = getTerrainAt(newX, newY);
-                            tries++;
-                            if (t.onIsland && t.ci !== 1) break;
-                        } while (tries < 10);
-                        animalStates.value[item.id].x    = newX;
-                        animalStates.value[item.id].y    = newY;
-                        animalStates.value[item.id].flip = newX > oldX;
+            // 同時最多 2 個島民移動
+            const movingCount = Object.values(animalStates.value).filter(s => s.moving).length;
+            if (movingCount >= 2) return;
 
-                        // 移動時切換到雪碧圖動畫，結束後強制回靜止圖
-                        setMoving(item);
+            // 從未移動的島民中隨機選一個
+            const eligible = displayIslandItems.value.filter(i =>
+                i.type === 'animal' && animalStates.value[i.id] && !animalStates.value[i.id].moving
+            );
+            if (!eligible.length) return;
+            if (Math.random() > 0.55) return; // 45% 機率真的觸發
 
-                        // 偵測高地變化，觸發跳躍動畫
-                        const newHL = getTerrainAt(newX, newY).hl || 0;
-                        if (newHL > oldHL) {
-                            jumpStates[item.id] = 'up';
-                            setTimeout(() => { delete jumpStates[item.id]; }, 500);
-                        } else if (newHL < oldHL) {
-                            jumpStates[item.id] = 'down';
-                            setTimeout(() => { delete jumpStates[item.id]; }, 400);
-                        }
-                        prevHL[item.id] = newHL;
-                    }
-                }
-            });
+            const item  = eligible[Math.floor(Math.random() * eligible.length)];
+            const state = animalStates.value[item.id];
+            const oldX  = state.x;
+            const oldY  = state.y;
+            const oldHL = prevHL[item.id] ?? 0;
+
+            // 在目前位置附近小範圍移動（±15%）
+            let newX, newY, tries = 0;
+            do {
+                newX = Math.min(85, Math.max(10, oldX + (Math.random() - 0.5) * 28));
+                newY = Math.min(75, Math.max(10, oldY + (Math.random() - 0.5) * 28));
+                const t = getTerrainAt(newX, newY);
+                tries++;
+                if (t.onIsland && t.ci !== 1) break;
+            } while (tries < 10);
+
+            state.x    = newX;
+            state.y    = newY;
+            state.flip = newX > oldX;
+            setMoving(item);
+
+            // 偵測高地變化，觸發跳躍動畫
+            const newHL = getTerrainAt(newX, newY).hl || 0;
+            if (newHL > oldHL) {
+                jumpStates[item.id] = 'up';
+                setTimeout(() => { delete jumpStates[item.id]; }, 500);
+            } else if (newHL < oldHL) {
+                jumpStates[item.id] = 'down';
+                setTimeout(() => { delete jumpStates[item.id]; }, 400);
+            }
+            prevHL[item.id] = newHL;
         };
 
         // ===== SeaTalk 認證 =====
@@ -4831,11 +4845,12 @@ createApp({
             ],
             shop: [
                 '🛍️ 用感謝換來的能量，招募夥伴、探索裝飾！',
-                '🐾 邀請動物朋友 (100⚡) — 隨機邀請一位可愛動物來你的島上定居！',
-                '🏕️ 裝飾品探索 (300⚡) — 發現各種島嶼裝飾，讓你的島更獨特！',
-                '✨ 十連招募/探索 — 一次抽 10 個，還保證至少 1 個稀有以上！',
+                '🐾 邀請島嶼居民 (100⚡) — 隨機邀請一位可愛夥伴來你的小島定居！',
+                '🏕️ 裝飾品探索 (100⚡) — 發現各種島嶼裝飾，讓你的島更獨特！',
+                '✨ 十連招募/探索 (900⚡) — 一次抽 10 個，享九折優惠，保證至少 1 個稀有以上！',
                 '稀有度分為：普通 / 💎 稀有 / ⭐ 傳說',
-                '傳說夥伴會發出神聖光芒，快去收集吧！',
+                '⭐ 傳說夥伴擁有特殊彩蛋，十分珍貴，快去收集吧！',
+                '✦ 標有「獨一無二」的夥伴/裝飾只會出現一次，擁有就代表世界上只有你有！',
                 '小提醒：能量越多，就能抽越多。多收感謝才能抽更多哦 😉',
             ],
             wall: [
@@ -5066,6 +5081,14 @@ createApp({
                 pool = allGachaItems.value.filter(i => i.poolId === type);
                 if (!pool.length) pool = [...allGachaItems.value];
             }
+            // 獨一無二：排除使用者已擁有的該物品
+            const user = currentUser.value;
+            const allOwned = new Set([
+                ...(user.island    || []).map(i => i.name),
+                ...(user.warehouse || []).map(i => i.name),
+            ]);
+            const poolNoUnique = pool.filter(p => !(p.isUnique && allOwned.has(p.name)));
+            if (poolNoUnique.length > 0) pool = poolNoUnique;
 
             setTimeout(() => { drawResult.value = weightedRandom(pool); }, 1800);
         };
@@ -5074,11 +5097,12 @@ createApp({
             if (drawResult.value) {
                 if (!currentUser.value.warehouse) currentUser.value.warehouse = [];
                 currentUser.value.warehouse.push({
-                    id: Date.now(),
-                    name:   drawResult.value.name,
-                    emoji:  drawResult.value.emoji,
-                    imgUrl: drawResult.value.imgUrl || null,
-                    type:   drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (drawResult.value.type || 'decor')
+                    id:       Date.now(),
+                    name:     drawResult.value.name,
+                    emoji:    drawResult.value.emoji,
+                    imgUrl:   drawResult.value.imgUrl || null,
+                    isUnique: drawResult.value.isUnique || false,
+                    type:     drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (drawResult.value.type || 'decor')
                 });
                 saveData();
             }
@@ -5112,6 +5136,14 @@ createApp({
                 pool = allGachaItems.value.filter(i => i.poolId === type);
                 if (!pool.length) pool = [...allGachaItems.value];
             }
+            // 獨一無二：排除使用者已擁有的該物品
+            const user10 = currentUser.value;
+            const allOwned10 = new Set([
+                ...(user10.island    || []).map(i => i.name),
+                ...(user10.warehouse || []).map(i => i.name),
+            ]);
+            const poolNoUnique10 = pool.filter(p => !(p.isUnique && allOwned10.has(p.name)));
+            if (poolNoUnique10.length > 0) pool = poolNoUnique10;
             // 保底：10連至少1個稀有或以上
             setTimeout(() => {
                 const results = [];
@@ -5136,10 +5168,12 @@ createApp({
                 if (!currentUser.value.warehouse) currentUser.value.warehouse = [];
                 draw10Results.value.forEach((item, i) => {
                     currentUser.value.warehouse.push({
-                        id: Date.now() + i,
-                        name:  item.name, emoji: item.emoji,
-                        imgUrl: item.imgUrl || null,
-                        type:  drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (item.type || 'decor')
+                        id:       Date.now() + i,
+                        name:     item.name,
+                        emoji:    item.emoji,
+                        imgUrl:   item.imgUrl || null,
+                        isUnique: item.isUnique || false,
+                        type:     drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (item.type || 'decor')
                     });
                 });
                 saveData();

@@ -746,6 +746,15 @@ input[type=range]{flex:1;accent-color:var(--pri)}
         </button>
       </div>
 
+      <div class="fr" style="flex-direction:row;align-items:center;gap:12px">
+        <label class="fl" style="margin:0">獨一無二</label>
+        <button @click="itemForm.isUnique=!itemForm.isUnique"
+          :style="itemForm.isUnique?{background:'#fff8e0',color:'#B8860B',border:'2px solid #e8c030'}:{background:'var(--s2)',color:'var(--sub)',border:'2px solid var(--border)'}"
+          style="padding:8px 20px;border-radius:var(--rp);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">
+          {{ itemForm.isUnique ? '✦ 開啟（每位使用者只能抽到一次）' : '關閉（可重複抽到）' }}
+        </button>
+      </div>
+
       <div style="display:flex;gap:10px;margin-top:8px">
         <button class="btn bg" @click="showItemForm=false" style="flex:1">取消</button>
         <button class="btn bp" @click="saveItem" :disabled="!itemForm.name.trim()||!itemForm.emoji.trim()||(imgUploading!=='')" style="flex:2">
@@ -990,7 +999,7 @@ createApp({setup(){
   const copiedMsg    = ref('');
   const itemForm = Vue.reactive({
     name:'', emoji:'', imgUrl:'', spriteUrl:'', idleSpriteUrl:'', idleSpriteFrames:4,
-    type:'animal', poolId:'animal', rarity:'common', weight:30, active:true,
+    type:'animal', poolId:'animal', rarity:'common', weight:30, active:true, isUnique:false,
   });
   const showPoolForm = ref(false);
   const editingPool  = ref(null);
@@ -1070,7 +1079,7 @@ createApp({setup(){
     editingItem.value = null;
     const pid = currentPool.value;
     const defaultType = pid==='animal'?'animal':pid==='decor'?'decor':'animal';
-    Object.assign(itemForm,{name:'',emoji:'',imgUrl:'',spriteUrl:'',idleSpriteUrl:'',idleSpriteFrames:4,type:defaultType,poolId:pid,rarity:'common',weight:30,active:true});
+    Object.assign(itemForm,{name:'',emoji:'',imgUrl:'',spriteUrl:'',idleSpriteUrl:'',idleSpriteFrames:4,type:defaultType,poolId:pid,rarity:'common',weight:30,active:true,isUnique:false});
     showItemForm.value = true;
   };
   const openEditItem = (item) => {
@@ -1080,7 +1089,7 @@ createApp({setup(){
       imgUrl:item.imgUrl||'', spriteUrl:item.spriteUrl||'',
       idleSpriteUrl:item.idleSpriteUrl||'', idleSpriteFrames:item.idleSpriteFrames||4,
       type:item.type, poolId:item.poolId||(item.type==='animal'?'animal':'decor'),
-      rarity:item.rarity, weight:item.weight, active:item.active,
+      rarity:item.rarity, weight:item.weight, active:item.active, isUnique:item.isUnique||false,
     });
     showItemForm.value = true;
   };
@@ -1092,7 +1101,7 @@ createApp({setup(){
       idleSpriteUrl:itemForm.idleSpriteUrl||'', idleSpriteFrames:Number(itemForm.idleSpriteFrames)||4,
       type:itemForm.type, poolId:itemForm.poolId,
       rarity:itemForm.rarity, weight:Number(itemForm.weight)||30,
-      active:itemForm.active,
+      active:itemForm.active, isUnique:itemForm.isUnique||false,
     };
     try {
       if(editingItem.value) {
