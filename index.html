@@ -513,7 +513,7 @@
             border: 2px solid rgba(255,255,255,0.9);
         }
         .float-item { position: absolute; transition: transform 0.2s ease; user-select: none; -webkit-user-select: none; }
-        .unique-badge { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#f7c948,#e8a020); color: #fff; font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px; white-space: nowrap; letter-spacing: .04em; box-shadow: 0 2px 6px rgba(232,160,32,.45); pointer-events: none; z-index: 10; }
+        .unique-badge { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #5c3d1e; color: #fff; font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px; white-space: nowrap; letter-spacing: .04em; pointer-events: none; z-index: 10; }
         .float-item:hover { transform: scale(1.12) translateY(-6px); z-index: 50 !important; }
         .float-item.is-dragging { transform: scale(1.15); cursor: grabbing; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
         .float-item:not(.is-dragging) { cursor: grab; }
@@ -2226,7 +2226,6 @@
                                 <img v-else-if="item.imgUrl" :src="item.imgUrl" @error="handleImageError(item)" :alt="item.name">
                                 <span v-else class="emoji-icon">{{ item.emoji }}</span>
                             </div>
-                            <div v-if="item.isUnique && !isEditMode" class="unique-badge">✦ 獨一無二</div>
                             <div v-if="isEditMode" class="item-edit-btns">
                                 <button @click.stop="toggleFlip(item)" class="flip-btn" title="左右鏡射"><i class="fa-solid fa-right-left"></i></button>
                                 <button v-if="item.type === 'decor'" @click.stop="scaleItem(item, -0.15)" class="scale-btn" title="縮小"><i class="fa-solid fa-minus"></i></button>
