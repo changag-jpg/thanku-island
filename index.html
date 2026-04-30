@@ -3884,7 +3884,6 @@ createApp({
 
         // 設定移動狀態，並在 CSS transition 結束後自動切回靜止
         const setMoving = (item) => {
-            if (!item.spriteUrl) return;
             const id = item.id;
 
             // 清掉舊的停止計時器，避免提早關閉
@@ -3893,9 +3892,9 @@ createApp({
                 delete movingTimers[id];
             }
 
-            // 強制設為移動狀態並啟動動畫
+            // 無論有無 spriteUrl 都設移動狀態（避免沒有雪碧圖時變靜止圖平移）
             animalStates.value[id].moving = true;
-            startSpriteAnim(id);
+            if (item.spriteUrl) startSpriteAnim(id);
 
             // CSS transition 是 3s，等 3.1s 後確認停止
             movingTimers[id] = setTimeout(() => {
@@ -3926,7 +3925,7 @@ createApp({
                 i.type === 'animal' && animalStates.value[i.id] && !animalStates.value[i.id].moving
             );
             if (!eligible.length) return;
-            if (Math.random() > 0.55) return; // 45% 機率真的觸發
+            if (Math.random() > 0.7) return; // 70% 機率真的觸發
 
             const item  = eligible[Math.floor(Math.random() * eligible.length)];
             const state = animalStates.value[item.id];
@@ -5303,7 +5302,7 @@ createApp({
                         loadPoolSettings();
                         syncItemImages();
                         initAnimalStates();
-                        if (!roamInterval) roamInterval = setInterval(moveAnimals, 4500);
+                        if (!roamInterval) roamInterval = setInterval(moveAnimals, 2500);
                         // 閒置動畫：每 150ms 推進 frame
                         if (!idleFrameTimer) idleFrameTimer = setInterval(() => {
                             for (const id of Object.keys(idleStates)) {
