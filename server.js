@@ -154,6 +154,7 @@ async function initDB() {
       `ALTER TABLE profiles ADD COLUMN shells INT DEFAULT 0`,
       `ALTER TABLE gacha_items ADD COLUMN idle_sprite_url TEXT`,
       `ALTER TABLE gacha_items ADD COLUMN idle_sprite_frames INT DEFAULT 4`,
+      `ALTER TABLE gacha_items ADD COLUMN is_unique TINYINT(1) DEFAULT 0`,
     ]) { try { await pool.query(sql); } catch(e) {} }
 
     console.log('資料庫初始化完成');
@@ -571,6 +572,7 @@ app.get('/api/gacha-items', async (req, res) => {
       spriteUrl: r.sprite_url,
       idleSpriteUrl: r.idle_sprite_url || '',
       idleSpriteFrames: r.idle_sprite_frames || 4,
+      isUnique: !!r.is_unique,
       active: !!r.active,
       createdAt: r.created_at
     })));
@@ -744,6 +746,7 @@ app.get('/api/admin/gacha-items', requireAdmin, async (req, res) => {
       spriteUrl: r.sprite_url || '',
       idleSpriteUrl: r.idle_sprite_url || '',
       idleSpriteFrames: r.idle_sprite_frames || 4,
+      isUnique: !!r.is_unique,
       active: !!r.active,
       createdAt: r.created_at
     })));
@@ -751,24 +754,24 @@ app.get('/api/admin/gacha-items', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/gacha-items', requireAdmin, async (req, res) => {
-  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, idleSpriteUrl, idleSpriteFrames, active } = req.body;
+  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, idleSpriteUrl, idleSpriteFrames, isUnique, active } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO gacha_items (name, emoji, rarity, weight, type, pool_id, img_url, sprite_url, idle_sprite_url, idle_sprite_frames, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO gacha_items (name, emoji, rarity, weight, type, pool_id, img_url, sprite_url, idle_sprite_url, idle_sprite_frames, is_unique, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [name, emoji || '', rarity || 'common', weight || 30, type || 'animal', poolId || null,
-       imgUrl || '', spriteUrl || '', idleSpriteUrl || '', idleSpriteFrames || 4, active !== false ? 1 : 0, Date.now()]
+       imgUrl || '', spriteUrl || '', idleSpriteUrl || '', idleSpriteFrames || 4, isUnique ? 1 : 0, active !== false ? 1 : 0, Date.now()]
     );
     res.json({ success: true, id: String(result.insertId) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.patch('/api/admin/gacha-items/:id', requireAdmin, async (req, res) => {
-  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, idleSpriteUrl, idleSpriteFrames, active } = req.body;
+  const { name, emoji, rarity, weight, type, poolId, imgUrl, spriteUrl, idleSpriteUrl, idleSpriteFrames, isUnique, active } = req.body;
   try {
     await pool.query(
-      'UPDATE gacha_items SET name=?, emoji=?, rarity=?, weight=?, type=?, pool_id=?, img_url=?, sprite_url=?, idle_sprite_url=?, idle_sprite_frames=?, active=? WHERE id=?',
+      'UPDATE gacha_items SET name=?, emoji=?, rarity=?, weight=?, type=?, pool_id=?, img_url=?, sprite_url=?, idle_sprite_url=?, idle_sprite_frames=?, is_unique=?, active=? WHERE id=?',
       [name, emoji || '', rarity || 'common', weight || 30, type || 'animal', poolId || null,
-       imgUrl || '', spriteUrl || '', idleSpriteUrl || '', idleSpriteFrames || 4, active !== false ? 1 : 0, req.params.id]
+       imgUrl || '', spriteUrl || '', idleSpriteUrl || '', idleSpriteFrames || 4, isUnique ? 1 : 0, active !== false ? 1 : 0, req.params.id]
     );
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }

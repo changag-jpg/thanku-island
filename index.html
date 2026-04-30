@@ -1894,6 +1894,28 @@
             100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
+        /* 禮物領取彈窗 */
+        .reward-claim-overlay {
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(60,50,40,0.55); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .reward-claim-card {
+            background: var(--bg); border-radius: 24px; padding: 40px 32px 32px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            box-shadow: 0 24px 80px rgba(60,50,40,0.3);
+            animation: popReveal 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+            min-width: 260px; text-align: center;
+        }
+        .reward-claim-label { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--primary-h); }
+        .reward-claim-img { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.15)); margin: 8px 0; }
+        .reward-claim-emoji { font-size: 80px; line-height: 1; margin: 8px 0; }
+        .reward-claim-name { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: -.02em; }
+        .reward-claim-desc { font-size: 13px; color: var(--muted); }
+        .reward-claim-btn { margin-top: 16px; }
+
         /* Error screen */
         .error-screen {
             position: absolute; inset: 0; z-index: 100;
@@ -1960,8 +1982,11 @@
         </div>
         <!-- 單抽結果 -->
         <div v-else-if="drawResult && !draw10Results" class="gacha-result">
-            <div :class="'rarity-badge rarity-' + drawResult.rarity" style="margin-bottom:12px;">
-                {{ drawResult.rarity === 'legend' ? '⭐ 傳說' : drawResult.rarity === 'rare' ? '💎 稀有' : '普通' }}
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">
+                <div :class="'rarity-badge rarity-' + drawResult.rarity">
+                    {{ drawResult.rarity === 'legend' ? '⭐ 傳說' : drawResult.rarity === 'rare' ? '💎 稀有' : '普通' }}
+                </div>
+                <div v-if="drawResult.isUnique" class="unique-badge" style="position:static;transform:none;">✦ 獨一無二</div>
             </div>
             <img v-if="drawResult.imgUrl" :src="drawResult.imgUrl" @error="handleImageError(drawResult)" :alt="drawResult.name">
             <div v-else class="emoji-big">{{ drawResult.emoji }}</div>
@@ -1985,9 +2010,25 @@
                     <div :class="'rarity-badge rarity-' + item.rarity" style="font-size:9px;padding:2px 6px;">
                         {{ item.rarity === 'legend' ? '⭐' : item.rarity === 'rare' ? '💎' : '○' }}
                     </div>
+                    <div v-if="item.isUnique" class="unique-badge" style="position:static;transform:none;font-size:8px;margin-top:2px;">✦ 獨一無二</div>
                 </div>
             </div>
             <button @click="finishDraw10" class="btn-primary" style="margin-top:24px;min-width:200px;">全部收入倉庫 🎒</button>
+        </div>
+    </div>
+
+    <!-- 禮物領取彈窗 -->
+    <div v-if="rewardPopup" class="reward-claim-overlay" @click.self="rewardPopup=null">
+        <div class="reward-claim-card">
+            <div class="reward-claim-label">🎁 獲得物品！</div>
+            <img v-if="rewardPopup.imgUrl" :src="rewardPopup.imgUrl" class="reward-claim-img" :alt="rewardPopup.name">
+            <div v-else class="reward-claim-emoji">{{ rewardPopup.emoji }}</div>
+            <div class="reward-claim-name">{{ rewardPopup.name }}</div>
+            <div class="reward-claim-desc">已加入倉庫，趕快放到小島上吧！</div>
+            <div v-if="rewardPopup.rarity" :class="'rarity-badge rarity-'+rewardPopup.rarity" style="margin-top:4px;">
+                {{ rewardPopup.rarity==='legend'?'⭐ 傳說':rewardPopup.rarity==='rare'?'💎 稀有':'普通' }}
+            </div>
+            <button @click="rewardPopup=null" class="btn-primary reward-claim-btn">太棒了！✨</button>
         </div>
     </div>
 
@@ -2264,6 +2305,7 @@
                                             <span v-if="group.count > 1" class="qty-badge">{{ group.count }}</span>
                                         </div>
                                         <div class="warehouse-item-name">{{ group.items[0].name }}</div>
+                                        <div v-if="group.items[0].isUnique" class="unique-badge" style="position:static;transform:none;margin-top:2px;">✦ 獨一無二</div>
                                     </div>
                                 </div>
                             </div>
@@ -2503,8 +2545,11 @@
                                 </div>
                                 <div class="pool-item-info">
                                     <div class="pool-item-name">{{ item.name }}</div>
-                                    <div :class="'rarity-badge rarity-' + item.rarity">
-                                        {{ item.rarity === 'legend' ? '⭐ 傳說' : item.rarity === 'rare' ? '💎 稀有' : '普通' }}
+                                    <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+                                        <div :class="'rarity-badge rarity-' + item.rarity">
+                                            {{ item.rarity === 'legend' ? '⭐ 傳說' : item.rarity === 'rare' ? '💎 稀有' : '普通' }}
+                                        </div>
+                                        <div v-if="item.isUnique" class="unique-badge" style="position:static;transform:none;">✦ 獨一無二</div>
                                     </div>
                                 </div>
                                 <div class="pool-item-rate">{{ calcRate(item, poolPreview) }}%</div>
@@ -4648,7 +4693,7 @@ createApp({
         });
 
         // 信箱未讀：所有分頁合計（badge dot 用）
-        const lastSeenNoticeTime = ref(0);
+        const lastSeenNoticeTime = ref(parseInt(localStorage.getItem('lastSeenNoticeTime') || '0', 10));
         const unreadNoticeCount = computed(() =>
             announcements.value.filter(a => a.timestamp > lastSeenNoticeTime.value).length
         );
@@ -4659,7 +4704,10 @@ createApp({
         );
         const switchInboxTab = (tab) => {
             inboxTab.value = tab;
-            if (tab === 'notice') lastSeenNoticeTime.value = Date.now();
+            if (tab === 'notice') {
+                lastSeenNoticeTime.value = Date.now();
+                localStorage.setItem('lastSeenNoticeTime', String(lastSeenNoticeTime.value));
+            }
         };
 
         // 每日登入禮物
@@ -4676,6 +4724,8 @@ createApp({
                 }
             } catch(e) {}
         };
+
+        const rewardPopup = ref(null);
 
         const claimReward = async (reward) => {
             const user = currentUser.value;
@@ -4706,6 +4756,12 @@ createApp({
                         rarity: reward.itemData.rarity || 'common',
                     });
                 }
+                rewardPopup.value = {
+                    name:   reward.itemData.name,
+                    emoji:  reward.itemData.emoji,
+                    imgUrl: reward.itemData.imgUrl || null,
+                    rarity: reward.itemData.rarity || 'common',
+                };
             }
             await saveData();
         };
@@ -4850,7 +4906,7 @@ createApp({
                 '✨ 十連招募/探索 (900⚡) — 一次抽 10 個，享九折優惠，保證至少 1 個稀有以上！',
                 '稀有度分為：普通 / 💎 稀有 / ⭐ 傳說',
                 '⭐ 傳說夥伴擁有特殊彩蛋，十分珍貴，快去收集吧！',
-                '✦ 標有「獨一無二」的夥伴/裝飾只會出現一次，擁有就代表世界上只有你有！',
+                '✦ 標有「獨一無二」的夥伴/裝飾每人只會抽到一次，不會重複出現！',
                 '小提醒：能量越多，就能抽越多。多收感謝才能抽更多哦 😉',
             ],
             wall: [
@@ -5331,7 +5387,7 @@ createApp({
             isEditMode, toggleEditMode, warehouseCollapsed, warehouseItems, groupedWarehouse,
             helpTab, openHelpSecs, helpTitles, helpSections, helpContents, openHelp, toggleHelpSec,
             firstLoginHelp,
-            inboxTab, unreadLetterCount, unclaimedRewards, claimReward, switchInboxTab, unreadNoticeCount,
+            inboxTab, unreadLetterCount, unclaimedRewards, claimReward, rewardPopup, switchInboxTab, unreadNoticeCount,
             warehouseFilter, filteredWarehouse,
             placeOnIsland, removeFromIsland,
             getFlip, toggleFlip, getHighlandLift, getTerrainAt,
