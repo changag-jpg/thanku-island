@@ -389,6 +389,22 @@ body {
   background: var(--marker-next);
   animation: pulse-marker 0.8s ease-in-out infinite;
 }
+/* 終點標記（最大數字） */
+.cell-num.endpoint {
+  background: var(--duo-blue);
+  box-shadow: 0 3px 0 var(--duo-blue-dark);
+}
+.cell-num.endpoint.visited {
+  background: var(--duo-green);
+}
+.cell-num.endpoint.next-target {
+  background: var(--duo-blue);
+  animation: pulse-endpoint 0.8s ease-in-out infinite;
+}
+@keyframes pulse-endpoint {
+  0%,100% { transform: scale(1);    box-shadow: 0 3px 0 var(--duo-blue-dark), 0 0 0 0   rgba(28,176,246,0.4); }
+  50%     { transform: scale(1.18); box-shadow: 0 5px 0 var(--duo-blue-dark), 0 0 0 6px rgba(28,176,246,0);   }
+}
 @keyframes pulse-marker {
   0%,100% { transform: scale(1);    box-shadow: 0 3px 0 rgba(0,0,0,0.2), 0 0 0 0   rgba(255,75,75,0.4); }
   50%     { transform: scale(1.18); box-shadow: 0 5px 0 rgba(0,0,0,0.15), 0 0 0 6px rgba(255,75,75,0);   }
@@ -501,6 +517,332 @@ body {
   border: 2px dashed var(--border);
   border-radius: 12px;
 }
+
+/* ── Tutorial button (above start) ── */
+.btn-tutorial {
+  width: 100%;
+  background: #ffffff;
+  border: 2px solid var(--duo-blue);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--duo-blue);
+  cursor: pointer;
+  margin-bottom: 12px;
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+  box-shadow: 0 3px 0 var(--duo-blue-dark);
+  transition: transform 80ms, box-shadow 80ms;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  letter-spacing: 0.03em;
+}
+.btn-tutorial:hover { filter: brightness(0.97); }
+.btn-tutorial:active { transform: translateY(3px); box-shadow: none; }
+
+/* ═══════════════════════════════════════════════
+   TUTORIAL PAGE
+═══════════════════════════════════════════════ */
+.tut-wrap {
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tut-header {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.tut-back {
+  float: left;
+  font-size: 12px;
+  padding: 7px 14px;
+  margin-bottom: 8px;
+}
+.tut-icon { font-size: 44px; line-height: 1; margin-bottom: 8px; }
+.tut-title {
+  font-family: 'Fredoka One', 'Noto Sans TC', cursive;
+  font-size: 26px;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+.tut-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+/* Cards */
+.tut-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 0 var(--border);
+}
+.tut-card-important {
+  border-color: var(--duo-blue);
+  box-shadow: 0 4px 0 var(--duo-blue-dark);
+}
+
+.tut-sec-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tut-body {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+.tut-body:last-child { margin-bottom: 0; }
+
+/* Mini demo grids */
+.tut-grids-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.tut-grid-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.tut-grid-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tut-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows:    repeat(3, 44px);
+  gap: 2px;
+  background: var(--lawn-border);
+  border: 3px solid var(--lawn-border);
+  border-bottom: 5px solid var(--lawn-border);
+  border-radius: 10px;
+  padding: 6px;
+}
+.tc {
+  width: 44px; height: 44px;
+  border-radius: 3px;
+  background: var(--grass-uncut);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  font-size: 11px;
+  overflow: hidden;
+}
+.tc::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg, transparent 0px, transparent 4px,
+    rgba(60,100,20,0.07) 4px, rgba(60,100,20,0.07) 5px
+  );
+  pointer-events: none;
+}
+.tc.mowed {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--grass-cut-a) 0px, var(--grass-cut-a) 7px,
+    var(--grass-cut-b) 7px, var(--grass-cut-b) 14px
+  );
+}
+.tc.mowed::after { display: none; }
+.tn {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--marker);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid rgba(0,0,0,0.15);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+  position: relative; z-index: 2;
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+}
+.tn.ep { background: var(--duo-blue); box-shadow: 0 2px 0 var(--duo-blue-dark); }
+.tn.done { background: var(--marker-done); transform: scale(0.8); box-shadow: none; opacity: 0.75; }
+.tn.ep.done { background: var(--duo-green); }
+
+/* Wrong/Right comparison */
+.tut-compare {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.tut-compare-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.tut-compare-tag {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+.tut-compare-tag.wrong {
+  background: #ffe3e3;
+  color: var(--duo-red-dark);
+  border: 2px solid var(--duo-red);
+}
+.tut-compare-tag.right {
+  background: var(--duo-green-lit);
+  color: var(--duo-green-dark);
+  border: 2px solid var(--duo-green);
+}
+.tut-compare-caption {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  max-width: 120px;
+}
+
+/* Steps */
+.tut-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tut-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--page-bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.tut-step-badge {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+}
+.tut-step-badge.orange { background: var(--marker); }
+.tut-step-badge.blue   { background: var(--duo-blue); }
+.tut-step-badge.green  { background: var(--duo-green); }
+.tut-step-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+}
+.tut-step-text strong { color: var(--text); }
+
+/* Controls */
+.tut-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tut-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+}
+.tut-ctrl-key {
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-bottom: 3px solid var(--border-b);
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Difficulty table */
+.tut-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tut-diff-table th {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 8px 8px;
+  text-align: left;
+}
+.tut-diff-table td {
+  padding: 8px;
+  border-top: 2px solid var(--border);
+  font-weight: 600;
+  vertical-align: middle;
+}
+.tut-diff-table tr:first-child td { border-top: none; }
+.diff-easy   { color: var(--duo-green-dark); font-weight: 800; }
+.diff-medium { color: var(--duo-gold-dark);  font-weight: 800; }
+.diff-hard   { color: var(--duo-red-dark);   font-weight: 800; }
+.diff-nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.diff-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--marker);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; color: white;
+  font-family: 'Nunito Sans', sans-serif;
+}
+.diff-dot.ep { background: var(--duo-blue); }
+
+/* Tutorial bottom button */
+.btn-tut-done {
+  width: 100%;
+  border: 2px solid var(--duo-green-dark);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+  background: var(--duo-green);
+  color: white;
+  box-shadow: 0 4px 0 var(--duo-green-dark);
+  transition: transform 80ms, box-shadow 80ms;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+.btn-tut-done:hover { filter: brightness(1.06); }
+.btn-tut-done:active { transform: translateY(4px); box-shadow: none; }
 </style>
 </head>
 <body>
@@ -530,6 +872,7 @@ body {
       ⚠️ 你今天已開始修剪但尚未完成，繼續挑戰！（計時重新開始）
     </div>
 
+    <button class="btn-tutorial" id="btnTutorial">📖 觀看教學</button>
     <button class="btn-start" id="btnStart">🚜 拿起割草機，開始！</button>
   </div>
 
@@ -538,6 +881,208 @@ body {
     <div id="historyListPre"></div>
   </div>
 
+</div>
+
+<!-- ═══════════════════════════ TUTORIAL PAGE ═══════════════════════════ -->
+<div class="page hidden" id="pageTutorial">
+<div class="tut-wrap">
+
+  <!-- Header -->
+  <div class="tut-header">
+    <button class="btn-control tut-back" id="btnTutBack">← 返回</button>
+    <div style="clear:both;"></div>
+    <div class="tut-icon">🌿</div>
+    <div class="tut-title">如何玩？</div>
+    <div class="tut-subtitle">草皮修剪大賽 完整教學</div>
+  </div>
+
+  <!-- ① 目標 -->
+  <div class="tut-card">
+    <div class="tut-sec-title">🎯 目標：填滿每一格草皮</div>
+    <p class="tut-body">從起點拖曳出路線，讓路線<strong>經過格子盤上的每一格</strong>，不能跳格、不能重複走同一格。</p>
+    <div class="tut-grids-row">
+      <!-- Before -->
+      <div class="tut-grid-block">
+        <div class="tut-grid-label">開始</div>
+        <div class="tut-mini-grid">
+          <div class="tc"><div class="tn">1</div></div>
+          <div class="tc"></div>
+          <div class="tc"></div>
+          <div class="tc"></div>
+          <div class="tc"><div class="tn">2</div></div>
+          <div class="tc"></div>
+          <div class="tc"></div>
+          <div class="tc"></div>
+          <div class="tc"><div class="tn ep">3</div></div>
+        </div>
+      </div>
+      <!-- After -->
+      <div class="tut-grid-block">
+        <div class="tut-grid-label">完成！</div>
+        <div class="tut-mini-grid">
+          <div class="tc mowed"><div class="tn done">1</div></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"><div class="tn done">2</div></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"><div class="tn ep done">3</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 三步驟 -->
+  <div class="tut-card">
+    <div class="tut-sec-title">📋 三步驟玩法</div>
+    <div class="tut-steps">
+      <div class="tut-step">
+        <div class="tut-step-badge orange">1</div>
+        <div class="tut-step-text">從 <strong>橘色 1</strong> 開始，按住並拖曳畫出路線</div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-badge orange">N</div>
+        <div class="tut-step-text">路線必須<strong>依序通過</strong>所有橘色數字（1→2→3→…）</div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-badge blue">🏁</div>
+        <div class="tut-step-text">填滿所有格子後，衝入<strong>藍色終點</strong>完成修剪！</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 終點規則 -->
+  <div class="tut-card tut-card-important">
+    <div class="tut-sec-title">🔵 終點規則（最重要！）</div>
+    <p class="tut-body">藍色是<strong>終點</strong>，必須等其他格子<strong>全部填滿</strong>才能進入。<br>否則路線會被擋住，無法踏入。</p>
+    <div class="tut-compare">
+      <!-- Wrong -->
+      <div class="tut-compare-block">
+        <div class="tut-compare-tag wrong">❌ 不行</div>
+        <div class="tut-mini-grid">
+          <div class="tc mowed"><div class="tn done">1</div></div>
+          <div class="tc mowed"></div>
+          <div class="tc"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"><div class="tn done">2</div></div>
+          <div class="tc"></div>
+          <div class="tc"></div>
+          <div class="tc"></div>
+          <div class="tc"><div class="tn ep">3</div></div>
+        </div>
+        <div class="tut-compare-caption">還有空格，<br>終點擋住進不去</div>
+      </div>
+      <!-- Right -->
+      <div class="tut-compare-block">
+        <div class="tut-compare-tag right">✅ 可以</div>
+        <div class="tut-mini-grid">
+          <div class="tc mowed"><div class="tn done">1</div></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"><div class="tn done">2</div></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"></div>
+          <div class="tc mowed"><div class="tn ep done">3</div></div>
+        </div>
+        <div class="tut-compare-caption">全部填滿，<br>衝入終點！完成！</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 操作方式 -->
+  <div class="tut-card">
+    <div class="tut-sec-title">🖱️ 操作方式</div>
+    <div class="tut-controls">
+      <div class="tut-ctrl">
+        <div class="tut-ctrl-key">拖曳</div>
+        <span>按住格子並滑動，畫出路線（支援滑鼠與觸控）</span>
+      </div>
+      <div class="tut-ctrl">
+        <div class="tut-ctrl-key">往回拖</div>
+        <span>把路線頭拖回前一格，撤銷最後一步</span>
+      </div>
+      <div class="tut-ctrl">
+        <div class="tut-ctrl-key">↩ 復原</div>
+        <span>按一下撤銷最後走的一格</span>
+      </div>
+      <div class="tut-ctrl">
+        <div class="tut-ctrl-key">↺ 重置路線</div>
+        <span>清除整條路線，從頭再來</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 難度說明 -->
+  <div class="tut-card">
+    <div class="tut-sec-title">📊 難度說明</div>
+    <p class="tut-body">數字標記越多 = 提示越多 = 越容易；數字越少 = 靠自己判斷 = 越難。</p>
+    <table class="tut-diff-table">
+      <tr>
+        <th>難度</th><th>格子</th><th>數字標記</th><th>終點</th>
+      </tr>
+      <tr>
+        <td class="diff-easy">簡單</td>
+        <td>6 × 6</td>
+        <td>
+          <div class="diff-nums">
+            <div class="diff-dot">1</div><div class="diff-dot">2</div><div class="diff-dot">3</div>
+            <div class="diff-dot">4</div><div class="diff-dot">5</div><div class="diff-dot">6</div>
+            <div class="diff-dot">7</div><div class="diff-dot">8</div><div class="diff-dot ep">9</div>
+          </div>
+        </td>
+        <td><div class="diff-dot ep">9</div></td>
+      </tr>
+      <tr>
+        <td class="diff-medium">普通</td>
+        <td>7 × 7</td>
+        <td>
+          <div class="diff-nums">
+            <div class="diff-dot">1</div><div class="diff-dot">2</div><div class="diff-dot">3</div>
+            <div class="diff-dot">4</div><div class="diff-dot">5</div><div class="diff-dot ep">6</div>
+          </div>
+        </td>
+        <td><div class="diff-dot ep">6</div></td>
+      </tr>
+      <tr>
+        <td class="diff-hard">困難</td>
+        <td>8 × 8</td>
+        <td>
+          <div class="diff-nums">
+            <div class="diff-dot">1</div><div class="diff-dot">2</div><div class="diff-dot">3</div>
+            <div class="diff-dot ep">4</div>
+          </div>
+        </td>
+        <td><div class="diff-dot ep">4</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ⑥ 小技巧 -->
+  <div class="tut-card">
+    <div class="tut-sec-title">💡 小技巧</div>
+    <div class="tut-steps">
+      <div class="tut-step">
+        <div class="tut-step-badge green">✓</div>
+        <div class="tut-step-text">遇到死路，往回拖或按「復原」退出，換條路試試</div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-badge green">✓</div>
+        <div class="tut-step-text">優先讓路線通過角落和邊緣，這些格子選擇最少</div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-badge green">✓</div>
+        <div class="tut-step-text">確保終點的鄰格留在最後，別讓自己困住</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-tut-done" id="btnTutDone">✅ 我學會了，開始挑戰！</button>
+
+</div>
 </div>
 
 <!-- ═══════════════════════════ PLAYING PAGE ════════════════════════════ -->
@@ -559,7 +1104,7 @@ body {
     <button class="btn-control" id="btnReset">↺ 重置路線</button>
   </div>
 
-  <div class="playing-hint" id="playHint">從標記 1 開始，拖曳路線填滿每一格草皮</div>
+  <div class="playing-hint" id="playHint">從標記 1 開始，填滿所有格子後才能進入藍色終點</div>
 
 </div>
 
@@ -592,9 +1137,9 @@ body {
 // CONFIG
 // ═══════════════════════════════════════════════════════
 const DIFF_CFG = {
-  easy:   { size: 6, numCount: 8,  cellPx: 66,  label: '簡單 6×6' },
-  medium: { size: 7, numCount: 7,  cellPx: 58,  label: '普通 7×7' },
-  hard:   { size: 8, numCount: 6,  cellPx: 50,  label: '困難 8×8' },
+  easy:   { size: 6, numCount: 9, cellPx: 66, label: '簡單 6×6' },
+  medium: { size: 7, numCount: 6, cellPx: 58, label: '普通 7×7' },
+  hard:   { size: 8, numCount: 4, cellPx: 50, label: '困難 8×8' },
 }
 const STATE_KEY   = 'zip_lawn_state_v1'
 const HISTORY_KEY = 'zip_lawn_history_v1'
@@ -772,7 +1317,11 @@ function canMove(r,c) {
     return false
   }
   const cn=getNum(r,c)
-  if (cn!==null) { const nt=nextTarget(); if (nt!==null&&cn!==nt) return false }
+  if (cn!==null) {
+    const nt=nextTarget(); if (nt!==null&&cn!==nt) return false
+    // 終點（最大數字）只能在其餘所有格子都填滿後才能進入
+    if (cn === numbers.length && path.length < gridSize*gridSize - 1) return false
+  }
   return true
 }
 
@@ -836,7 +1385,9 @@ function renderGrid() {
       const no=numbers.find(n=>n.row===r&&n.col===c)
       if (no) {
         const badge=document.createElement('div')
-        badge.className='cell-num'; badge.textContent=no.num; badge.id=`num-${r}-${c}`
+        badge.className='cell-num'
+        if (no.num === numbers.length) badge.classList.add('endpoint')
+        badge.textContent=no.num; badge.id=`num-${r}-${c}`
         cell.appendChild(badge)
       }
       gridEl.appendChild(cell)
@@ -1045,6 +1596,16 @@ function showResult(time) {
 
   renderHistory('historyListResult')
   showPage('pageResult')
+
+  // 回報成績給伺服器及父頁面
+  fetch('/api/zip/score', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({seconds: time})
+  }).catch(()=>{})
+  if (window.parent !== window) {
+    window.parent.postMessage({type:'zip-complete', seconds: time}, '*')
+  }
 }
 
 function showAlreadyDone() {
@@ -1120,6 +1681,9 @@ function shuffleArr(arr) {
 // ═══════════════════════════════════════════════════════
 
 document.getElementById('btnStart').addEventListener('click', startPlaying)
+document.getElementById('btnTutorial').addEventListener('click', () => showPage('pageTutorial'))
+document.getElementById('btnTutBack').addEventListener('click', goPrestart)
+document.getElementById('btnTutDone').addEventListener('click', goPrestart)
 
 document.getElementById('btnUndo').addEventListener('click', ()=>{
   if (path.length===0) return

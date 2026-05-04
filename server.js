@@ -142,6 +142,25 @@ async function initDB() {
 
     await pool.query(`INSERT IGNORE INTO admin_whitelist (email) VALUES ('changag@garena.com')`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS zip_scores (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uid VARCHAR(255) NOT NULL,
+      display_name VARCHAR(255),
+      avatar_url VARCHAR(512),
+      date VARCHAR(10) NOT NULL,
+      seconds INT NOT NULL,
+      played_at BIGINT NOT NULL,
+      UNIQUE KEY unique_user_date (uid, date)
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS zip_settlements (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      type ENUM('daily','weekly') NOT NULL,
+      period VARCHAR(10) NOT NULL,
+      settled_at BIGINT NOT NULL,
+      UNIQUE KEY unique_period_type (type, period)
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+
     // 補欄位（若已存在會安靜失敗）
     for (const sql of [
       `ALTER TABLE announcements ADD COLUMN title TEXT`,
@@ -161,6 +180,91 @@ async function initDB() {
   } catch (err) {
     console.error('資料庫初始化失敗:', err.message);
   }
+}
+
+// ===== ZIP 遊戲結算 =====
+function getUTC8Date(ts) {
+  return new Date((ts || Date.now()) + 8 * 3600000).toISOString().slice(0, 10);
+}
+
+function getUTC8WeekStart(ts) {
+  const now8 = new Date((ts || Date.now()) + 8 * 3600000);
+  const day = now8.getUTCDay();
+  const daysBack = day === 0 ? 6 : day - 1;
+  return new Date(now8.getTime() - daysBack * 86400000).toISOString().slice(0, 10);
+}
+
+async function settleDailyZip(date) {
+  const [ex] = await pool.query('SELECT 1 FROM zip_settlements WHERE type=? AND period=?', ['daily', date]);
+  if (ex.length > 0) return;
+  const [rows] = await pool.query(
+    'SELECT uid, display_name, seconds FROM zip_scores WHERE date=? ORDER BY seconds ASC LIMIT 3', [date]
+  );
+  const ts = Date.now();
+  const rankLabels = ['第 1 名', '第 2 名', '第 3 名'];
+  for (let i = 0; i < rows.length; i++) {
+    const inboxData = {
+      type: 'admin_reward', rewardType: 'energy', amount: 100,
+      title: `🏆 每日任務${rankLabels[i]}！獲得 ⚡100 能量！`,
+      note: `${date} 每日割草排行 ${rankLabels[i]}，用時 ${rows[i].seconds} 秒，恭喜！`,
+      timestamp: ts, read: false, processed: false,
+    };
+    await pool.query('INSERT INTO inbox_items (uid, item_json, timestamp) VALUES (?,?,?)',
+      [rows[i].uid, JSON.stringify(inboxData), ts]);
+  }
+  await pool.query('INSERT IGNORE INTO zip_settlements (type, period, settled_at) VALUES (?,?,?)', ['daily', date, ts]);
+  console.log(`每日割草結算：${date}，發放 ${rows.length} 份獎勵`);
+}
+
+async function settleWeeklyZip(weekStart) {
+  const [ex] = await pool.query('SELECT 1 FROM zip_settlements WHERE type=? AND period=?', ['weekly', weekStart]);
+  if (ex.length > 0) return;
+  const startDate = new Date(weekStart + 'T00:00:00Z');
+  const dates = Array.from({length: 5}, (_, i) =>
+    new Date(startDate.getTime() + i * 86400000).toISOString().slice(0, 10)
+  );
+  const [rows] = await pool.query(
+    `SELECT uid, display_name,
+       COUNT(*) as days_played, ROUND(AVG(seconds)) as avg_seconds, MIN(seconds) as best_seconds
+     FROM zip_scores WHERE date IN (?)
+     GROUP BY uid, display_name
+     ORDER BY days_played DESC, avg_seconds ASC, best_seconds ASC LIMIT 3`,
+    [dates]
+  );
+  const ts = Date.now();
+  const rankLabels = ['第 1 名', '第 2 名', '第 3 名'];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const inboxData = {
+      type: 'admin_reward', rewardType: 'tile', amount: 1,
+      title: `🏆 每週任務${rankLabels[i]}！獲得 🗺️×1 地圖板塊！`,
+      note: `${weekStart} 週排行 ${rankLabels[i]}，出賽 ${r.days_played} 天，平均 ${r.avg_seconds} 秒，恭喜！`,
+      timestamp: ts, read: false, processed: false,
+    };
+    await pool.query('INSERT INTO inbox_items (uid, item_json, timestamp) VALUES (?,?,?)',
+      [r.uid, JSON.stringify(inboxData), ts]);
+  }
+  await pool.query('INSERT IGNORE INTO zip_settlements (type, period, settled_at) VALUES (?,?,?)', ['weekly', weekStart, ts]);
+  console.log(`每週割草結算：${weekStart}，發放 ${rows.length} 份獎勵`);
+}
+
+function startSettlementScheduler() {
+  let lastDailyDate = '';
+  setInterval(async () => {
+    const now = Date.now();
+    const now8 = new Date(now + 8 * 3600000);
+    const h = now8.getUTCHours();
+    const m = now8.getUTCMinutes();
+    if (h !== 23 || m !== 59) return;
+    const date = now8.toISOString().slice(0, 10);
+    if (date === lastDailyDate) return;
+    lastDailyDate = date;
+    try { await settleDailyZip(date); } catch(e) { console.error('每日結算失敗:', e.message); }
+    if (now8.getUTCDay() === 5) {
+      const weekStart = getUTC8WeekStart(now);
+      try { await settleWeeklyZip(weekStart); } catch(e) { console.error('每週結算失敗:', e.message); }
+    }
+  }, 30000);
 }
 
 // Session 設定
@@ -923,12 +1027,74 @@ app.delete('/api/admin/legend-exchanges', requireAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ===== ZIP 遊戲 API =====
+app.get('/api/zip/today', async (req, res) => {
+  const today = getUTC8Date();
+  const myUid = req.session.user?.employee_code;
+  try {
+    const [rows] = await pool.query(
+      'SELECT uid, display_name, avatar_url, seconds FROM zip_scores WHERE date=? ORDER BY seconds ASC LIMIT 10', [today]
+    );
+    res.json({
+      date: today,
+      played: rows.some(r => r.uid === myUid),
+      board: rows.map((r, i) => ({
+        rank: i + 1, uid: r.uid, name: r.display_name,
+        avatar: r.avatar_url, seconds: r.seconds, isMe: r.uid === myUid
+      }))
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/zip/score', requireLogin, async (req, res) => {
+  const uid = req.session.user.employee_code;
+  const { seconds } = req.body;
+  if (!seconds || seconds < 1) return res.status(400).json({ error: 'invalid seconds' });
+  const today = getUTC8Date();
+  try {
+    await pool.query(
+      `INSERT INTO zip_scores (uid, display_name, avatar_url, date, seconds, played_at) VALUES (?,?,?,?,?,?)
+       ON DUPLICATE KEY UPDATE seconds = IF(seconds > VALUES(seconds), VALUES(seconds), seconds)`,
+      [uid, req.session.user.name || '', req.session.user.avatar || '', today, seconds, Date.now()]
+    );
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/zip/weekly', async (req, res) => {
+  const weekStart = getUTC8WeekStart();
+  const startDate = new Date(weekStart + 'T00:00:00Z');
+  const dates = Array.from({length: 5}, (_, i) =>
+    new Date(startDate.getTime() + i * 86400000).toISOString().slice(0, 10)
+  );
+  const myUid = req.session.user?.employee_code;
+  try {
+    const [rows] = await pool.query(
+      `SELECT uid, display_name, avatar_url,
+         COUNT(*) as days_played, ROUND(AVG(seconds)) as avg_seconds, MIN(seconds) as best_seconds
+       FROM zip_scores WHERE date IN (?)
+       GROUP BY uid, display_name, avatar_url
+       ORDER BY days_played DESC, avg_seconds ASC, best_seconds ASC LIMIT 10`,
+      [dates]
+    );
+    res.json({
+      weekStart,
+      board: rows.map((r, i) => ({
+        rank: i + 1, uid: r.uid, name: r.display_name, avatar: r.avatar_url,
+        daysPlayed: r.days_played, avgSeconds: r.avg_seconds, bestSeconds: r.best_seconds,
+        isMe: r.uid === myUid
+      }))
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ===== 頁面路由 =====
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
 // 啟動（先初始化資料庫再監聽）
 initDB().then(() => {
+  startSettlementScheduler();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`感恩小島運行中：http://0.0.0.0:${PORT}`);
   });
