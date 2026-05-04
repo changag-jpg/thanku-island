@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今日草皮 — 感恩小島</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito+Sans:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── Duolingo core palette ── */
+  --duo-green:      #58cc02;
+  --duo-green-dark: #3f8f01;
+  --duo-green-lit:  #d7ffb8;
+  --duo-blue:       #1cb0f6;
+  --duo-blue-dark:  #0e8bbd;
+  --duo-gold:       #ffc800;
+  --duo-gold-dark:  #b88a00;
+  --duo-red:        #ff4b4b;
+  --duo-red-dark:   #cc0000;
+
+  /* ── Grass theme (Duolingo-tuned) ── */
+  --grass-uncut:   #e2f8c8;
+  --grass-cut-a:   #58cc02;
+  --grass-cut-b:   #4ab800;
+  --grass-head-a:  #78e420;
+  --grass-head-b:  #60d000;
+  --lawn-border:   #3f8f01;
+  --lawn-bg:       #a3e635;
+  --marker:        #ff9600;
+  --marker-done:   #3f8f01;
+  --marker-next:   #ff4b4b;
+
+  /* ── UI tokens ── */
+  --page-bg:   #f7f7f7;
+  --surface:   #ffffff;
+  --text:      #4b4b4b;
+  --muted:     #afafaf;
+  --border:    #e5e5e5;
+  --border-b:  #ccc;
+  --radius:    16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+  min-height: 100vh;
+  background: var(--page-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 60px;
+  color: var(--text);
+  user-select: none;
+  -webkit-user-select: none;
+  letter-spacing: 0.025em;
+}
+
+/* ── Back link ── */
+.back-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.back-link:hover { color: var(--duo-blue); }
+
+/* ── Page visibility ─────────────────────────── */
+.page { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.page.hidden { display: none; }
+
+/* ═══════════════════════════════════════════════
+   PRE-START PAGE
+═══════════════════════════════════════════════ */
+.prestart-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 32px 36px;
+  max-width: 420px;
+  width: 100%;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--border);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.ps-icon { font-size: 52px; line-height: 1; margin-bottom: 12px; }
+
+.ps-title {
+  font-family: 'Fredoka One', 'Noto Sans TC', cursive;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+}
+
+.ps-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.ps-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--page-bg);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  border: 2px solid var(--border);
+}
+
+.ps-diff-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--duo-green);
+  color: white;
+  border-radius: 999px;
+  padding: 3px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ps-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.ps-rule {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: var(--page-bg);
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+}
+
+/* Continue warning */
+.continue-warning {
+  background: #fff9e6;
+  border: 2px solid var(--duo-gold);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a5500;
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+/* ── 3D Start Button (Duolingo) ── */
+.btn-start {
+  width: 100%;
+  border: 2px solid var(--duo-green-dark);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+  background: var(--duo-green);
+  color: white;
+  box-shadow: 0 4px 0 var(--duo-green-dark);
+  transition: transform 80ms, box-shadow 80ms, filter 80ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.04em;
+}
+.btn-start:hover { filter: brightness(1.06); }
+.btn-start:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+/* History card */
+.history-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--border);
+}
+
+.history-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 2px solid var(--border);
+  font-size: 13px;
+}
+.history-row:last-child { border-bottom: none; }
+.history-rank { width: 22px; font-weight: 800; color: var(--muted); font-size: 16px; text-align: center; }
+.history-date { font-size: 11px; font-weight: 600; color: var(--muted); }
+.history-diff {
+  font-size: 11px; font-weight: 700;
+  color: var(--duo-green-dark);
+  background: var(--duo-green-lit);
+  border-radius: 999px; padding: 2px 8px;
+}
+.history-time { margin-left: auto; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--duo-blue); font-size: 16px; }
+.history-empty { font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; padding: 20px 0; }
+
+/* ═══════════════════════════════════════════════
+   PLAYING PAGE
+═══════════════════════════════════════════════ */
+.playing-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 12px 20px;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--border);
+  max-width: 480px;
+  width: 100%;
+}
+
+.playing-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--duo-green-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.playing-timer {
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  min-width: 5ch;
+}
+
+.playing-progress {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--page-bg);
+  border-radius: 999px;
+  padding: 4px 12px;
+  border: 2px solid var(--border);
+}
+
+/* ── Grid (lawn) ── */
+.grid-outer {
+  position: relative;
+  background: var(--lawn-bg);
+  border: 3px solid var(--lawn-border);
+  border-bottom: 6px solid var(--lawn-border);
+  border-radius: 16px;
+  padding: 10px;
+  margin-bottom: 14px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.grid { display: grid; gap: 2px; position: relative; }
+
+.path-canvas {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* ── Cell ────────────────────────────────────── */
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grass-uncut);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: background 80ms;
+}
+
+/* Uncut grass texture */
+.cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0px, transparent 5px,
+    rgba(60,100,20,0.06) 5px, rgba(60,100,20,0.06) 6px
+  );
+  pointer-events: none;
+}
+
+/* Mowed: diagonal lawn stripes */
+.cell.in-path {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--grass-cut-a) 0px, var(--grass-cut-a) 7px,
+    var(--grass-cut-b) 7px, var(--grass-cut-b) 14px
+  );
+}
+.cell.in-path::after { display: none; }
+
+/* Current mower head: brighter stripe */
+.cell.path-head {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--grass-head-a) 0px, var(--grass-head-a) 7px,
+    var(--grass-head-b) 7px, var(--grass-head-b) 14px
+  );
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.45);
+}
+.cell.path-head::after { display: none; }
+
+/* Solved flash */
+@keyframes mow-flash {
+  0%   { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+.cell.mow-anim { animation: mow-flash 0.5s ease-out forwards; }
+
+/* Number markers — Duolingo 3D badge */
+.cell-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--marker);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  border: 2px solid rgba(0,0,0,0.15);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+  pointer-events: none;
+  transition: all 120ms;
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+}
+.cell-num.visited {
+  background: var(--marker-done);
+  transform: scale(0.8);
+  box-shadow: none;
+  opacity: 0.75;
+}
+.cell-num.next-target {
+  background: var(--marker-next);
+  animation: pulse-marker 0.8s ease-in-out infinite;
+}
+@keyframes pulse-marker {
+  0%,100% { transform: scale(1);    box-shadow: 0 3px 0 rgba(0,0,0,0.2), 0 0 0 0   rgba(255,75,75,0.4); }
+  50%     { transform: scale(1.18); box-shadow: 0 5px 0 rgba(0,0,0,0.15), 0 0 0 6px rgba(255,75,75,0);   }
+}
+
+/* ── Controls ────────────────────────────────── */
+.playing-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.btn-control {
+  border: 2px solid var(--border);
+  border-bottom: 4px solid var(--border-b);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+  color: var(--text);
+  transition: transform 80ms, box-shadow 80ms;
+  letter-spacing: 0.03em;
+}
+.btn-control:hover { filter: brightness(0.97); }
+.btn-control:active { transform: translateY(4px); border-bottom-width: 0; }
+.btn-control:disabled { opacity: 0.35; cursor: not-allowed; transform: none; border-bottom-width: 2px; }
+
+.playing-hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════
+   RESULT PAGE
+═══════════════════════════════════════════════ */
+.result-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 40px 40px;
+  max-width: 400px;
+  width: 100%;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--border);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.result-icon  { font-size: 52px; line-height: 1; margin-bottom: 12px; }
+.result-title {
+  font-family: 'Fredoka One', 'Noto Sans TC', cursive;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+.result-date  { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 20px; }
+.result-time  {
+  font-family: 'Fredoka One', 'Noto Sans TC', cursive;
+  font-size: 60px;
+  font-weight: 400;
+  color: var(--duo-blue);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.result-time-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.result-rank {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--duo-green-dark);
+  background: var(--duo-green-lit);
+  border: 2px solid var(--duo-green);
+  border-radius: 12px;
+  padding: 10px 18px;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.result-tomorrow {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--page-bg);
+  border-radius: 12px;
+  padding: 10px 16px;
+  border: 2px solid var(--border);
+}
+
+.global-note {
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 16px;
+  padding: 12px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← 感恩小島</a>
+
+<!-- ═══════════════════════════ PRE-START PAGE ═══════════════════════════ -->
+<div class="page" id="pagePrestart">
+
+  <div class="prestart-card">
+    <div class="ps-icon">🌿</div>
+    <div class="ps-title">【每日任務-草皮修剪大賽】</div>
+    <div class="ps-subtitle">不僅比智力、更是比速度！每週榜上前三還能額外拿到能量500點!</div>
+
+    <div class="ps-date-row">
+      <span id="psDate"></span>
+      <span class="ps-diff-badge" id="psDiffBadge"></span>
+    </div>
+
+    <div class="ps-rules">
+      <div class="ps-rule">⚠️ 每日只有<strong>1次</strong>修剪機會</div>
+      <div class="ps-rule">⏱️ 你拿起割草機的那一刻起開始計時</div>
+      <div class="ps-rule">🌐 全海上今日草皮題目完全相同，一較高下吧！</div>
+    </div>
+
+    <div class="continue-warning hidden" id="continueWarning">
+      ⚠️ 你今天已開始修剪但尚未完成，繼續挑戰！（計時重新開始）
+    </div>
+
+    <button class="btn-start" id="btnStart">🚜 拿起割草機，開始！</button>
+  </div>
+
+  <div class="history-card">
+    <div class="history-title">📋 我的歷史紀錄</div>
+    <div id="historyListPre"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════ PLAYING PAGE ════════════════════════════ -->
+<div class="page hidden" id="pagePlaying">
+
+  <div class="playing-header">
+    <div class="playing-label">🌿 修剪草皮中</div>
+    <div class="playing-timer" id="playTimer">00:00</div>
+    <div class="playing-progress" id="playProgress">0 / 0 格</div>
+  </div>
+
+  <div class="grid-outer" id="gridOuter">
+    <div class="grid" id="grid"></div>
+    <canvas class="path-canvas" id="pathCanvas"></canvas>
+  </div>
+
+  <div class="playing-controls">
+    <button class="btn-control" id="btnUndo" disabled>↩ 復原</button>
+    <button class="btn-control" id="btnReset">↺ 重置路線</button>
+  </div>
+
+  <div class="playing-hint" id="playHint">從標記 1 開始，拖曳路線填滿每一格草皮</div>
+
+</div>
+
+<!-- ═══════════════════════════ RESULT PAGE ══════════════════════════════ -->
+<div class="page hidden" id="pageResult">
+
+  <div class="result-card">
+    <div class="result-icon">🌿</div>
+    <div class="result-title" id="resultTitle">你太強啦！</div>
+    <div class="result-date" id="resultDate"></div>
+    <div class="result-time" id="resultTime">--:--</div>
+    <div class="result-time-label">完成時間</div>
+    <div class="result-rank" id="resultRank"></div>
+    <div class="result-tomorrow">📅 明天依然有新的挑戰等你喲！</div>
+  </div>
+
+  <div class="history-card">
+    <div class="history-title">📋 我的歷史紀錄</div>
+    <div id="historyListResult"></div>
+  </div>
+
+  <div class="global-note">
+    🌐 全服排行榜將整合至感恩小島主頁面上線
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const DIFF_CFG = {
+  easy:   { size: 6, numCount: 8,  cellPx: 66,  label: '簡單 6×6' },
+  medium: { size: 7, numCount: 7,  cellPx: 58,  label: '普通 7×7' },
+  hard:   { size: 8, numCount: 6,  cellPx: 50,  label: '困難 8×8' },
+}
+const STATE_KEY   = 'zip_lawn_state_v1'
+const HISTORY_KEY = 'zip_lawn_history_v1'
+const HISTORY_MAX = 20
+const MEDALS = ['🥇','🥈','🥉']
+
+// ═══════════════════════════════════════════════════════
+// SEEDED RNG  ── Mulberry32 + FNV-1a
+// ═══════════════════════════════════════════════════════
+let rng = () => Math.random()
+
+function makeRng(seed) {
+  let s = seed >>> 0
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0
+    let t = Math.imul(s ^ (s >>> 15), 1 | s)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function strSeed(str) {
+  let h = 2166136261
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+function useSeeded(seed) { rng = makeRng(seed) }
+function useDefault()    { rng = () => Math.random() }
+
+// ═══════════════════════════════════════════════════════
+// DAILY UTILS
+// ═══════════════════════════════════════════════════════
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
+function todayLabel() {
+  const d = new Date()
+  const days = ['日','一','二','三','四','五','六']
+  return `${todayStr()}（週${days[d.getDay()]}）`
+}
+
+function getDailyDiff() {
+  // Deterministic per day: seeded random picks difficulty
+  const r = makeRng(strSeed(todayStr() + 'diff'))()
+  return r < 0.34 ? 'easy' : r < 0.67 ? 'medium' : 'hard'
+}
+
+// ═══════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════
+let difficulty   = 'easy'
+let gridSize     = 6
+let cellPx       = 66
+let numbers      = []
+let solutionPath = []
+let path         = []
+let pathSet      = new Set()
+let isDrawing    = false
+let timerItv     = null
+let seconds      = 0
+let solved       = false
+
+// ═══════════════════════════════════════════════════════
+// HAMILTONIAN PATH GENERATOR  (Warnsdorff + backtrack)
+// ═══════════════════════════════════════════════════════
+function buildPuzzle() {
+  const today = todayStr()
+  difficulty   = getDailyDiff()
+  const cfg    = DIFF_CFG[difficulty]
+  gridSize     = cfg.size
+  cellPx       = cfg.cellPx
+
+  useSeeded(strSeed(today + 'puzzle'))
+  solutionPath = generateHamiltonianPath(gridSize)
+  numbers      = placeNumbers(solutionPath, cfg.numCount)
+  useDefault()
+}
+
+function generateHamiltonianPath(size) {
+  const total = size * size
+  const vis   = Array.from({length:size}, () => new Array(size).fill(false))
+  const res   = []
+  let   ops   = 0
+  const DIRS  = [[0,1],[0,-1],[1,0],[-1,0]]
+
+  function free(r, c) {
+    return DIRS.reduce((n,[dr,dc]) => {
+      const nr=r+dr, nc=c+dc
+      return n + (nr>=0&&nr<size&&nc>=0&&nc<size&&!vis[nr][nc] ? 1 : 0)
+    }, 0)
+  }
+
+  function dfs(r, c) {
+    if (++ops > 120000) return false
+    vis[r][c] = true; res.push({row:r,col:c})
+    if (res.length === total) return true
+
+    const nexts = DIRS
+      .map(([dr,dc]) => [r+dr, c+dc])
+      .filter(([nr,nc]) => nr>=0&&nr<size&&nc>=0&&nc<size&&!vis[nr][nc])
+      .map(([nr,nc]) => ({r:nr,c:nc,w:free(nr,nc)}))
+      .sort((a,b) => a.w!==b.w ? a.w-b.w : (rng()<0.5?-1:1))
+
+    for (const {r:nr,c:nc} of nexts) if (dfs(nr,nc)) return true
+    vis[r][c] = false; res.pop(); return false
+  }
+
+  const corners = [[0,0],[0,size-1],[size-1,0],[size-1,size-1]]
+  const others  = []
+  for (let r=0;r<size;r++)
+    for (let c=0;c<size;c++)
+      if (!corners.some(([cr,cc])=>cr===r&&cc===c)) others.push([r,c])
+  shuffleArr(others)
+  const starts = [...corners, ...others]
+
+  for (const [sr,sc] of starts) {
+    ops=0; res.length=0; vis.forEach(r=>r.fill(false))
+    if (dfs(sr,sc) && res.length===total) return [...res]
+  }
+
+  // Fallback: serpentine
+  const fb=[]
+  for (let r=0;r<size;r++)
+    for (let c=0;c<size;c++)
+      fb.push({row:r, col:r%2===0?c:size-1-c})
+  return fb
+}
+
+function placeNumbers(sol, numCount) {
+  const n      = sol.length
+  const total  = Math.max(numCount, 2)
+  const idxSet = new Set([0, n-1])
+
+  if (total > 2) {
+    const step = n / (total - 1)
+    for (let i = 1; i < total-1; i++) {
+      let idx = Math.round(i * step)
+      idx += Math.round((rng()-0.5) * step * 0.4)
+      idx = Math.max(1, Math.min(n-2, idx))
+      idxSet.add(idx)
+    }
+  }
+
+  return [...idxSet].sort((a,b)=>a-b)
+    .map((idx,i) => ({row:sol[idx].row, col:sol[idx].col, num:i+1}))
+}
+
+// ═══════════════════════════════════════════════════════
+// PATH LOGIC
+// ═══════════════════════════════════════════════════════
+function key(r,c) { return r*100+c }
+function adj(a,b) { return Math.abs(a.row-b.row)+Math.abs(a.col-b.col)===1 }
+
+function getNum(r,c) {
+  const n = numbers.find(n=>n.row===r&&n.col===c)
+  return n ? n.num : null
+}
+
+function nextTarget() {
+  for (const n of numbers) if (!pathSet.has(key(n.row,n.col))) return n.num
+  return null
+}
+
+function canMove(r,c) {
+  if (r<0||r>=gridSize||c<0||c>=gridSize) return false
+  if (path.length>0 && !adj(path[path.length-1],{row:r,col:c})) return false
+  if (pathSet.has(key(r,c))) {
+    if (path.length>=2) { const p=path[path.length-2]; return p.row===r&&p.col===c }
+    return false
+  }
+  const cn=getNum(r,c)
+  if (cn!==null) { const nt=nextTarget(); if (nt!==null&&cn!==nt) return false }
+  return true
+}
+
+function tryMove(r,c) {
+  if (solved) return
+
+  // Backtrack
+  if (path.length>=2 && path[path.length-2].row===r && path[path.length-2].col===c) {
+    const last=path.pop(); pathSet.delete(key(last.row,last.col))
+    renderPath(); syncUI(); return
+  }
+
+  if (!canMove(r,c)) return
+  if (path.length===0 && getNum(r,c)!==1) return
+
+  path.push({row:r,col:c}); pathSet.add(key(r,c))
+  renderPath(); syncUI(); checkWin()
+}
+
+function checkWin() {
+  if (path.length!==gridSize*gridSize) return
+  let last=0
+  for (const cell of path) {
+    const n=getNum(cell.row,cell.col)
+    if (n!==null) { if(n!==last+1) return; last=n }
+  }
+  if (last<numbers.length) return
+
+  solved=true; stopTimer()
+  markDailyComplete(seconds)
+  saveHistory(seconds)
+  animateSolve()
+  setTimeout(() => showResult(seconds), 800)
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════
+function renderGrid() {
+  const gridEl = document.getElementById('grid')
+  const canvas = document.getElementById('pathCanvas')
+  const total  = gridSize * gridSize
+  const px     = gridSize * cellPx + (gridSize-1) * 2 // gap=2
+
+  gridEl.style.gridTemplateColumns = `repeat(${gridSize},${cellPx}px)`
+  gridEl.style.gridTemplateRows    = `repeat(${gridSize},${cellPx}px)`
+  gridEl.style.gap = '2px'
+  gridEl.innerHTML = ''
+
+  canvas.width  = px; canvas.height = px
+  canvas.style.width=px+'px'; canvas.style.height=px+'px'
+  // Position canvas accounting for gap layout
+  canvas.style.top='10px'; canvas.style.left='10px'
+
+  for (let r=0;r<gridSize;r++) {
+    for (let c=0;c<gridSize;c++) {
+      const cell = document.createElement('div')
+      cell.className='cell'; cell.dataset.row=r; cell.dataset.col=c
+      cell.style.width=cellPx+'px'; cell.style.height=cellPx+'px'
+
+      const no=numbers.find(n=>n.row===r&&n.col===c)
+      if (no) {
+        const badge=document.createElement('div')
+        badge.className='cell-num'; badge.textContent=no.num; badge.id=`num-${r}-${c}`
+        cell.appendChild(badge)
+      }
+      gridEl.appendChild(cell)
+    }
+  }
+
+  document.getElementById('playProgress').textContent = `0 / ${total} 格`
+
+  gridEl.addEventListener('mousedown',  onMouseDown)
+  gridEl.addEventListener('mousemove',  onMouseMove)
+  gridEl.addEventListener('mouseleave', ()=>{ isDrawing=false })
+}
+
+function renderPath() {
+  for (let r=0;r<gridSize;r++) {
+    for (let c=0;c<gridSize;c++) {
+      const el=cEl(r,c); if(!el) continue
+      const idx=path.findIndex(p=>p.row===r&&p.col===c)
+      el.classList.toggle('in-path',   idx!==-1)
+      el.classList.toggle('path-head', idx!==-1&&idx===path.length-1)
+    }
+  }
+
+  const nt=nextTarget()
+  for (const n of numbers) {
+    const b=document.getElementById(`num-${n.row}-${n.col}`); if(!b) continue
+    const vis=pathSet.has(key(n.row,n.col))
+    b.classList.toggle('visited',     vis)
+    b.classList.toggle('next-target', !vis&&n.num===nt)
+  }
+
+  drawCanvas()
+}
+
+function drawCanvas() {
+  const canvas=document.getElementById('pathCanvas')
+  const ctx=canvas.getContext('2d')
+  // Cell centers accounting for 2px gap
+  const stride = cellPx + 2
+  const cx = cell => cell.col * stride + cellPx/2
+  const cy = cell => cell.row * stride + cellPx/2
+
+  ctx.clearRect(0,0,canvas.width,canvas.height)
+  if (path.length<1) return
+
+  if (path.length>=2) {
+    ctx.lineCap='round'; ctx.lineJoin='round'
+    ctx.lineWidth=cellPx*0.3
+    ctx.strokeStyle='rgba(50,90,25,0.3)'
+    ctx.beginPath()
+    ctx.moveTo(cx(path[0]),cy(path[0]))
+    for (let i=1;i<path.length;i++) ctx.lineTo(cx(path[i]),cy(path[i]))
+    ctx.stroke()
+  }
+
+  // Head dot
+  const head=path[path.length-1]
+  ctx.fillStyle='rgba(80,140,40,0.55)'
+  ctx.beginPath()
+  ctx.arc(cx(head),cy(head),cellPx*0.17,0,Math.PI*2)
+  ctx.fill()
+}
+
+function animateSolve() {
+  for (let r=0;r<gridSize;r++)
+    for (let c=0;c<gridSize;c++) {
+      const el=cEl(r,c); if(!el) continue
+      setTimeout(()=>{
+        el.classList.add('mow-anim')
+        setTimeout(()=>el.classList.remove('mow-anim'),600)
+      },(r+c)*20)
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════
+function startTimer() {
+  seconds=0
+  timerItv=setInterval(()=>{ seconds++; updateTimerEl() },1000)
+}
+function stopTimer()  { clearInterval(timerItv); timerItv=null }
+function updateTimerEl() { document.getElementById('playTimer').textContent=fmt(seconds) }
+function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}` }
+
+// ═══════════════════════════════════════════════════════
+// DAILY STATE STORAGE
+// ═══════════════════════════════════════════════════════
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STATE_KEY)||'{}') } catch { return {} }
+}
+function getTodayRec()  { return loadState()[todayStr()] || null }
+
+function markDailyStart() {
+  const s=loadState(); const t=todayStr()
+  if (!s[t]) s[t]={ diff:difficulty, started:true, completed:false, time:null }
+  localStorage.setItem(STATE_KEY, JSON.stringify(s))
+}
+
+function markDailyComplete(time) {
+  const s=loadState(); const t=todayStr()
+  if (!s[t]) s[t]={ diff:difficulty }
+  s[t].completed=true
+  if (s[t].time==null || s[t].time>time) s[t].time=time
+  // Prune > 60 days
+  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-60)
+  for (const d of Object.keys(s)) if (new Date(d)<cutoff) delete s[d]
+  localStorage.setItem(STATE_KEY, JSON.stringify(s))
+}
+
+// ═══════════════════════════════════════════════════════
+// HISTORY (personal leaderboard)
+// ═══════════════════════════════════════════════════════
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]') } catch { return [] }
+}
+
+function saveHistory(time) {
+  const h = loadHistory()
+  const today = todayStr()
+  // Update if exists today, otherwise insert
+  const existing = h.findIndex(e => e.date === today)
+  const entry = { date:today, diff:difficulty, label:DIFF_CFG[difficulty].label, time, name:getPlayerName() }
+  if (existing>=0) { if (h[existing].time>time) h[existing]=entry }
+  else             { h.unshift(entry) }
+  if (h.length>HISTORY_MAX) h.length=HISTORY_MAX
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h))
+}
+
+function renderHistory(elId) {
+  const h   = loadHistory()
+  const el  = document.getElementById(elId)
+  if (h.length===0) { el.innerHTML='<div class="history-empty">尚無紀錄，快來修第一片草皮！</div>'; return }
+  el.innerHTML = h.map((e,i)=>`
+    <div class="history-row">
+      <div class="history-rank">${MEDALS[i]||`#${i+1}`}</div>
+      <span class="history-diff">${e.label}</span>
+      <span class="history-date">${e.date}</span>
+      <span class="history-time">${fmt(e.time)}</span>
+    </div>
+  `).join('')
+}
+
+// ═══════════════════════════════════════════════════════
+// PLAYER NAME  ── 待整合：接入感恩小島登入帳號後替換此函式
+// ═══════════════════════════════════════════════════════
+function getPlayerName() {
+  // TODO: 整合後改為從 currentUser.name 取得
+  return window.__zipPlayerName || '玩家'
+}
+
+// ═══════════════════════════════════════════════════════
+// PAGE TRANSITIONS
+// ═══════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'))
+  document.getElementById(id).classList.remove('hidden')
+}
+
+function goPrestart() {
+  const today    = todayStr()
+  const diff     = getDailyDiff()
+  const cfg      = DIFF_CFG[diff]
+  const rec      = getTodayRec()
+
+  document.getElementById('psDate').textContent      = todayLabel()
+  document.getElementById('psDiffBadge').textContent = cfg.label
+
+  renderHistory('historyListPre')
+
+  if (rec && rec.started && !rec.completed) {
+    document.getElementById('continueWarning').classList.remove('hidden')
+    document.getElementById('btnStart').textContent = '🚜 繼續修剪！'
+  } else {
+    document.getElementById('continueWarning').classList.add('hidden')
+    document.getElementById('btnStart').textContent = '🚜 拿起割草機，開始！'
+  }
+
+  showPage('pagePrestart')
+}
+
+function startPlaying() {
+  markDailyStart()
+  buildPuzzle()
+  path=[]; pathSet=new Set(); solved=false; seconds=0
+
+  renderGrid()
+  renderPath()
+  syncUI()
+  showPage('pagePlaying')
+  startTimer()
+}
+
+function showResult(time) {
+  const cfg  = DIFF_CFG[difficulty]
+  const h    = loadHistory()
+  const rank = h.findIndex(e => e.date===todayStr()) + 1
+
+  document.getElementById('resultDate').textContent  = `${todayLabel()} · ${cfg.label}`
+  document.getElementById('resultTime').textContent  = fmt(time)
+
+  const rankEl = document.getElementById('resultRank')
+  if (rank===1)    rankEl.innerHTML = '🏆 歷史最佳！'
+  else if (rank>0) rankEl.innerHTML = `個人紀錄排名：第 <strong>${rank}</strong> 名`
+  else             rankEl.textContent = '完成！'
+
+  renderHistory('historyListResult')
+  showPage('pageResult')
+}
+
+function showAlreadyDone() {
+  const rec = getTodayRec()
+  const cfg = DIFF_CFG[rec.diff || getDailyDiff()]
+
+  document.getElementById('resultTitle').textContent  = '今日草皮已修剪完畢 ✅'
+  document.getElementById('resultDate').textContent   = `${todayLabel()} · ${cfg.label}`
+  document.getElementById('resultTime').textContent   = fmt(rec.time)
+  document.getElementById('resultRank').textContent   = '明天再來挑戰新的草皮！'
+
+  renderHistory('historyListResult')
+  showPage('pageResult')
+}
+
+// ═══════════════════════════════════════════════════════
+// EVENT HANDLERS
+// ═══════════════════════════════════════════════════════
+function cEl(r,c) { return document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`) }
+
+function cellAt(clientX, clientY) {
+  const el = document.elementFromPoint(clientX, clientY)
+  if (!el) return null
+  const c = el.closest('.cell')
+  if (!c) return null
+  return {row: parseInt(c.dataset.row), col: parseInt(c.dataset.col)}
+}
+
+function onMouseDown(e) {
+  e.preventDefault(); isDrawing=true
+  const c=cellAt(e.clientX,e.clientY); if(!c) return
+  if (path.length>0 && getNum(c.row,c.col)===1) { resetPath(); return }
+  tryMove(c.row,c.col)
+}
+function onMouseMove(e) {
+  if (!isDrawing) return
+  const c=cellAt(e.clientX,e.clientY); if(c) tryMove(c.row,c.col)
+}
+
+const gridOuter = document.getElementById('gridOuter')
+gridOuter.addEventListener('touchstart', e=>{
+  e.preventDefault(); isDrawing=true
+  const t=e.touches[0]; const c=cellAt(t.clientX,t.clientY); if(!c) return
+  if (path.length>0 && getNum(c.row,c.col)===1) { resetPath(); return }
+  tryMove(c.row,c.col)
+},{passive:false})
+gridOuter.addEventListener('touchmove', e=>{
+  e.preventDefault(); if (!isDrawing) return
+  const t=e.touches[0]; const c=cellAt(t.clientX,t.clientY); if(c) tryMove(c.row,c.col)
+},{passive:false})
+gridOuter.addEventListener('touchend',  ()=>{ isDrawing=false })
+document.addEventListener('mouseup',    ()=>{ isDrawing=false })
+
+function resetPath() {
+  path=[]; pathSet=new Set()
+  renderPath(); syncUI()
+}
+
+function syncUI() {
+  document.getElementById('btnUndo').disabled = path.length===0
+  document.getElementById('playProgress').textContent = `${path.length} / ${gridSize*gridSize} 格`
+}
+
+function shuffleArr(arr) {
+  for (let i=arr.length-1;i>0;i--) {
+    const j=Math.floor(rng()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]]
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// WIRE UP
+// ═══════════════════════════════════════════════════════
+
+document.getElementById('btnStart').addEventListener('click', startPlaying)
+
+document.getElementById('btnUndo').addEventListener('click', ()=>{
+  if (path.length===0) return
+  const last=path.pop(); pathSet.delete(key(last.row,last.col))
+  renderPath(); syncUI()
+})
+
+document.getElementById('btnReset').addEventListener('click', resetPath)
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+(function init() {
+  const rec = getTodayRec()
+  if (rec && rec.completed) {
+    showAlreadyDone()
+  } else {
+    goPrestart()
+  }
+})()
+</script>
+</body>
+</html>
