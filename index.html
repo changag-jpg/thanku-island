@@ -451,9 +451,17 @@
             width: 32px; height: 32px; border-radius: 50%; border: 2px solid #e5e5e5;
             background: #f7f7f7; font-size: 14px; font-weight: 700; color: #666; cursor: pointer;
         }
-        .zip-game-wrap { flex: 1; overflow: hidden; }
-        .zip-iframe { width: 100%; height: 100%; border: none; display: block; min-height: 520px; }
+        .zip-game-wrap { flex: 1; overflow: hidden; position: relative; min-height: 540px; }
+        .zip-iframe { width: 100%; height: 100%; border: none; display: block; position: absolute; inset: 0; }
+        .zip-iframe-loading {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 12px; color: #aaa; font-size: 13px;
+        }
         .zip-board-wrap { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+        .zip-board-refresh {
+            padding: 10px 24px; border-radius: 999px; border: 2px solid #1cb0f6;
+            background: #fff; color: #1cb0f6; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
         .zip-board-section-title {
             font-size: 12px; font-weight: 800; color: #aaa; letter-spacing: .08em;
             text-transform: uppercase; margin-bottom: 8px;
@@ -4011,9 +4019,20 @@
                 </div>
                 <button class="zip-close" @click="closeZipModal">✕</button>
             </div>
+            <!-- 每日任務 tab -->
             <div v-show="zipTab==='game'" class="zip-game-wrap">
-                <iframe ref="zipFrame" src="/zip-game.html" class="zip-iframe"></iframe>
+                <div v-if="!zipIframeReady" class="zip-iframe-loading">
+                    <span style="font-size:28px">🌿</span>
+                    草皮載入中...
+                </div>
+                <iframe v-if="zipModalOpen"
+                    :src="zipIframeSrc"
+                    class="zip-iframe"
+                    @load="zipIframeReady=true"
+                    allow="same-origin">
+                </iframe>
             </div>
+            <!-- 排行榜 tab -->
             <div v-show="zipTab==='board'" class="zip-board-wrap">
                 <div>
                     <div class="zip-board-section-title">今日榜（用時最短）</div>
@@ -4143,7 +4162,8 @@ createApp({
         const zipPlayedToday = ref(false);
         const zipTodayBoard = ref([]);
         const zipWeeklyBoard = ref([]);
-        const zipFrame = ref(null);
+        const zipIframeReady = ref(false);
+        const zipIframeSrc = ref('');
 
         const fetchZipBoards = async () => {
             try {
@@ -4160,18 +4180,21 @@ createApp({
         const openZipModal = () => {
             zipModalOpen.value = true;
             zipTab.value = 'game';
+            zipIframeReady.value = false;
+            zipIframeSrc.value = '/zip-game.html';
             fetchZipBoards();
         };
 
-        const closeZipModal = () => { zipModalOpen.value = false; };
+        const closeZipModal = () => {
+            zipModalOpen.value = false;
+            zipIframeSrc.value = '';
+            zipIframeReady.value = false;
+        };
 
         const onZipMessage = (e) => {
             if (e.data?.type === 'zip-complete') {
                 zipPlayedToday.value = true;
-                setTimeout(() => {
-                    zipTab.value = 'board';
-                    fetchZipBoards();
-                }, 900);
+                setTimeout(() => { zipTab.value = 'board'; fetchZipBoards(); }, 900);
             }
         };
 
@@ -6107,7 +6130,7 @@ createApp({
             } finally {
                 fbLoading.value = false;
             }
-            // 初始化 ZIP 狀態 + 監聽 postMessage
+            // 初始化 ZIP 狀態
             fetchZipBoards();
             window.addEventListener('message', onZipMessage);
         });
@@ -6162,7 +6185,8 @@ createApp({
             islandAddTile, islandCenterView, islandReset, islandEditMode,
             idleStates, triggerIdleAnim,
             exchangeAmt, exchangeNote, exchangeError, exchangeSuccess, exchangeSubmitting, submitExchange,
-            zipModalOpen, zipTab, zipPlayedToday, zipTodayBoard, zipWeeklyBoard, zipFrame,
+            zipModalOpen, zipTab, zipPlayedToday, zipTodayBoard, zipWeeklyBoard,
+            zipIframeReady, zipIframeSrc,
             openZipModal, closeZipModal, fetchZipBoards,
         };
     }
