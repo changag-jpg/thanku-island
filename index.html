@@ -712,35 +712,98 @@
         .help-line:last-child { margin-bottom: 0; }
 
         /* ── 登入畫面 ── */
+        /* ===== 登入頁 ===== */
         .login-screen {
             position: fixed; inset: 0; z-index: 9999;
-            background: linear-gradient(135deg, #EFF8F1 0%, #D4EDD8 50%, #C8E8D4 100%);
+            display: flex; flex-direction: row;
+            background: #ffffff;
+        }
+
+        /* 左側視覺面板 */
+        .login-panel-left {
+            flex: 1;
+            background: linear-gradient(160deg, #d7ffb8 0%, #a8e8b0 45%, #7ed896 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 48px 40px; position: relative; overflow: hidden;
+        }
+        .login-hero-tag {
+            font-size: 11px; font-weight: 900; letter-spacing: .1em;
+            text-transform: uppercase; color: var(--primary-h);
+            background: rgba(255,255,255,.65); border-radius: 999px;
+            padding: 6px 18px; margin-bottom: 40px;
+        }
+        /* 雪碧圖動畫（4 格水平排列，每格 340×340px，總寬 1360px）
+           若要調整幀數：改 steps(N)、background-size 第一個值 = N×340、keyframes to 的 X = -(N×340)px */
+        .login-hero-sprite {
+            width: 340px; height: 340px;
+            border-radius: 24px; flex-shrink: 0;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 0 rgba(63,143,1,.25), 0 16px 40px rgba(40,100,40,.18);
+            border: 3px solid rgba(255,255,255,.8);
+            background-color: rgba(255,255,255,.3);
+            background-image: url('assets/login-hero.png');
+            background-size: 1360px 340px;
+            background-repeat: no-repeat;
+            background-position: 0 0;
+            animation: login-hero-play 0.6s steps(4) infinite;
+        }
+        @keyframes login-hero-play {
+            to { background-position: -1360px 0; }
+        }
+        .login-hero-h {
+            font-size: 26px; font-weight: 900; color: var(--primary-h);
+            text-align: center; line-height: 1.5; margin-bottom: 32px;
+        }
+        .login-feature-row {
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .login-feature-chip {
+            background: rgba(255,255,255,.72); border: 2px solid rgba(255,255,255,.9);
+            border-radius: 12px; padding: 8px 16px;
+            font-size: 13px; font-weight: 800; color: var(--primary-h);
+            box-shadow: 0 3px 0 rgba(63,143,1,.18);
+        }
+
+        /* 右側登入面板 */
+        .login-panel-right {
+            width: 420px; flex-shrink: 0; background: #ffffff;
+            border-left: 2px solid var(--border);
             display: flex; align-items: center; justify-content: center;
+            padding: 48px 44px;
         }
         .login-card {
-            background: rgba(255,255,255,0.92); backdrop-filter: blur(20px);
-            border: 2px solid rgba(255,255,255,0.8);
-            border-radius: 28px; padding: 48px 40px;
-            text-align: center; max-width: 360px; width: 90%;
-            box-shadow: 0 20px 60px rgba(100,140,110,0.2);
+            width: 100%; text-align: center;
         }
-        .login-logo { font-size: 64px; line-height: 1; margin-bottom: 16px;
-            display: block; animation: float-island 4s ease-in-out infinite; }
-        .login-title { font-size: 28px; font-weight: 900; color: var(--text); margin: 0 0 4px; letter-spacing: -0.02em; }
-        .login-sub { font-size: 12px; color: var(--primary-h); font-weight: 700;
-            letter-spacing: 0.12em; margin: 0 0 20px; }
-        .login-desc { font-size: 13px; color: var(--text-sub); font-weight: 600;
-            line-height: 1.6; margin-bottom: 32px; }
-        .google-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            width: 100%; padding: 14px 24px; border-radius: var(--radius-pill);
-            background: #fff; border: 2px solid var(--border);
-            font-size: 14px; font-weight: 800; color: var(--text);
-            cursor: pointer; transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(100,100,100,0.1);
+        .login-card-logo {
+            width: 72px; height: 72px;
+            background: var(--primary); box-shadow: 0 4px 0 #3f8f01;
+            border-radius: 18px; display: grid; place-items: center;
+            font-size: 34px; color: #fff; font-weight: 900;
+            margin: 0 auto 20px;
+            font-family: "Baloo 2", "Nunito", sans-serif;
         }
-        .google-btn:hover { border-color: #4285F4; box-shadow: 0 6px 20px rgba(66,133,244,0.2); transform: translateY(-1px); }
-        .login-error { margin-top: 12px; font-size: 12px; color: var(--alert); font-weight: 700; }
+        .login-title {
+            font-size: 32px; font-weight: 900; color: var(--primary);
+            margin: 0 0 4px; letter-spacing: 0;
+            font-family: "Baloo 2", "Nunito", sans-serif;
+        }
+        .login-sub {
+            font-size: 11px; color: var(--accent); font-weight: 900;
+            letter-spacing: .1em; text-transform: uppercase; margin: 0 0 28px;
+        }
+        .login-desc {
+            font-size: 14px; color: var(--text-sub); font-weight: 600;
+            line-height: 1.7; margin-bottom: 36px;
+        }
+        .login-error { margin-top: 16px; font-size: 12px; color: var(--alert); font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .login-panel-left { display: none; }
+            .login-panel-right {
+                width: 100%; border: none; padding: 56px 32px;
+            }
+        }
 
         /* 登入後右上角使用者資訊 */
         .topbar-user {
@@ -2571,35 +2634,57 @@
         <button @click="forceReset" class="btn-dark" style="width:auto;padding:12px 32px;">清除資料並重新啟動</button>
     </div>
 
-    <!-- 抽卡動畫 -->
     <!-- 登入畫面 -->
     <div v-show="!fbUser && !fbLoading" class="login-screen">
-        <div class="login-card">
-            <div class="login-logo">🏝️</div>
-            <h1 class="login-title">感恩小島</h1>
-            <p class="login-sub">ThankU Island</p>
-            <p class="login-desc">用感謝的力量，打造屬於你的小島 🌿</p>
-            <div id="seatalk_login_app_info"
-              data-redirect_uri="https://thankuisland.run.ingarena.net/auth/seatalk/callback"
-              data-appid="MDIxMjA0MDE0MTg3"
-              data-response_type="code"
-              data-state="thanku">
+        <!-- 左側視覺 -->
+        <div class="login-panel-left">
+            <div class="login-hero-tag">感恩小島 · ThankU Island</div>
+            <div class="login-hero-sprite"></div>
+            <h2 class="login-hero-h">用感謝的力量<br>打造屬於你的小島</h2>
+            <div class="login-feature-row">
+                <div class="login-feature-chip">✉️ 寄出感謝信</div>
+                <div class="login-feature-chip">🎲 扭蛋抽卡</div>
+                <div class="login-feature-chip">🏝️ 建造小島</div>
+                <div class="login-feature-chip">🌏 探索 Sea 群島</div>
             </div>
-            <div id="seatalk_login_button"
-              data-size="default"
-              data-theme="default"
-              data-align="center"
-              data-copywriting="使用 SeaTalk 帳號登入">
+        </div>
+        <!-- 右側登入 -->
+        <div class="login-panel-right">
+            <div class="login-card">
+                <div class="login-card-logo">T</div>
+                <h1 class="login-title">感恩小島</h1>
+                <p class="login-sub">ThankU Island</p>
+                <p class="login-desc">登入後開始你的感恩旅程<br>與朋友分享每一份感謝 🌿</p>
+                <div id="seatalk_login_app_info"
+                  data-redirect_uri="https://thankuisland.run.ingarena.net/auth/seatalk/callback"
+                  data-appid="MDIxMjA0MDE0MTg3"
+                  data-response_type="code"
+                  data-state="thanku">
+                </div>
+                <div id="seatalk_login_button"
+                  data-size="default"
+                  data-theme="default"
+                  data-align="center"
+                  data-copywriting="使用 SeaTalk 帳號登入">
+                </div>
+                <div v-if="loginError" class="login-error">{{ loginError }}</div>
             </div>
-            <div v-if="loginError" class="login-error">{{ loginError }}</div>
         </div>
     </div>
 
     <!-- 載入中 -->
     <div v-if="fbLoading" class="login-screen">
-        <div class="login-card">
-            <div class="login-logo" style="animation:float-island 2s ease-in-out infinite;">🏝️</div>
-            <p style="color:var(--text-sub);font-weight:700;margin-top:16px;">載入中...</p>
+        <div class="login-panel-left">
+            <div class="login-hero-tag">感恩小島 · ThankU Island</div>
+            <div class="login-hero-sprite"></div>
+        </div>
+        <div class="login-panel-right">
+            <div class="login-card">
+                <div class="login-card-logo">T</div>
+                <h1 class="login-title">感恩小島</h1>
+                <p class="login-sub">ThankU Island</p>
+                <p style="color:var(--text-sub);font-weight:700;margin-top:24px;font-size:14px;">載入中...</p>
+            </div>
         </div>
     </div>
 
