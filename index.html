@@ -715,33 +715,19 @@
         /* ===== 登入頁 ===== */
         .login-screen {
             position: fixed; inset: 0; z-index: 9999;
-            display: flex; flex-direction: row;
             background: #ffffff;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        /* 左側視覺面板 */
-        .login-panel-left {
-            flex: 1;
-            background: linear-gradient(160deg, #d7ffb8 0%, #a8e8b0 45%, #7ed896 100%);
+        .login-card {
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 48px 40px; position: relative; overflow: hidden;
+            align-items: center; text-align: center;
+            max-width: 380px; width: 90%;
+            padding: 0 24px 48px;
         }
-        .login-hero-tag {
-            font-size: 11px; font-weight: 900; letter-spacing: .1em;
-            text-transform: uppercase; color: var(--primary-h);
-            background: rgba(255,255,255,.65); border-radius: 999px;
-            padding: 6px 18px; margin-bottom: 40px;
-        }
-        /* 雪碧圖動畫（4 格水平排列，每格 340×340px，總寬 1360px）
-           若要調整幀數：改 steps(N)、background-size 第一個值 = N×340、keyframes to 的 X = -(N×340)px */
+        /* 4 格水平雪碧圖，每格 340×340px，總寬 1360px */
         .login-hero-sprite {
-            width: 340px; height: 340px;
-            border-radius: 24px; flex-shrink: 0;
-            margin-bottom: 32px;
-            box-shadow: 0 8px 0 rgba(63,143,1,.25), 0 16px 40px rgba(40,100,40,.18);
-            border: 3px solid rgba(255,255,255,.8);
-            background-color: rgba(255,255,255,.3);
+            width: 340px; height: 340px; flex-shrink: 0;
+            margin-bottom: 4px;
             background-image: url('assets/login-hero.png');
             background-size: 1360px 340px;
             background-repeat: no-repeat;
@@ -751,38 +737,6 @@
         @keyframes login-hero-play {
             to { background-position: -1360px 0; }
         }
-        .login-hero-h {
-            font-size: 26px; font-weight: 900; color: var(--primary-h);
-            text-align: center; line-height: 1.5; margin-bottom: 32px;
-        }
-        .login-feature-row {
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
-        }
-        .login-feature-chip {
-            background: rgba(255,255,255,.72); border: 2px solid rgba(255,255,255,.9);
-            border-radius: 12px; padding: 8px 16px;
-            font-size: 13px; font-weight: 800; color: var(--primary-h);
-            box-shadow: 0 3px 0 rgba(63,143,1,.18);
-        }
-
-        /* 右側登入面板 */
-        .login-panel-right {
-            width: 420px; flex-shrink: 0; background: #ffffff;
-            border-left: 2px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            padding: 48px 44px;
-        }
-        .login-card {
-            width: 100%; text-align: center;
-        }
-        .login-card-logo {
-            width: 72px; height: 72px;
-            background: var(--primary); box-shadow: 0 4px 0 #3f8f01;
-            border-radius: 18px; display: grid; place-items: center;
-            font-size: 34px; color: #fff; font-weight: 900;
-            margin: 0 auto 20px;
-            font-family: "Baloo 2", "Nunito", sans-serif;
-        }
         .login-title {
             font-size: 32px; font-weight: 900; color: var(--primary);
             margin: 0 0 4px; letter-spacing: 0;
@@ -790,20 +744,13 @@
         }
         .login-sub {
             font-size: 11px; color: var(--accent); font-weight: 900;
-            letter-spacing: .1em; text-transform: uppercase; margin: 0 0 28px;
+            letter-spacing: .1em; text-transform: uppercase; margin: 0 0 20px;
         }
         .login-desc {
             font-size: 14px; color: var(--text-sub); font-weight: 600;
-            line-height: 1.7; margin-bottom: 36px;
+            line-height: 1.7; margin-bottom: 32px;
         }
         .login-error { margin-top: 16px; font-size: 12px; color: var(--alert); font-weight: 700; }
-
-        @media (max-width: 768px) {
-            .login-panel-left { display: none; }
-            .login-panel-right {
-                width: 100%; border: none; padding: 56px 32px;
-            }
-        }
 
         /* 登入後右上角使用者資訊 */
         .topbar-user {
@@ -2636,55 +2583,34 @@
 
     <!-- 登入畫面 -->
     <div v-show="!fbUser && !fbLoading" class="login-screen">
-        <!-- 左側視覺 -->
-        <div class="login-panel-left">
-            <div class="login-hero-tag">感恩小島 · ThankU Island</div>
+        <div class="login-card">
             <div class="login-hero-sprite"></div>
-            <h2 class="login-hero-h">用感謝的力量<br>打造屬於你的小島</h2>
-            <div class="login-feature-row">
-                <div class="login-feature-chip">✉️ 寄出感謝信</div>
-                <div class="login-feature-chip">🎲 扭蛋抽卡</div>
-                <div class="login-feature-chip">🏝️ 建造小島</div>
-                <div class="login-feature-chip">🌏 探索 Sea 群島</div>
+            <h1 class="login-title">感恩小島</h1>
+            <p class="login-sub">ThankU Island</p>
+            <p class="login-desc">登入後開始你的感恩旅程<br>與朋友分享每一份感謝 🌿</p>
+            <div id="seatalk_login_app_info"
+              data-redirect_uri="https://thankuisland.run.ingarena.net/auth/seatalk/callback"
+              data-appid="MDIxMjA0MDE0MTg3"
+              data-response_type="code"
+              data-state="thanku">
             </div>
-        </div>
-        <!-- 右側登入 -->
-        <div class="login-panel-right">
-            <div class="login-card">
-                <div class="login-card-logo">T</div>
-                <h1 class="login-title">感恩小島</h1>
-                <p class="login-sub">ThankU Island</p>
-                <p class="login-desc">登入後開始你的感恩旅程<br>與朋友分享每一份感謝 🌿</p>
-                <div id="seatalk_login_app_info"
-                  data-redirect_uri="https://thankuisland.run.ingarena.net/auth/seatalk/callback"
-                  data-appid="MDIxMjA0MDE0MTg3"
-                  data-response_type="code"
-                  data-state="thanku">
-                </div>
-                <div id="seatalk_login_button"
-                  data-size="default"
-                  data-theme="default"
-                  data-align="center"
-                  data-copywriting="使用 SeaTalk 帳號登入">
-                </div>
-                <div v-if="loginError" class="login-error">{{ loginError }}</div>
+            <div id="seatalk_login_button"
+              data-size="default"
+              data-theme="default"
+              data-align="center"
+              data-copywriting="使用 SeaTalk 帳號登入">
             </div>
+            <div v-if="loginError" class="login-error">{{ loginError }}</div>
         </div>
     </div>
 
     <!-- 載入中 -->
     <div v-if="fbLoading" class="login-screen">
-        <div class="login-panel-left">
-            <div class="login-hero-tag">感恩小島 · ThankU Island</div>
+        <div class="login-card">
             <div class="login-hero-sprite"></div>
-        </div>
-        <div class="login-panel-right">
-            <div class="login-card">
-                <div class="login-card-logo">T</div>
-                <h1 class="login-title">感恩小島</h1>
-                <p class="login-sub">ThankU Island</p>
-                <p style="color:var(--text-sub);font-weight:700;margin-top:24px;font-size:14px;">載入中...</p>
-            </div>
+            <h1 class="login-title">感恩小島</h1>
+            <p class="login-sub">ThankU Island</p>
+            <p style="color:var(--text-sub);font-weight:700;margin-top:16px;font-size:14px;">載入中...</p>
         </div>
     </div>
 
