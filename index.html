@@ -1929,6 +1929,637 @@
 
         .tab-content { padding-bottom: 8px; }
     </style>
+
+    <style id="duolingo-island-style">
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@500;700;800;900&display=swap');
+
+        :root {
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --surface-2: #f7f7f7;
+            --border: #e5e5e5;
+            --border-soft: #eeeeee;
+            --text: #3c3c3c;
+            --text-sub: #777777;
+            --primary: #67c175;
+            --primary-h: #3f8f01;
+            --primary-lt: #d7ffb8;
+            --accent: #1cb0f6;
+            --accent-lt: #ddf4ff;
+            --alert: #ff4b4b;
+            --alert-lt: #ffe3e3;
+            --yellow: #ffc700;
+            --blue: #1cb0f6;
+            --sage: #67c175;
+            --sage-deep: #67c175;
+            --sage-lt: #d7ffb8;
+            --sea: #1cb0f6;
+            --coral: #cc348d;
+            --gold: #ffc700;
+            --paper: #ffffff;
+            --ink: #3c3c3c;
+            --muted: #777777;
+            --line: #e5e5e5;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 12px;
+            --radius-pill: 999px;
+            --shadow-sm: none;
+            --shadow: none;
+            --shadow-lg: none;
+            --duo-button-shadow: 0 4px 0 #3f8f01;
+            --duo-blue-shadow: 0 4px 0 #0f87c7;
+        }
+
+        html, body {
+            background: #ffffff;
+        }
+
+        body,
+        button,
+        input,
+        textarea,
+        select {
+            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            letter-spacing: .03em;
+            font-weight: 500;
+        }
+
+        .app {
+            background:
+                linear-gradient(180deg, rgba(215,255,184,.24), rgba(255,255,255,0) 260px),
+                #ffffff;
+            color: var(--text);
+        }
+
+        .sidebar {
+            width: 252px;
+            background: #ffffff;
+            border-right: 2px solid var(--border);
+            padding: 24px 16px;
+            backdrop-filter: none;
+        }
+
+        .sidebar-logo {
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .sidebar-logo-mark {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary);
+            box-shadow: var(--duo-button-shadow);
+            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-size: 25px;
+            line-height: 1;
+        }
+
+        .sidebar-logo-title {
+            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-size: 21px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .sidebar-logo-sub,
+        .bn-label,
+        .sidebar-user-level,
+        .sidebar-stat-label {
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-logo-sub {
+            color: var(--accent);
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .sidebar-nav,
+        .sidebar-bottom {
+            gap: 8px;
+        }
+
+        .sidebar-bottom {
+            border-top: 2px solid var(--border);
+            margin-top: 14px;
+            padding-top: 14px;
+        }
+
+        .nav-btn,
+        .inbox-btn,
+        .feedback-sidebar-btn {
+            min-height: 50px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            color: #777777;
+            font-size: 15px;
+            font-weight: 900;
+            padding: 0 12px;
+            box-shadow: none;
+        }
+
+        .nav-label {
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .nav-btn i,
+        .inbox-btn i,
+        .feedback-sidebar-btn i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: #f7f7f7;
+            color: var(--accent);
+            font-size: 15px;
+        }
+
+        .nav-btn:hover:not(.active),
+        .inbox-btn:hover,
+        .feedback-sidebar-btn:hover {
+            color: var(--accent);
+            background: #ffffff;
+            border-color: var(--border);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-btn.active,
+        .inbox-btn.active {
+            background: var(--primary-lt);
+            border-color: var(--primary);
+            color: var(--primary-h);
+            box-shadow: none;
+        }
+
+        .nav-btn.active i,
+        .inbox-btn.active i {
+            background: #ffffff;
+            color: var(--primary);
+        }
+
+        .sidebar-user {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: none;
+        }
+
+        .sidebar-avatar,
+        .sidebar-avatar-img,
+        .topbar-avatar {
+            border: 3px solid var(--primary-lt);
+            box-shadow: none;
+        }
+
+        .sidebar-user-name {
+            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-size: 20px;
+            color: var(--text);
+            letter-spacing: 0;
+        }
+
+        .sidebar-stats {
+            border-top: 2px solid var(--border);
+        }
+
+        .sidebar-stat {
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .sidebar-stat-val {
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .content-area {
+            background: transparent;
+        }
+
+        .topbar {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 2px solid var(--border);
+            box-shadow: none;
+            padding: 0 32px;
+        }
+
+        .topbar-title {
+            font-family: "Baloo 2", "Nunito", sans-serif;
+            color: var(--primary);
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .topbar-actions {
+            gap: 12px;
+        }
+
+        .topbar-btn,
+        .btn-primary,
+        .feedback-submit-btn,
+        .reward-claim-btn,
+        .is-act.center,
+        .imb-act.center {
+            min-height: 42px;
+            border-radius: 12px;
+            border: 0;
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: var(--duo-button-shadow);
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+        }
+
+        .topbar-btn:hover,
+        .btn-primary:hover,
+        .feedback-submit-btn:hover,
+        .reward-claim-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #3f8f01;
+        }
+
+        .topbar-btn:active,
+        .btn-primary:active,
+        .feedback-submit-btn:active,
+        .reward-claim-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #3f8f01;
+        }
+
+        .topbar-btn:not(.active) {
+            background: #ffffff;
+            border: 2px solid var(--border);
+            color: var(--accent);
+            box-shadow: 0 4px 0 #d1d1d1;
+        }
+
+        .topbar-btn:not(.active):hover {
+            box-shadow: 0 5px 0 #d1d1d1;
+        }
+
+        .help-btn,
+        .topbar-signout,
+        .island-center-btn,
+        .pool-close,
+        .modal-close {
+            border: 2px solid var(--border);
+            background: #ffffff;
+            color: var(--accent);
+            box-shadow: 0 4px 0 #d1d1d1;
+            border-radius: 12px;
+        }
+
+        .main.home-active > .tab-content {
+            padding: 24px 32px 28px;
+            gap: 18px;
+            max-width: 1180px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .status-row {
+            gap: 12px;
+        }
+
+        .resource-pill {
+            min-height: 42px;
+            padding: 0 16px;
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: #4b4b4b;
+            font-size: 13px;
+            font-weight: 900;
+            box-shadow: none;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+        }
+
+        .dot.sage { background: var(--primary); }
+        .dot.coral { background: var(--coral); }
+        .dot.blue { background: var(--accent); }
+        .dot.gold { background: var(--yellow); }
+
+        .bulletin-bar {
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            box-shadow: none;
+        }
+
+        .bn-header {
+            background: #ffffff;
+            border-right: 2px solid var(--border);
+        }
+
+        .bn-dot {
+            background: var(--primary);
+        }
+
+        .bn-title-text,
+        .bn-item-msg strong {
+            color: var(--primary);
+        }
+
+        .bn-item {
+            border-right: 2px solid var(--border);
+        }
+
+        .bn-new-badge {
+            background: var(--primary-lt);
+            color: var(--primary-h);
+        }
+
+        .island-wrap {
+            gap: 14px;
+        }
+
+        .island-flat {
+            min-height: 540px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background:
+                linear-gradient(180deg, #9edcff 0%, #bcecff 54%, #e5f8ff 100%);
+            box-shadow: none;
+            outline: 8px solid #f7f7f7;
+            overflow: hidden;
+        }
+
+        .island-flat::before {
+            content: none;
+        }
+
+        .island-flat::after {
+            content: none;
+        }
+
+        .island-empty {
+            z-index: 4;
+            background: #ffffff;
+            color: #777777;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 13px;
+            font-weight: 900;
+            box-shadow: 0 4px 0 #d1d1d1;
+        }
+
+        #island-canvas,
+        #island-overlay {
+            border-radius: 12px !important;
+        }
+
+        .float-item img,
+        .sprite-anim {
+            filter: drop-shadow(0 5px 0 rgba(60,60,60,.08));
+        }
+
+        .item-edit-btns button,
+        .flip-btn,
+        .scale-btn,
+        .layer-btn,
+        .remove-btn {
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: #ffffff;
+            color: var(--accent);
+            box-shadow: 0 3px 0 #d1d1d1;
+        }
+
+        .warehouse,
+        .layer-panel,
+        .gacha-card,
+        .shop-item,
+        .letter-card,
+        .wall-card,
+        .rank-card,
+        .exchange-card,
+        .is-panel,
+        .pool-card,
+        .help-modal,
+        .feedback-modal,
+        .letter-modal,
+        .avatar-modal,
+        .pool-modal {
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            box-shadow: none;
+        }
+
+        .section-title,
+        .gacha-title,
+        .pool-modal-title,
+        .feedback-modal-title,
+        .avatar-modal-title,
+        .letter-modal-from {
+            font-family: "Baloo 2", "Nunito", sans-serif;
+            color: var(--primary);
+            letter-spacing: 0;
+        }
+
+        .form-input,
+        input,
+        textarea,
+        select {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text);
+            font-weight: 800;
+            box-shadow: none;
+        }
+
+        .form-input:focus,
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        a,
+        .link,
+        .inline-link {
+            color: var(--accent);
+        }
+
+        .visit-banner-home {
+            background: var(--accent);
+            box-shadow: var(--duo-blue-shadow);
+            border-radius: 12px;
+            font-weight: 900;
+        }
+
+        .badge-dot,
+        .unread-bubble {
+            background: var(--primary);
+        }
+
+        body.duolingo-preview,
+        body.duolingo-preview button,
+        body.duolingo-preview input,
+        body.duolingo-preview textarea,
+        body.duolingo-preview select {
+            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-optical-sizing: auto;
+        }
+
+        body.duolingo-preview .sidebar-logo-title,
+        body.duolingo-preview .topbar-title {
+            font-family: "Noto Sans TC", "Baloo 2", "Nunito", sans-serif;
+            font-weight: 900;
+        }
+
+        body.duolingo-preview .section-title,
+        body.duolingo-preview .write-hero-title,
+        body.duolingo-preview .wall-hero-title,
+        body.duolingo-preview .sea-hero-title,
+        body.duolingo-preview .gacha-title,
+        body.duolingo-preview .pool-modal-title,
+        body.duolingo-preview .feedback-modal-title,
+        body.duolingo-preview .avatar-modal-title,
+        body.duolingo-preview .send-confirm-title,
+        body.duolingo-preview .reward-claim-name,
+        body.duolingo-preview .gacha-partner-name,
+        body.duolingo-preview .login-title {
+            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        body.duolingo-preview .sidebar-user-name,
+        body.duolingo-preview .resource-pill,
+        body.duolingo-preview .letter-from,
+        body.duolingo-preview .wall-names,
+        body.duolingo-preview .sea-name,
+        body.duolingo-preview .shop-item-name,
+        body.duolingo-preview .pool-item-name {
+            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        body.duolingo-preview .nav-btn,
+        body.duolingo-preview .inbox-btn,
+        body.duolingo-preview .feedback-sidebar-btn,
+        body.duolingo-preview .nav-label,
+        body.duolingo-preview .topbar-btn,
+        body.duolingo-preview .btn-primary,
+        body.duolingo-preview .btn-outline,
+        body.duolingo-preview .feedback-submit-btn,
+        body.duolingo-preview .reward-claim-btn,
+        body.duolingo-preview .send-confirm-ok,
+        body.duolingo-preview .send-btn,
+        body.duolingo-preview .tf-btn,
+        body.duolingo-preview .inbox-tab,
+        body.duolingo-preview .rarity-tab,
+        body.duolingo-preview .is-mode-btn,
+        body.duolingo-preview .is-btn,
+        body.duolingo-preview .is-sz,
+        body.duolingo-preview .is-act,
+        body.duolingo-preview .imb-btn,
+        body.duolingo-preview .imb-sz,
+        body.duolingo-preview .imb-act {
+            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-weight: 800;
+            letter-spacing: .02em;
+        }
+
+        body.duolingo-preview .sidebar-logo-sub,
+        body.duolingo-preview .bn-label,
+        body.duolingo-preview .sidebar-user-level,
+        body.duolingo-preview .sidebar-stat-label,
+        body.duolingo-preview .form-label,
+        body.duolingo-preview .letter-time,
+        body.duolingo-preview .cards-left,
+        body.duolingo-preview .sea-explore-stat,
+        body.duolingo-preview .warehouse-sub,
+        body.duolingo-preview .reward-card-desc,
+        body.duolingo-preview .avatar-upload-hint,
+        body.duolingo-preview .avatar-range-label {
+            font-weight: 600;
+            letter-spacing: .04em;
+        }
+
+        body.duolingo-preview .section-sub,
+        body.duolingo-preview .gacha-desc,
+        body.duolingo-preview .letter-body,
+        body.duolingo-preview .wall-letter-body,
+        body.duolingo-preview .help-sec-body,
+        body.duolingo-preview .send-confirm-msg,
+        body.duolingo-preview .letter-modal-body,
+        body.duolingo-preview .form-input,
+        body.duolingo-preview textarea {
+            font-weight: 500;
+            letter-spacing: 0;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 900px) {
+            .app {
+                min-width: 320px;
+            }
+
+            .sidebar {
+                width: 72px;
+                padding: 16px 8px;
+            }
+
+            .sidebar-logo {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .sidebar-logo > div:last-child,
+            .nav-label,
+            .sidebar-user,
+            .sidebar-bottom .unread-bubble {
+                display: none;
+            }
+
+            .nav-btn,
+            .inbox-btn,
+            .feedback-sidebar-btn {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .topbar {
+                height: 64px;
+                padding: 0 16px;
+            }
+
+            .topbar-title {
+                font-size: 24px;
+            }
+
+            .main.home-active > .tab-content {
+                padding: 18px 16px 24px;
+            }
+
+            .island-flat {
+                min-height: 460px;
+                outline-width: 4px;
+            }
+        }
+    </style>
 </head>
 <body>
 <div id="app" v-cloak class="app">
@@ -5870,6 +6501,11 @@ window.islandEditorEngine={
 /* ── 啟動（頁面載入時立刻讀資料）── */
 load();
 })();
+</script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.add('duolingo-preview');
+});
 </script>
 </body>
 </html>
