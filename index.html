@@ -513,7 +513,7 @@
             border: 2px solid rgba(255,255,255,0.9);
         }
         .float-item { position: absolute; transition: transform 0.2s ease; user-select: none; -webkit-user-select: none; }
-        .unique-badge { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #5c3d1e; color: #fff; font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px; white-space: nowrap; letter-spacing: .04em; pointer-events: none; z-index: 10; }
+        .unique-badge { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #5c3d1e; color: #fff; font-size: 10px; font-weight: 900; padding: 3px 10px; border-radius: 999px; white-space: nowrap; letter-spacing: .04em; pointer-events: none; z-index: 10; }
         .float-item:hover { transform: scale(1.12) translateY(-6px); z-index: 50 !important; }
         .float-item.is-dragging { transform: scale(1.15); cursor: grabbing; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
         .float-item:not(.is-dragging) { cursor: grab; }
@@ -2232,11 +2232,9 @@
         }
 
         .main.home-active > .tab-content {
-            padding: 24px 32px 28px;
+            padding: 24px 16px 28px;
             gap: 18px;
-            max-width: 1180px;
             width: 100%;
-            margin: 0 auto;
         }
 
         .status-row {
@@ -2798,17 +2796,9 @@
                         <span class="dot coral"></span>
                         {{ unreadCount > 0 ? '未讀 '+unreadCount+' 封感謝' : '今日暫無新感謝' }}
                     </div>
-                    <div class="resource-pill">
+                    <div v-if="hasNewShopItems" class="resource-pill" @click="switchTab('shop')" style="cursor:pointer;">
                         <span class="dot sage"></span>
-                        倉庫 {{ warehouseItems.length }} 件物品
-                    </div>
-                    <div class="resource-pill">
-                        <span class="dot blue"></span>
-                        板塊 {{ tiles_used }}/{{ currentUser?.tileCount || 6 }}
-                    </div>
-                    <div class="resource-pill">
-                        <span class="dot gold"></span>
-                        🌅 {{ isEditMode ? '裝飾模式中' : '已登入' }}
+                        🆕 感恩商鋪有新上架！
                     </div>
                 </div>
 
@@ -3095,7 +3085,6 @@
                         <button @click="triggerGacha('pet', false)" class="btn-primary" :disabled="(currentUser?.energy || 0) < 100">
                             邀請 <span class="cost-badge">-100 ⚡</span>
                         </button>
-                        <button @click="triggerGacha('pet', true)" class="btn-outline">測試</button>
                     </div>
                     <div class="btn-row" style="margin-top:8px;">
                         <button @click="triggerGacha10('pet', false)" class="btn-primary btn-ten" :disabled="(currentUser?.energy || 0) < 900">
@@ -3121,7 +3110,6 @@
                         <button @click="triggerGacha('decor', false)" class="btn-primary" :disabled="(currentUser?.energy || 0) < 100">
                             探索 <span class="cost-badge">-100 ⚡</span>
                         </button>
-                        <button @click="triggerGacha('decor', true)" class="btn-outline">測試</button>
                     </div>
                     <div class="btn-row" style="margin-top:8px;">
                         <button @click="triggerGacha10('decor', false)" class="btn-primary btn-ten" :disabled="(currentUser?.energy || 0) < 900">
@@ -3147,7 +3135,6 @@
                         <button @click="triggerGacha(spool.id, false)" class="btn-primary" :disabled="(currentUser?.energy || 0) < 100">
                             抽取 <span class="cost-badge">-100 ⚡</span>
                         </button>
-                        <button @click="triggerGacha(spool.id, true)" class="btn-outline">測試</button>
                     </div>
                     <div class="btn-row" style="margin-top:8px;">
                         <button @click="triggerGacha10(spool.id, false)" class="btn-primary btn-ten" :disabled="(currentUser?.energy || 0) < 900">
@@ -5439,6 +5426,11 @@ createApp({
             return window.islandEngine?.exportTiles?.()?.length ?? 1;
         });
 
+        const hasNewShopItems = computed(() => {
+            const twoDays = 2 * 24 * 60 * 60 * 1000;
+            return allGachaItems.value.some(i => i.createdAt && (Date.now() - i.createdAt) < twoDays);
+        });
+
         // 同步板塊預算給引擎
         watch(() => currentUser.value?.tileCount, (val) => {
             window._tileCount = val || 6;
@@ -6020,7 +6012,7 @@ createApp({
             sortedLetters, wallFilter, filteredGlobalLetters, inboxLetterFilter, filteredMyLetters, getPos,
             isDragging, onDragStart, onDragMove, onDragEnd, dragState,
             onIslandMouseDown, onIslandMouseMove, onIslandMouseUp, centerHomeIsland, camTick,
-            tiles_used,
+            tiles_used, hasNewShopItems,
             poolPreview, poolRarityFilter, openPool, closePool,
             filteredPoolItems, calcRate, poolPreviewTitle,
             specialPools, allGachaItems, poolSettings,
