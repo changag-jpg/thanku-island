@@ -2624,6 +2624,152 @@
                 outline-width: 4px;
             }
         }
+
+        /* ══ ZIP GAME (每日任務) ══ */
+        .zt-wrap {
+            --duo-green: #58cc02; --duo-green-dark: #3f8f01; --duo-green-lit: #d7ffb8;
+            --duo-blue: #1cb0f6; --duo-blue-dark: #0e8bbd;
+            --duo-gold: #ffc800; --duo-gold-dark: #b88a00;
+            --duo-red: #ff4b4b; --duo-red-dark: #cc0000;
+            --grass-uncut: #e2f8c8; --grass-cut-a: #58cc02; --grass-cut-b: #4ab800;
+            --grass-head-a: #78e420; --grass-head-b: #60d000;
+            --lawn-border: #3f8f01; --lawn-bg: #a3e635;
+            --marker: #ff9600; --marker-done: #3f8f01; --marker-next: #ff4b4b;
+            --zt-surface: #ffffff; --zt-text: #4b4b4b; --zt-muted: #afafaf;
+            --zt-border: #e5e5e5; --zt-border-b: #ccc; --zt-radius: 16px; --zt-bg: #f7f7f7;
+            font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+            user-select: none; -webkit-user-select: none;
+            display: flex; flex-direction: column; align-items: center; width: 100%;
+        }
+        .zt-wrap .page { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .zt-wrap .page.hidden { display: none; }
+        .zt-wrap .prestart-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 26px 24px; max-width: 400px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
+        .zt-wrap .ps-icon { font-size: 40px; line-height: 1; margin-bottom: 9px; }
+        .zt-wrap .ps-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 17px; font-weight: 400; color: var(--zt-text); margin-bottom: 5px; letter-spacing: 0.03em; }
+        .zt-wrap .ps-subtitle { font-size: 12px; font-weight: 600; color: var(--zt-muted); margin-bottom: 14px; line-height: 1.5; }
+        .zt-wrap .ps-date-row { display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 12px; font-weight: 700; color: var(--zt-text); background: var(--zt-bg); border-radius: 11px; padding: 7px 13px; margin-bottom: 12px; border: 2px solid var(--zt-border); }
+        .zt-wrap .ps-diff-badge { font-size: 10px; font-weight: 700; background: var(--duo-green); color: white; border-radius: 999px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .zt-wrap .ps-rules { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .zt-wrap .ps-rule { font-size: 12px; font-weight: 600; color: var(--zt-text); display: flex; align-items: center; gap: 8px; text-align: left; background: var(--zt-bg); border-radius: 10px; padding: 7px 11px; border: 2px solid var(--zt-border); }
+        .zt-wrap .continue-warning { background: #fff9e6; border: 2px solid var(--duo-gold); border-radius: 10px; padding: 7px 11px; font-size: 11px; font-weight: 600; color: #7a5500; margin-bottom: 12px; text-align: left; }
+        .zt-wrap .btn-start { width: 100%; border: 2px solid var(--duo-green-dark); border-radius: 12px; padding: 11px 14px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; background: var(--duo-green); color: white; box-shadow: 0 4px 0 var(--duo-green-dark); transition: transform 80ms,box-shadow 80ms,filter 80ms; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.04em; }
+        .zt-wrap .btn-start:hover { filter: brightness(1.06); }
+        .zt-wrap .btn-start:active { transform: translateY(4px); box-shadow: none; }
+        .zt-wrap .btn-tutorial { width: 100%; background: #fff; border: 2px solid var(--duo-blue); border-radius: 11px; padding: 8px 13px; font-size: 12px; font-weight: 800; color: var(--duo-blue); cursor: pointer; margin-bottom: 9px; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; box-shadow: 0 3px 0 var(--duo-blue-dark); transition: transform 80ms,box-shadow 80ms; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .zt-wrap .btn-tutorial:hover { filter: brightness(0.97); }
+        .zt-wrap .btn-tutorial:active { transform: translateY(3px); box-shadow: none; }
+        .zt-wrap .history-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 14px; max-width: 400px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); }
+        .zt-wrap .history-title { font-size: 11px; font-weight: 800; color: var(--zt-muted); margin-bottom: 9px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .zt-wrap .history-row { display: flex; align-items: center; gap: 9px; padding: 7px 0; border-bottom: 2px solid var(--zt-border); font-size: 12px; }
+        .zt-wrap .history-row:last-child { border-bottom: none; }
+        .zt-wrap .history-rank { width: 20px; font-weight: 800; color: var(--zt-muted); font-size: 14px; text-align: center; }
+        .zt-wrap .history-date { font-size: 10px; font-weight: 600; color: var(--zt-muted); }
+        .zt-wrap .history-diff { font-size: 10px; font-weight: 700; color: var(--duo-green-dark); background: var(--duo-green-lit); border-radius: 999px; padding: 2px 7px; }
+        .zt-wrap .history-time { margin-left: auto; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--duo-blue); font-size: 14px; }
+        .zt-wrap .history-empty { font-size: 12px; font-weight: 600; color: var(--zt-muted); text-align: center; padding: 14px 0; }
+        .zt-wrap .playing-header { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; background: var(--zt-surface); border-radius: 11px; padding: 9px 14px; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); max-width: 100%; width: 100%; }
+        .zt-wrap .playing-label { font-size: 11px; font-weight: 800; color: var(--duo-green-dark); display: flex; align-items: center; gap: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .zt-wrap .playing-timer { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--zt-text); min-width: 5ch; }
+        .zt-wrap .playing-progress { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--zt-muted); background: var(--zt-bg); border-radius: 999px; padding: 3px 9px; border: 2px solid var(--zt-border); }
+        .zt-wrap .grid-outer { position: relative; background: var(--lawn-bg); border: 3px solid var(--lawn-border); border-bottom: 6px solid var(--lawn-border); border-radius: 14px; padding: 9px; margin-bottom: 11px; cursor: crosshair; touch-action: none; }
+        .zt-wrap .grid { display: grid; gap: 2px; position: relative; }
+        .zt-wrap .path-canvas { position: absolute; pointer-events: none; }
+        .zt-wrap .cell { position: relative; display: flex; align-items: center; justify-content: center; background: var(--grass-uncut); border-radius: 4px; overflow: hidden; transition: background 80ms; }
+        .zt-wrap .cell::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg,transparent 0px,transparent 5px,rgba(60,100,20,0.06) 5px,rgba(60,100,20,0.06) 6px); pointer-events: none; }
+        .zt-wrap .cell.in-path { background: repeating-linear-gradient(135deg,var(--grass-cut-a) 0px,var(--grass-cut-a) 7px,var(--grass-cut-b) 7px,var(--grass-cut-b) 14px); }
+        .zt-wrap .cell.in-path::after { display: none; }
+        .zt-wrap .cell.path-head { background: repeating-linear-gradient(135deg,var(--grass-head-a) 0px,var(--grass-head-a) 7px,var(--grass-head-b) 7px,var(--grass-head-b) 14px); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.45); }
+        .zt-wrap .cell.path-head::after { display: none; }
+        @keyframes zt-mow-flash { 0% { filter: brightness(1.3); } 100% { filter: brightness(1); } }
+        .zt-wrap .cell.mow-anim { animation: zt-mow-flash 0.5s ease-out forwards; }
+        .zt-wrap .cell-num { width: 26px; height: 26px; border-radius: 50%; background: var(--marker); color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; border: 2px solid rgba(0,0,0,0.15); box-shadow: 0 3px 0 rgba(0,0,0,0.25); pointer-events: none; transition: all 120ms; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; }
+        .zt-wrap .cell-num.visited { background: var(--marker-done); transform: scale(0.8); box-shadow: none; opacity: 0.75; }
+        .zt-wrap .cell-num.next-target { background: var(--marker-next); animation: zt-pulse-marker 0.8s ease-in-out infinite; }
+        .zt-wrap .cell-num.endpoint { background: var(--duo-blue); box-shadow: 0 3px 0 var(--duo-blue-dark); }
+        .zt-wrap .cell-num.endpoint.visited { background: var(--duo-green); }
+        .zt-wrap .cell-num.endpoint.next-target { background: var(--duo-blue); animation: zt-pulse-endpoint 0.8s ease-in-out infinite; }
+        @keyframes zt-pulse-endpoint { 0%,100%{transform:scale(1);box-shadow:0 3px 0 var(--duo-blue-dark),0 0 0 0 rgba(28,176,246,0.4);}50%{transform:scale(1.18);box-shadow:0 5px 0 var(--duo-blue-dark),0 0 0 6px rgba(28,176,246,0);} }
+        @keyframes zt-pulse-marker { 0%,100%{transform:scale(1);box-shadow:0 3px 0 rgba(0,0,0,0.2),0 0 0 0 rgba(255,75,75,0.4);}50%{transform:scale(1.18);box-shadow:0 5px 0 rgba(0,0,0,0.15),0 0 0 6px rgba(255,75,75,0);} }
+        .zt-wrap .playing-controls { display: flex; gap: 9px; margin-bottom: 9px; }
+        .zt-wrap .btn-control { border: 2px solid var(--zt-border); border-bottom: 4px solid var(--zt-border-b); background: var(--zt-surface); border-radius: 10px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; color: var(--zt-text); transition: transform 80ms; }
+        .zt-wrap .btn-control:hover { filter: brightness(0.97); }
+        .zt-wrap .btn-control:active { transform: translateY(4px); border-bottom-width: 0; }
+        .zt-wrap .btn-control:disabled { opacity: 0.35; cursor: not-allowed; transform: none; border-bottom-width: 2px; }
+        .zt-wrap .playing-hint { font-size: 11px; font-weight: 600; color: var(--zt-muted); text-align: center; }
+        .zt-wrap .result-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 28px 24px; max-width: 380px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
+        .zt-wrap .result-icon { font-size: 40px; line-height: 1; margin-bottom: 9px; }
+        .zt-wrap .result-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 20px; font-weight: 400; color: var(--zt-text); margin-bottom: 4px; letter-spacing: 0.03em; }
+        .zt-wrap .result-date { font-size: 11px; font-weight: 600; color: var(--zt-muted); margin-bottom: 14px; }
+        .zt-wrap .result-time { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 48px; font-weight: 400; color: var(--duo-blue); font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 4px; }
+        .zt-wrap .result-time-label { font-size: 10px; font-weight: 700; color: var(--zt-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
+        .zt-wrap .result-rank { font-size: 13px; font-weight: 700; color: var(--duo-green-dark); background: var(--duo-green-lit); border: 2px solid var(--duo-green); border-radius: 11px; padding: 8px 14px; display: inline-block; margin-bottom: 12px; }
+        .zt-wrap .result-tomorrow { font-size: 12px; font-weight: 600; color: var(--zt-muted); background: var(--zt-bg); border-radius: 11px; padding: 8px 13px; border: 2px solid var(--zt-border); }
+        .zt-wrap .tut-wrap { max-width: 400px; width: 100%; display: flex; flex-direction: column; gap: 11px; }
+        .zt-wrap .tut-header { text-align: center; padding: 5px 0 2px; }
+        .zt-wrap .tut-back { float: left; font-size: 11px; padding: 5px 11px; margin-bottom: 5px; }
+        .zt-wrap .tut-icon { font-size: 34px; line-height: 1; margin-bottom: 5px; }
+        .zt-wrap .tut-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 20px; color: var(--zt-text); letter-spacing: 0.03em; }
+        .zt-wrap .tut-subtitle { font-size: 10px; font-weight: 700; color: var(--zt-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+        .zt-wrap .tut-card { background: var(--zt-surface); border: 2px solid var(--zt-border); border-radius: var(--zt-radius); padding: 14px; box-shadow: 0 4px 0 var(--zt-border); }
+        .zt-wrap .tut-card-important { border-color: var(--duo-blue); box-shadow: 0 4px 0 var(--duo-blue-dark); }
+        .zt-wrap .tut-sec-title { font-size: 12px; font-weight: 800; color: var(--zt-text); margin-bottom: 9px; display: flex; align-items: center; gap: 6px; }
+        .zt-wrap .tut-body { font-size: 12px; font-weight: 600; color: var(--zt-text); line-height: 1.7; margin-bottom: 11px; }
+        .zt-wrap .tut-body:last-child { margin-bottom: 0; }
+        .zt-wrap .tut-grids-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .zt-wrap .tut-grid-block { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .zt-wrap .tut-grid-label { font-size: 10px; font-weight: 800; color: var(--zt-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+        .zt-wrap .tut-mini-grid { display: grid; grid-template-columns: repeat(3,38px); grid-template-rows: repeat(3,38px); gap: 2px; background: var(--lawn-border); border: 3px solid var(--lawn-border); border-bottom: 5px solid var(--lawn-border); border-radius: 9px; padding: 5px; }
+        .zt-wrap .tc { width: 38px; height: 38px; border-radius: 3px; background: var(--grass-uncut); display: flex; align-items: center; justify-content: center; position: relative; font-size: 10px; overflow: hidden; }
+        .zt-wrap .tc::after { content:''; position:absolute; inset:0; background-image: repeating-linear-gradient(90deg,transparent 0px,transparent 4px,rgba(60,100,20,0.07) 4px,rgba(60,100,20,0.07) 5px); pointer-events:none; }
+        .zt-wrap .tc.mowed { background: repeating-linear-gradient(135deg,var(--grass-cut-a) 0px,var(--grass-cut-a) 7px,var(--grass-cut-b) 7px,var(--grass-cut-b) 14px); }
+        .zt-wrap .tc.mowed::after { display:none; }
+        .zt-wrap .tn { width:20px;height:20px;border-radius:50%;background:var(--marker);color:white;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid rgba(0,0,0,0.15);box-shadow:0 2px 0 rgba(0,0,0,0.25);position:relative;z-index:2; }
+        .zt-wrap .tn.ep { background:var(--duo-blue);box-shadow:0 2px 0 var(--duo-blue-dark); }
+        .zt-wrap .tn.done { background:var(--marker-done);transform:scale(0.8);box-shadow:none;opacity:0.75; }
+        .zt-wrap .tn.ep.done { background:var(--duo-green); }
+        .zt-wrap .tut-compare { display:flex;gap:11px;justify-content:center;flex-wrap:wrap;margin-top:9px; }
+        .zt-wrap .tut-compare-block { display:flex;flex-direction:column;align-items:center;gap:5px; }
+        .zt-wrap .tut-compare-tag { font-size:10px;font-weight:800;padding:2px 9px;border-radius:999px;letter-spacing:0.04em; }
+        .zt-wrap .tut-compare-tag.wrong { background:#ffe3e3;color:var(--duo-red-dark);border:2px solid var(--duo-red); }
+        .zt-wrap .tut-compare-tag.right { background:var(--duo-green-lit);color:var(--duo-green-dark);border:2px solid var(--duo-green); }
+        .zt-wrap .tut-compare-caption { font-size:10px;font-weight:700;color:var(--zt-muted);text-align:center;max-width:110px; }
+        .zt-wrap .tut-steps { display:flex;flex-direction:column;gap:7px; }
+        .zt-wrap .tut-step { display:flex;align-items:center;gap:9px;background:var(--zt-bg);border:2px solid var(--zt-border);border-radius:9px;padding:7px 11px; }
+        .zt-wrap .tut-step-badge { width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0;box-shadow:0 2px 0 rgba(0,0,0,0.2); }
+        .zt-wrap .tut-step-badge.orange { background:var(--marker); }
+        .zt-wrap .tut-step-badge.blue { background:var(--duo-blue); }
+        .zt-wrap .tut-step-badge.green { background:var(--duo-green); }
+        .zt-wrap .tut-step-text { font-size:12px;font-weight:600;color:var(--zt-text);line-height:1.5; }
+        .zt-wrap .tut-controls { display:flex;flex-direction:column;gap:6px; }
+        .zt-wrap .tut-ctrl { display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;color:var(--zt-text);line-height:1.5; }
+        .zt-wrap .tut-ctrl-key { font-size:10px;font-weight:800;background:var(--zt-surface);border:2px solid var(--zt-border);border-bottom:3px solid var(--zt-border-b);border-radius:7px;padding:3px 8px;color:var(--zt-text);white-space:nowrap;flex-shrink:0; }
+        .zt-wrap .tut-diff-table { width:100%;border-collapse:collapse;font-size:12px; }
+        .zt-wrap .tut-diff-table th { font-size:10px;font-weight:800;color:var(--zt-muted);text-transform:uppercase;letter-spacing:0.05em;padding:0 6px 6px;text-align:left; }
+        .zt-wrap .tut-diff-table td { padding:6px;border-top:2px solid var(--zt-border);font-weight:600;vertical-align:middle; }
+        .zt-wrap .tut-diff-table tr:first-child td { border-top:none; }
+        .zt-wrap .diff-easy { color:var(--duo-green-dark);font-weight:800; }
+        .zt-wrap .diff-medium { color:var(--duo-gold-dark);font-weight:800; }
+        .zt-wrap .diff-hard { color:var(--duo-red-dark);font-weight:800; }
+        .zt-wrap .diff-nums { display:flex;flex-wrap:wrap;gap:3px; }
+        .zt-wrap .diff-dot { width:15px;height:15px;border-radius:50%;background:var(--marker);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:white; }
+        .zt-wrap .diff-dot.ep { background:var(--duo-blue); }
+        .zt-wrap .btn-tut-done { width:100%;border:2px solid var(--duo-green-dark);border-radius:11px;padding:11px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito Sans','Noto Sans TC',sans-serif;background:var(--duo-green);color:white;box-shadow:0 4px 0 var(--duo-green-dark);transition:transform 80ms,box-shadow 80ms;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px; }
+        .zt-wrap .btn-tut-done:hover { filter:brightness(1.06); }
+        .zt-wrap .btn-tut-done:active { transform:translateY(4px);box-shadow:none; }
+        /* 排行榜面板 */
+        .zt-board-head { padding: 18px 20px 14px; background: linear-gradient(135deg,rgba(143,169,155,.12),rgba(251,250,246,.9)); border-bottom: 1px solid var(--line); }
+        .zt-board-head-title { font-size: 15px; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 3px; }
+        .zt-board-head-sub { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+        .zt-board-section { padding: 14px 20px; border-bottom: 1px solid var(--line); }
+        .zt-board-section:last-child { border-bottom: 0; }
+        .zt-board-section-title { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between; }
+        .zt-board-refresh { font-size: 11px; font-weight: 700; color: #1cb0f6; background: none; border: none; cursor: pointer; padding: 2px 6px; }
+        .zt-board-row { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 9px; background: var(--paper); margin-bottom: 5px; font-size: 12px; border: 1px solid var(--line); }
+        .zt-board-row.is-me { background: #e8f7ff; border-color: #1cb0f6; }
+        .zt-board-rank { font-size: 15px; width: 24px; text-align: center; flex-shrink: 0; }
+        .zt-board-name { flex: 1; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+        .zt-board-val { font-size: 11px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; }
+        .zt-board-empty { font-size: 12px; color: var(--text-sub); text-align: center; padding: 14px 0; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -2758,6 +2904,9 @@
             <button @click="switchTab('exchange')" class="nav-btn" :class="{ active: currentTab === 'exchange' }">
                 <i class="fa-solid fa-ticket-simple"></i><span class="nav-label">傳說兌換</span>
             </button>
+            <button @click="switchTab('task')" class="nav-btn" :class="{ active: currentTab === 'task' }">
+                <i class="fa-solid fa-seedling"></i><span class="nav-label">每日任務</span>
+            </button>
         </nav>
 
         <div class="sidebar-bottom">
@@ -2814,7 +2963,7 @@
         <!-- 頂部標題列 -->
         <div class="topbar">
             <span class="topbar-title">
-                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 傳說兌換' : '收件匣' }}
+                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 傳說兌換' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
             </span>
             <div v-if="currentTab === 'home'" class="topbar-actions">
                 <button @click="toggleEditMode" class="topbar-btn" :class="{ active: isEditMode }">
@@ -2857,10 +3006,10 @@
                         <span class="dot sage"></span>
                         🆕 感恩商鋪有新上架！
                     </div>
-                    <a href="/daily-task.html" class="resource-pill" style="text-decoration:none;cursor:pointer;background:#e8f7ff;border-color:#1cb0f6;color:#1cb0f6;font-weight:900;">
+                    <div class="resource-pill" @click="switchTab('task')" style="cursor:pointer;background:#e8f7ff;border-color:#1cb0f6;color:#1cb0f6;font-weight:900;">
                         <span class="dot mint"></span>
                         📋 每日任務
-                    </a>
+                    </div>
                 </div>
 
                 <div class="island-wrap">
@@ -3675,6 +3824,167 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 每日任務 -->
+            <div v-else-if="currentTab === 'task'" key="task" class="tab-content">
+                <div class="write-layout">
+
+                    <!-- 左：遊戲區 -->
+                    <div class="write-form-col">
+                        <div class="zt-wrap" id="zt-wrap">
+
+                            <!-- PRE-START -->
+                            <div class="page" id="zt-pagePrestart">
+                                <div class="prestart-card">
+                                    <div class="ps-icon">🌿</div>
+                                    <div class="ps-title">【每日任務 — 草皮修剪大賽】</div>
+                                    <div class="ps-subtitle">不僅比智力、更是比速度！每週榜前三能拿地圖板塊！</div>
+                                    <div class="ps-date-row">
+                                        <span id="zt-psDate"></span>
+                                        <span class="ps-diff-badge" id="zt-psDiffBadge"></span>
+                                    </div>
+                                    <div class="ps-rules">
+                                        <div class="ps-rule">⚠️ 每日只有<strong>1次</strong>修剪機會</div>
+                                        <div class="ps-rule">⏱️ 你拿起割草機的那一刻起開始計時</div>
+                                        <div class="ps-rule">🌐 全服今日草皮題目完全相同，一較高下！</div>
+                                        <div class="ps-rule">🏆 每日前3名各得 ⚡100 能量；每週前3名各得 🗺️×1 板塊</div>
+                                    </div>
+                                    <div class="continue-warning hidden" id="zt-continueWarning">
+                                        ⚠️ 你今天已開始修剪但尚未完成，繼續挑戰！（計時重新開始）
+                                    </div>
+                                    <button class="btn-tutorial" id="zt-btnTutorial">📖 觀看教學</button>
+                                    <button class="btn-start" id="zt-btnStart">🚜 拿起割草機，開始！</button>
+                                </div>
+                                <div class="history-card">
+                                    <div class="history-title">📋 我的歷史紀錄</div>
+                                    <div id="zt-historyListPre"></div>
+                                </div>
+                            </div>
+
+                            <!-- TUTORIAL -->
+                            <div class="page hidden" id="zt-pageTutorial">
+                            <div class="tut-wrap">
+                                <div class="tut-header">
+                                    <button class="btn-control tut-back" id="zt-btnTutBack">← 返回</button>
+                                    <div style="clear:both;"></div>
+                                    <div class="tut-icon">🌿</div>
+                                    <div class="tut-title">如何玩？</div>
+                                    <div class="tut-subtitle">草皮修剪大賽 完整教學</div>
+                                </div>
+                                <div class="tut-card">
+                                    <div class="tut-sec-title">🎯 目標：填滿每一格草皮</div>
+                                    <p class="tut-body">從起點拖曳出路線，讓路線<strong>經過格子盤上的每一格</strong>，不能跳格、不能重複走同一格。</p>
+                                    <div class="tut-grids-row">
+                                        <div class="tut-grid-block"><div class="tut-grid-label">開始</div><div class="tut-mini-grid"><div class="tc"><div class="tn">1</div></div><div class="tc"></div><div class="tc"></div><div class="tc"></div><div class="tc"><div class="tn">2</div></div><div class="tc"></div><div class="tc"></div><div class="tc"></div><div class="tc"><div class="tn ep">3</div></div></div></div>
+                                        <div class="tut-grid-block"><div class="tut-grid-label">完成！</div><div class="tut-mini-grid"><div class="tc mowed"><div class="tn done">1</div></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"><div class="tn done">2</div></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"><div class="tn ep done">3</div></div></div></div>
+                                    </div>
+                                </div>
+                                <div class="tut-card">
+                                    <div class="tut-sec-title">📋 三步驟玩法</div>
+                                    <div class="tut-steps">
+                                        <div class="tut-step"><div class="tut-step-badge orange">1</div><div class="tut-step-text">從 <strong>橘色 1</strong> 開始，按住並拖曳畫出路線</div></div>
+                                        <div class="tut-step"><div class="tut-step-badge orange">N</div><div class="tut-step-text">路線必須<strong>依序通過</strong>所有橘色數字（1→2→3→…）</div></div>
+                                        <div class="tut-step"><div class="tut-step-badge blue">🏁</div><div class="tut-step-text">填滿所有格子後，衝入<strong>藍色終點</strong>完成修剪！</div></div>
+                                    </div>
+                                </div>
+                                <div class="tut-card tut-card-important">
+                                    <div class="tut-sec-title">🔵 終點規則（最重要！）</div>
+                                    <p class="tut-body">藍色是<strong>終點</strong>，必須等其他格子<strong>全部填滿</strong>才能進入。</p>
+                                    <div class="tut-compare">
+                                        <div class="tut-compare-block"><div class="tut-compare-tag wrong">❌ 不行</div><div class="tut-mini-grid"><div class="tc mowed"><div class="tn done">1</div></div><div class="tc mowed"></div><div class="tc"></div><div class="tc mowed"></div><div class="tc mowed"><div class="tn done">2</div></div><div class="tc"></div><div class="tc"></div><div class="tc"></div><div class="tc"><div class="tn ep">3</div></div></div><div class="tut-compare-caption">還有空格，終點進不去</div></div>
+                                        <div class="tut-compare-block"><div class="tut-compare-tag right">✅ 可以</div><div class="tut-mini-grid"><div class="tc mowed"><div class="tn done">1</div></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"><div class="tn done">2</div></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"></div><div class="tc mowed"><div class="tn ep done">3</div></div></div><div class="tut-compare-caption">全部填滿，衝入終點！</div></div>
+                                    </div>
+                                </div>
+                                <div class="tut-card">
+                                    <div class="tut-sec-title">🖱️ 操作方式</div>
+                                    <div class="tut-controls">
+                                        <div class="tut-ctrl"><div class="tut-ctrl-key">拖曳</div><span>按住格子並滑動，畫出路線（支援滑鼠與觸控）</span></div>
+                                        <div class="tut-ctrl"><div class="tut-ctrl-key">往回拖</div><span>把路線頭拖回前一格，撤銷最後一步</span></div>
+                                        <div class="tut-ctrl"><div class="tut-ctrl-key">↩ 復原</div><span>按一下撤銷最後走的一格</span></div>
+                                        <div class="tut-ctrl"><div class="tut-ctrl-key">↺ 重置路線</div><span>清除整條路線，從頭再來</span></div>
+                                    </div>
+                                </div>
+                                <div class="tut-card">
+                                    <div class="tut-sec-title">📊 難度說明</div>
+                                    <p class="tut-body">數字標記越多 = 提示越多 = 越容易；數字越少 = 靠自己判斷 = 越難。</p>
+                                    <table class="tut-diff-table">
+                                        <tr><th>難度</th><th>格子</th><th>數字標記</th><th>終點</th></tr>
+                                        <tr><td class="diff-easy">簡單</td><td>6×6</td><td><div class="diff-nums"><div class="diff-dot">1</div><div class="diff-dot">2</div><div class="diff-dot">3</div><div class="diff-dot">4</div><div class="diff-dot">5</div><div class="diff-dot">6</div><div class="diff-dot">7</div><div class="diff-dot">8</div><div class="diff-dot ep">9</div></div></td><td><div class="diff-dot ep">9</div></td></tr>
+                                        <tr><td class="diff-medium">普通</td><td>7×7</td><td><div class="diff-nums"><div class="diff-dot">1</div><div class="diff-dot">2</div><div class="diff-dot">3</div><div class="diff-dot">4</div><div class="diff-dot">5</div><div class="diff-dot ep">6</div></div></td><td><div class="diff-dot ep">6</div></td></tr>
+                                        <tr><td class="diff-hard">困難</td><td>8×8</td><td><div class="diff-nums"><div class="diff-dot">1</div><div class="diff-dot">2</div><div class="diff-dot">3</div><div class="diff-dot ep">4</div></div></td><td><div class="diff-dot ep">4</div></td></tr>
+                                    </table>
+                                </div>
+                                <div class="tut-card">
+                                    <div class="tut-sec-title">💡 小技巧</div>
+                                    <div class="tut-steps">
+                                        <div class="tut-step"><div class="tut-step-badge green">✓</div><div class="tut-step-text">遇到死路，往回拖或按「復原」退出，換條路試試</div></div>
+                                        <div class="tut-step"><div class="tut-step-badge green">✓</div><div class="tut-step-text">優先讓路線通過角落和邊緣，這些格子選擇最少</div></div>
+                                        <div class="tut-step"><div class="tut-step-badge green">✓</div><div class="tut-step-text">確保終點的鄰格留在最後，別讓自己困住</div></div>
+                                    </div>
+                                </div>
+                                <button class="btn-tut-done" id="zt-btnTutDone">✅ 我學會了，開始挑戰！</button>
+                            </div>
+                            </div>
+
+                            <!-- PLAYING -->
+                            <div class="page hidden" id="zt-pagePlaying">
+                                <div class="playing-header">
+                                    <div class="playing-label">🌿 修剪草皮中</div>
+                                    <div class="playing-timer" id="zt-playTimer">00:00</div>
+                                    <div class="playing-progress" id="zt-playProgress">0 / 0 格</div>
+                                </div>
+                                <div class="grid-outer" id="zt-gridOuter">
+                                    <div class="grid" id="zt-grid"></div>
+                                    <canvas class="path-canvas" id="zt-pathCanvas"></canvas>
+                                </div>
+                                <div class="playing-controls">
+                                    <button class="btn-control" id="zt-btnUndo" disabled>↩ 復原</button>
+                                    <button class="btn-control" id="zt-btnReset">↺ 重置路線</button>
+                                </div>
+                                <div class="playing-hint" id="zt-playHint">從標記 1 開始，填滿所有格子後才能進入藍色終點</div>
+                            </div>
+
+                            <!-- RESULT -->
+                            <div class="page hidden" id="zt-pageResult">
+                                <div class="result-card">
+                                    <div class="result-icon">🌿</div>
+                                    <div class="result-title" id="zt-resultTitle">你太強啦！</div>
+                                    <div class="result-date" id="zt-resultDate"></div>
+                                    <div class="result-time" id="zt-resultTime">--:--</div>
+                                    <div class="result-time-label">完成時間</div>
+                                    <div class="result-rank" id="zt-resultRank"></div>
+                                    <div class="result-tomorrow">📅 明天依然有新的挑戰等你喲！</div>
+                                </div>
+                                <div class="history-card">
+                                    <div class="history-title">📋 我的歷史紀錄</div>
+                                    <div id="zt-historyListResult"></div>
+                                </div>
+                            </div>
+
+                        </div><!-- /zt-wrap -->
+                    </div><!-- /write-form-col -->
+
+                    <!-- 右：排行榜面板 -->
+                    <aside class="write-rules-panel">
+                        <div class="zt-board-head">
+                            <div class="zt-board-head-title">🏆 即時排行榜</div>
+                            <div class="zt-board-head-sub">草皮修剪大賽 · 今日 &amp; 本週</div>
+                        </div>
+                        <div class="zt-board-section">
+                            <div class="zt-board-section-title">
+                                今日榜 · 用時最短
+                                <button class="zt-board-refresh" id="zt-refreshBtn">↻ 更新</button>
+                            </div>
+                            <div id="zt-todayBoard"><div class="zt-board-empty">載入中...</div></div>
+                        </div>
+                        <div class="zt-board-section">
+                            <div class="zt-board-section-title">本週榜 · Mon–Fri 累計</div>
+                            <div id="zt-weeklyBoard"><div class="zt-board-empty">載入中...</div></div>
+                        </div>
+                    </aside>
+
                 </div>
             </div>
 
@@ -5062,6 +5372,8 @@ createApp({
                 document.getElementById('main-content')?.scrollTo(0, 0);
                 if(tab==='home')   window.initIslandCanvas?.();
                 if(tab==='island') window.initIslandEditorCanvas?.();
+                if(tab==='task')   window.initZipGame?.();
+                if(prev==='task')  window.destroyZipGame?.();
                 if(prev==='island' && tab!=='island'){
                     window.islandEngine?.save();
                     setTimeout(() => { window.initIslandCanvas?.(); saveTiles(); }, 50);
@@ -6570,6 +6882,374 @@ load();
 window.addEventListener('DOMContentLoaded', () => {
   document.body.classList.add('duolingo-preview');
 });
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// 每日任務遊戲邏輯（封裝於 IIFE，透過 window.initZipGame / destroyZipGame 呼叫）
+// ══════════════════════════════════════════════════════════
+;(function() {
+  const DIFF_CFG = {
+    easy:   { size: 6, numCount: 9, cellPx: 62, label: '簡單 6×6' },
+    medium: { size: 7, numCount: 6, cellPx: 54, label: '普通 7×7' },
+    hard:   { size: 8, numCount: 4, cellPx: 46, label: '困難 8×8' },
+  }
+  const STATE_KEY   = 'zip_lawn_state_v1'
+  const HISTORY_KEY = 'zip_lawn_history_v1'
+  const HISTORY_MAX = 20
+  const MEDALS = ['🥇','🥈','🥉']
+
+  // ── helpers ──
+  function ztEl(id) { return document.getElementById('zt-' + id) }
+  function ztShowPage(id) {
+    const wrap = document.getElementById('zt-wrap')
+    if (!wrap) return
+    wrap.querySelectorAll('.page').forEach(p => p.classList.add('hidden'))
+    ztEl(id).classList.remove('hidden')
+  }
+
+  // ── RNG ──
+  let rng = () => Math.random()
+  function makeRng(seed) {
+    let s = seed >>> 0
+    return () => {
+      s = (s + 0x6D2B79F5) >>> 0
+      let t = Math.imul(s ^ (s >>> 15), 1 | s)
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+  }
+  function strSeed(str) {
+    let h = 2166136261
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) }
+    return h >>> 0
+  }
+  function useSeeded(seed) { rng = makeRng(seed) }
+  function useDefault()    { rng = () => Math.random() }
+
+  // ── date utils ──
+  function todayStr() {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  }
+  function todayLabel() {
+    const d = new Date(); const days = ['日','一','二','三','四','五','六']
+    return `${todayStr()}（週${days[d.getDay()]}）`
+  }
+  function getDailyDiff() {
+    const r = makeRng(strSeed(todayStr() + 'diff'))()
+    return r < 0.34 ? 'easy' : r < 0.67 ? 'medium' : 'hard'
+  }
+
+  // ── game state ──
+  let difficulty = 'easy', gridSize = 6, cellPx = 62
+  let numbers = [], solutionPath = [], path = [], pathSet = new Set()
+  let isDrawing = false, timerItv = null, seconds = 0, solved = false
+  let boardRefreshItv = null
+  let _mouseUpHandler = null
+
+  // ── puzzle gen ──
+  function buildPuzzle() {
+    difficulty = getDailyDiff()
+    const cfg = DIFF_CFG[difficulty]
+    gridSize = cfg.size; cellPx = cfg.cellPx
+    useSeeded(strSeed(todayStr() + 'puzzle'))
+    solutionPath = generateHamiltonianPath(gridSize)
+    numbers = placeNumbers(solutionPath, cfg.numCount)
+    useDefault()
+  }
+
+  function generateHamiltonianPath(size) {
+    const total = size * size
+    const vis = Array.from({length: size}, () => new Array(size).fill(false))
+    const res = []; let ops = 0
+    const DIRS = [[0,1],[0,-1],[1,0],[-1,0]]
+    function free(r,c) { return DIRS.reduce((n,[dr,dc]) => { const nr=r+dr,nc=c+dc; return n+(nr>=0&&nr<size&&nc>=0&&nc<size&&!vis[nr][nc]?1:0) }, 0) }
+    function dfs(r,c) {
+      if (++ops > 120000) return false
+      vis[r][c] = true; res.push({row:r,col:c})
+      if (res.length === total) return true
+      const nexts = DIRS.map(([dr,dc]) => [r+dr,c+dc])
+        .filter(([nr,nc]) => nr>=0&&nr<size&&nc>=0&&nc<size&&!vis[nr][nc])
+        .map(([nr,nc]) => ({r:nr,c:nc,w:free(nr,nc)}))
+        .sort((a,b) => a.w!==b.w ? a.w-b.w : (rng()<0.5?-1:1))
+      for (const {r:nr,c:nc} of nexts) if (dfs(nr,nc)) return true
+      vis[r][c] = false; res.pop(); return false
+    }
+    const corners = [[0,0],[0,size-1],[size-1,0],[size-1,size-1]], others = []
+    for (let r=0;r<size;r++) for (let c=0;c<size;c++) if (!corners.some(([cr,cc])=>cr===r&&cc===c)) others.push([r,c])
+    shuffleArr(others)
+    const starts = [...corners, ...others]
+    for (const [sr,sc] of starts) { ops=0; res.length=0; vis.forEach(r=>r.fill(false)); if (dfs(sr,sc) && res.length===total) return [...res] }
+    const fb = []; for (let r=0;r<size;r++) for (let c=0;c<size;c++) fb.push({row:r, col:r%2===0?c:size-1-c}); return fb
+  }
+
+  function placeNumbers(sol, numCount) {
+    const n = sol.length, total = Math.max(numCount, 2), idxSet = new Set([0, n-1])
+    if (total > 2) {
+      const step = n / (total-1)
+      for (let i=1; i<total-1; i++) { let idx = Math.round(i*step); idx += Math.round((rng()-0.5)*step*0.4); idx = Math.max(1,Math.min(n-2,idx)); idxSet.add(idx) }
+    }
+    return [...idxSet].sort((a,b)=>a-b).map((idx,i) => ({row:sol[idx].row, col:sol[idx].col, num:i+1}))
+  }
+
+  // ── path logic ──
+  function key(r,c) { return r*100+c }
+  function adj(a,b) { return Math.abs(a.row-b.row)+Math.abs(a.col-b.col)===1 }
+  function getNum(r,c) { const n=numbers.find(n=>n.row===r&&n.col===c); return n?n.num:null }
+  function nextTarget() { for (const n of numbers) if (!pathSet.has(key(n.row,n.col))) return n.num; return null }
+
+  function canMove(r,c) {
+    if (r<0||r>=gridSize||c<0||c>=gridSize) return false
+    if (path.length>0 && !adj(path[path.length-1],{row:r,col:c})) return false
+    if (pathSet.has(key(r,c))) { if (path.length>=2) { const p=path[path.length-2]; return p.row===r&&p.col===c } return false }
+    const cn = getNum(r,c)
+    if (cn !== null) { const nt=nextTarget(); if (nt!==null&&cn!==nt) return false; if (cn===numbers.length&&path.length<gridSize*gridSize-1) return false }
+    return true
+  }
+
+  function tryMove(r,c) {
+    if (solved) return
+    if (path.length>=2 && path[path.length-2].row===r && path[path.length-2].col===c) {
+      const last = path.pop(); pathSet.delete(key(last.row,last.col)); renderPath(); syncUI(); return
+    }
+    if (!canMove(r,c)) return
+    if (path.length===0 && getNum(r,c)!==1) return
+    path.push({row:r,col:c}); pathSet.add(key(r,c)); renderPath(); syncUI(); checkWin()
+  }
+
+  function checkWin() {
+    if (path.length !== gridSize*gridSize) return
+    let last = 0
+    for (const cell of path) { const n=getNum(cell.row,cell.col); if (n!==null) { if (n!==last+1) return; last=n } }
+    if (last < numbers.length) return
+    solved = true; stopTimer(); markDailyComplete(seconds); saveHistory(seconds); animateSolve()
+    setTimeout(() => showResult(seconds), 800)
+  }
+
+  // ── rendering ──
+  function renderGrid() {
+    const gridEl = ztEl('grid'), canvas = ztEl('pathCanvas'), total = gridSize*gridSize
+    const px = gridSize*cellPx + (gridSize-1)*2
+    gridEl.style.gridTemplateColumns = `repeat(${gridSize},${cellPx}px)`
+    gridEl.style.gridTemplateRows    = `repeat(${gridSize},${cellPx}px)`
+    gridEl.style.gap = '2px'; gridEl.innerHTML = ''
+    canvas.width = px; canvas.height = px
+    canvas.style.width = px+'px'; canvas.style.height = px+'px'
+    canvas.style.top = '9px'; canvas.style.left = '9px'
+    for (let r=0; r<gridSize; r++) for (let c=0; c<gridSize; c++) {
+      const cell = document.createElement('div')
+      cell.className = 'cell'; cell.dataset.row = r; cell.dataset.col = c
+      cell.style.width = cellPx+'px'; cell.style.height = cellPx+'px'
+      const no = numbers.find(n => n.row===r && n.col===c)
+      if (no) {
+        const badge = document.createElement('div'); badge.className = 'cell-num'
+        if (no.num === numbers.length) badge.classList.add('endpoint')
+        badge.textContent = no.num; badge.id = `zt-num-${r}-${c}`; cell.appendChild(badge)
+      }
+      gridEl.appendChild(cell)
+    }
+    ztEl('playProgress').textContent = `0 / ${total} 格`
+    gridEl.addEventListener('mousedown', onMouseDown)
+    gridEl.addEventListener('mousemove', onMouseMove)
+    gridEl.addEventListener('mouseleave', () => { isDrawing = false })
+  }
+
+  function cEl(r,c) { return document.querySelector(`#zt-gridOuter .cell[data-row="${r}"][data-col="${c}"]`) }
+
+  function renderPath() {
+    for (let r=0; r<gridSize; r++) for (let c=0; c<gridSize; c++) {
+      const el = cEl(r,c); if (!el) continue
+      const idx = path.findIndex(p => p.row===r && p.col===c)
+      el.classList.toggle('in-path',   idx !== -1)
+      el.classList.toggle('path-head', idx !== -1 && idx === path.length-1)
+    }
+    const nt = nextTarget()
+    for (const n of numbers) {
+      const b = document.getElementById(`zt-num-${n.row}-${n.col}`); if (!b) continue
+      const vis = pathSet.has(key(n.row, n.col))
+      b.classList.toggle('visited',     vis)
+      b.classList.toggle('next-target', !vis && n.num === nt)
+    }
+    drawCanvas()
+  }
+
+  function drawCanvas() {
+    const canvas = ztEl('pathCanvas'); if (!canvas) return
+    const ctx = canvas.getContext('2d'), stride = cellPx + 2
+    const cx = cell => cell.col*stride + cellPx/2
+    const cy = cell => cell.row*stride + cellPx/2
+    ctx.clearRect(0, 0, canvas.width, canvas.height); if (path.length < 1) return
+    if (path.length >= 2) {
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = cellPx*0.3
+      ctx.strokeStyle = 'rgba(50,90,25,0.3)'; ctx.beginPath()
+      ctx.moveTo(cx(path[0]), cy(path[0]))
+      for (let i=1; i<path.length; i++) ctx.lineTo(cx(path[i]), cy(path[i]))
+      ctx.stroke()
+    }
+    const head = path[path.length-1]
+    ctx.fillStyle = 'rgba(80,140,40,0.55)'; ctx.beginPath()
+    ctx.arc(cx(head), cy(head), cellPx*0.17, 0, Math.PI*2); ctx.fill()
+  }
+
+  function animateSolve() {
+    for (let r=0; r<gridSize; r++) for (let c=0; c<gridSize; c++) {
+      const el = cEl(r,c); if (!el) continue
+      setTimeout(() => { el.classList.add('mow-anim'); setTimeout(() => el.classList.remove('mow-anim'), 600) }, (r+c)*20)
+    }
+  }
+
+  // ── timer ──
+  function startTimer() { seconds=0; timerItv=setInterval(()=>{ seconds++; const el=ztEl('playTimer'); if(el)el.textContent=fmt(seconds) },1000) }
+  function stopTimer()  { clearInterval(timerItv); timerItv=null }
+  function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}` }
+
+  // ── storage ──
+  function loadState()     { try { return JSON.parse(localStorage.getItem(STATE_KEY)||'{}') } catch { return {} } }
+  function getTodayRec()   { return loadState()[todayStr()] || null }
+  function markDailyStart() { const s=loadState(),t=todayStr(); if(!s[t])s[t]={diff:difficulty,started:true,completed:false,time:null}; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
+  function markDailyComplete(time) { const s=loadState(),t=todayStr(); if(!s[t])s[t]={diff:difficulty}; s[t].completed=true; if(s[t].time==null||s[t].time>time)s[t].time=time; const co=new Date(); co.setDate(co.getDate()-60); for(const d of Object.keys(s))if(new Date(d)<co)delete s[d]; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
+  function loadHistory()   { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]') } catch { return [] } }
+  function saveHistory(time) { const h=loadHistory(),today=todayStr(),ex=h.findIndex(e=>e.date===today),entry={date:today,diff:difficulty,label:DIFF_CFG[difficulty].label,time,name:getPlayerName()}; if(ex>=0){if(h[ex].time>time)h[ex]=entry}else{h.unshift(entry)}; if(h.length>HISTORY_MAX)h.length=HISTORY_MAX; localStorage.setItem(HISTORY_KEY,JSON.stringify(h)) }
+  function getPlayerName() { return window.__zipPlayerName || '玩家' }
+
+  function renderHistory(elId) {
+    const h = loadHistory(), el = ztEl(elId)
+    if (!el) return
+    if (h.length === 0) { el.innerHTML = '<div class="history-empty">尚無紀錄，快來修第一片草皮！</div>'; return }
+    el.innerHTML = h.map((e,i) => `<div class="history-row"><div class="history-rank">${MEDALS[i]||`#${i+1}`}</div><span class="history-diff">${e.label}</span><span class="history-date">${e.date}</span><span class="history-time">${fmt(e.time)}</span></div>`).join('')
+  }
+
+  // ── leaderboard ──
+  async function loadBoards() {
+    try {
+      const [td, wk] = await Promise.all([
+        fetch('/api/zip/today').then(r => r.json()),
+        fetch('/api/zip/weekly').then(r => r.json()),
+      ])
+      renderBoard('todayBoard',  td.board  || [], r => `<div class="zt-board-val">${r.seconds}秒</div>`)
+      renderBoard('weeklyBoard', wk.board  || [], r => `<div class="zt-board-val">${r.daysPlayed}天 均${r.avgSeconds}秒</div>`)
+    } catch(e) {
+      const el = ztEl('todayBoard'); if (el) el.innerHTML = '<div class="zt-board-empty">無法載入</div>'
+    }
+  }
+
+  function renderBoard(elId, rows, valFn) {
+    const el = ztEl(elId); if (!el) return
+    if (rows.length === 0) { el.innerHTML = '<div class="zt-board-empty">今天還沒有紀錄，來搶頭名！</div>'; return }
+    el.innerHTML = rows.map(r => `
+      <div class="zt-board-row${r.isMe?' is-me':''}">
+        <div class="zt-board-rank">${['🥇','🥈','🥉'][r.rank-1]||'#'+r.rank}</div>
+        <div class="zt-board-name">${r.name}${r.isMe?' （你）':''}</div>
+        ${valFn(r)}
+      </div>`).join('')
+  }
+
+  // ── page transitions ──
+  function goPrestart() {
+    const diff = getDailyDiff(), cfg = DIFF_CFG[diff], rec = getTodayRec()
+    const psDate = ztEl('psDate'); if (psDate) psDate.textContent = todayLabel()
+    const psBadge = ztEl('psDiffBadge'); if (psBadge) psBadge.textContent = cfg.label
+    renderHistory('historyListPre')
+    const warn = ztEl('continueWarning')
+    if (warn) { if (rec && rec.started && !rec.completed) warn.classList.remove('hidden'); else warn.classList.add('hidden') }
+    ztShowPage('pagePrestart')
+  }
+
+  function startPlaying() {
+    buildPuzzle(); markDailyStart()
+    path = []; pathSet = new Set(); solved = false; seconds = 0
+    renderGrid(); renderPath(); syncUI()
+    ztShowPage('pagePlaying'); startTimer()
+  }
+
+  function showResult(time) {
+    const cfg = DIFF_CFG[difficulty], h = loadHistory(), rank = h.findIndex(e => e.date===todayStr()) + 1
+    const rDate = ztEl('resultDate'); if (rDate) rDate.textContent = `${todayLabel()} · ${cfg.label}`
+    const rTime = ztEl('resultTime'); if (rTime) rTime.textContent = fmt(time)
+    const rankEl = ztEl('resultRank')
+    if (rankEl) {
+      if (rank===1)    rankEl.innerHTML = '🏆 歷史最佳！'
+      else if (rank>0) rankEl.innerHTML = `個人紀錄排名：第 <strong>${rank}</strong> 名`
+      else             rankEl.textContent = '完成！'
+    }
+    renderHistory('historyListResult')
+    ztShowPage('pageResult')
+    fetch('/api/zip/score', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({seconds:time}) })
+      .then(() => setTimeout(loadBoards, 1000)).catch(()=>{})
+  }
+
+  function showAlreadyDone() {
+    const rec = getTodayRec(), cfg = DIFF_CFG[rec.diff || getDailyDiff()]
+    const rTitle = ztEl('resultTitle'); if (rTitle) rTitle.textContent = '今日草皮已修剪完畢 ✅'
+    const rDate  = ztEl('resultDate');  if (rDate)  rDate.textContent  = `${todayLabel()} · ${cfg.label}`
+    const rTime  = ztEl('resultTime');  if (rTime)  rTime.textContent  = fmt(rec.time)
+    const rRank  = ztEl('resultRank');  if (rRank)  rRank.textContent  = '明天再來挑戰新的草皮！'
+    renderHistory('historyListResult')
+    ztShowPage('pageResult')
+  }
+
+  // ── input handlers ──
+  function cellAt(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY); if (!el) return null
+    const c = el.closest('.cell')
+    const gridOuter = ztEl('gridOuter')
+    if (!c || !gridOuter || !gridOuter.contains(c)) return null
+    return { row: parseInt(c.dataset.row), col: parseInt(c.dataset.col) }
+  }
+
+  function onMouseDown(e) { e.preventDefault(); isDrawing=true; const c=cellAt(e.clientX,e.clientY); if(!c)return; if(path.length>0&&getNum(c.row,c.col)===1){resetPath();return}; tryMove(c.row,c.col) }
+  function onMouseMove(e) { if(!isDrawing)return; const c=cellAt(e.clientX,e.clientY); if(c)tryMove(c.row,c.col) }
+
+  function resetPath() { path=[]; pathSet=new Set(); renderPath(); syncUI() }
+  function syncUI() {
+    const undo = ztEl('btnUndo'); if (undo) undo.disabled = path.length===0
+    const prog = ztEl('playProgress'); if (prog) prog.textContent = `${path.length} / ${gridSize*gridSize} 格`
+  }
+  function shuffleArr(arr) { for (let i=arr.length-1;i>0;i--) { const j=Math.floor(rng()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]] } }
+
+  // ── wire up (run once after DOM ready) ──
+  let _wired = false
+  function wireButtons() {
+    if (_wired) return; _wired = true
+    ztEl('btnStart')   ?.addEventListener('click', startPlaying)
+    ztEl('btnTutorial')?.addEventListener('click', () => ztShowPage('pageTutorial'))
+    ztEl('btnTutBack') ?.addEventListener('click', goPrestart)
+    ztEl('btnTutDone') ?.addEventListener('click', goPrestart)
+    ztEl('btnUndo')    ?.addEventListener('click', () => { if(path.length===0)return; const last=path.pop(); pathSet.delete(key(last.row,last.col)); renderPath(); syncUI() })
+    ztEl('btnReset')   ?.addEventListener('click', resetPath)
+    ztEl('refreshBtn') ?.addEventListener('click', loadBoards)
+
+    const gridOuter = ztEl('gridOuter')
+    if (gridOuter) {
+      gridOuter.addEventListener('touchstart', e => { e.preventDefault(); isDrawing=true; const t=e.touches[0]; const c=cellAt(t.clientX,t.clientY); if(!c)return; if(path.length>0&&getNum(c.row,c.col)===1){resetPath();return}; tryMove(c.row,c.col) }, {passive:false})
+      gridOuter.addEventListener('touchmove',  e => { e.preventDefault(); if(!isDrawing)return; const t=e.touches[0]; const c=cellAt(t.clientX,t.clientY); if(c)tryMove(c.row,c.col) }, {passive:false})
+      gridOuter.addEventListener('touchend',   () => { isDrawing=false })
+    }
+    _mouseUpHandler = () => { isDrawing = false }
+    document.addEventListener('mouseup', _mouseUpHandler)
+  }
+
+  // ── public API ──
+  window.initZipGame = function() {
+    if (!ztEl('wrap')) return   // tab not yet in DOM
+    // sync player name from Vue state
+    try { const u = document.querySelector('.sidebar-user-name'); if (u) window.__zipPlayerName = u.textContent.trim() } catch(e){}
+    wireButtons()
+    const rec = getTodayRec()
+    if (rec && rec.completed) showAlreadyDone()
+    else goPrestart()
+    loadBoards()
+    if (boardRefreshItv) clearInterval(boardRefreshItv)
+    boardRefreshItv = setInterval(loadBoards, 60000)
+  }
+
+  window.destroyZipGame = function() {
+    stopTimer()
+    if (boardRefreshItv) { clearInterval(boardRefreshItv); boardRefreshItv = null }
+    if (_mouseUpHandler) { document.removeEventListener('mouseup', _mouseUpHandler); _mouseUpHandler = null }
+  }
+})()
 </script>
 </body>
 </html>
