@@ -559,7 +559,25 @@ function scrollToBoard() {
 }
 
 loadBoards()
-setInterval(loadBoards, 60000)
+let boardRefreshItv = setInterval(loadBoards, 60000)
+
+async function zipFetchJson(url, options) {
+  const res = await fetch(url, options)
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  return data
+}
+
+async function submitScore(scoreSeconds) {
+  const data = await zipFetchJson('/api/zip/score', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({seconds:scoreSeconds})
+  })
+  const syncedSeconds = Number(data.seconds)
+  if (!data.success || !Number.isFinite(syncedSeconds) || syncedSeconds <= 0) throw new Error(data.error || 'score sync failed')
+  return syncedSeconds
+}
 
 // ════════════════════════════════════════════
 // 遊戲邏輯（完整）
@@ -664,8 +682,17 @@ function checkWin(){
   let last=0
   for(const cell of path){ const n=getNum(cell.row,cell.col); if(n!==null){if(n!==last+1)return; last=n} }
   if(last<numbers.length)return
-  solved=true; stopTimer(); markDailyComplete(seconds); saveHistory(seconds); animateSolve()
-  setTimeout(()=>showResult(seconds),800)
+  solved=true; stopTimer(); animateSolve()
+  const localSecs=seconds
+  setTimeout(async()=>{
+    try{
+      const finalSecs=await submitScore(localSecs)
+      markDailyComplete(finalSecs); saveHistory(finalSecs); showResult(finalSecs)
+    }catch(e){
+      saveAccumulatedSecs(localSecs)
+      showScoreSyncError(localSecs,e.message)
+    }
+  },800)
 }
 
 function renderGrid(){
@@ -702,8 +729,11 @@ function animateSolve(){
   for(let r=0;r<gridSize;r++) for(let c=0;c<gridSize;c++){ const el=cEl(r,c); if(!el)continue; setTimeout(()=>{el.classList.add('mow-anim'); setTimeout(()=>el.classList.remove('mow-anim'),600)},(r+c)*20) }
 }
 
-function startTimer(){ seconds=0; timerItv=setInterval(()=>{seconds++; updateTimerEl()},1000) }
+function startTimer(initialSecs=0){ stopTimer(); seconds=initialSecs||0; updateTimerEl(); timerItv=setInterval(()=>{seconds++; updateTimerEl()},1000) }
 function stopTimer(){ clearInterval(timerItv); timerItv=null }
+function pauseActiveTimer(){ if(!timerItv||solved)return; saveAccumulatedSecs(seconds); stopTimer() }
+function isPlayingPageVisible(){ const page=document.getElementById('pagePlaying'); return !!page&&!page.classList.contains('hidden') }
+function resumeVisibleTimer(){ if(timerItv||solved||document.hidden||!isPlayingPageVisible())return; startTimer(getAccumulatedSecs()||seconds) }
 function updateTimerEl(){ document.getElementById('playTimer').textContent=fmt(seconds) }
 function fmt(s){ return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}` }
 
@@ -711,7 +741,9 @@ function loadState(){ try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}
 function getTodayRec(){ return loadState()[todayStr()]||null }
 
 function markDailyStart(){ const s=loadState(); const t=todayStr(); if(!s[t])s[t]={diff:difficulty,started:true,completed:false,time:null}; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
-function markDailyComplete(time){ const s=loadState(); const t=todayStr(); if(!s[t])s[t]={diff:difficulty}; s[t].completed=true; if(s[t].time==null||s[t].time>time)s[t].time=time; const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-60); for(const d of Object.keys(s))if(new Date(d)<cutoff)delete s[d]; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
+function markDailyComplete(time){ const s=loadState(); const t=todayStr(); if(!s[t])s[t]={diff:difficulty}; s[t].completed=true; delete s[t].accumulated; if(s[t].time==null||s[t].time>time)s[t].time=time; const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-60); for(const d of Object.keys(s))if(new Date(d)<cutoff)delete s[d]; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
+function getAccumulatedSecs(){ const rec=getTodayRec(); return (rec?.completed?0:rec?.accumulated)||0 }
+function saveAccumulatedSecs(secs){ const s=loadState(); const t=todayStr(); if(!s[t])s[t]={diff:difficulty,started:true,completed:false,time:null}; s[t].accumulated=secs; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
 
 function loadHistory(){ try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch{return[]} }
 function saveHistory(time){ const h=loadHistory(); const today=todayStr(); const existing=h.findIndex(e=>e.date===today); const entry={date:today,diff:difficulty,label:DIFF_CFG[difficulty].label,time,name:getPlayerName()}; if(existing>=0){if(h[existing].time>time)h[existing]=entry}else{h.unshift(entry)}; if(h.length>HISTORY_MAX)h.length=HISTORY_MAX; localStorage.setItem(HISTORY_KEY,JSON.stringify(h)) }
@@ -736,10 +768,22 @@ function goPrestart(){
   showPage('pagePrestart')
 }
 
-function startPlaying(){
+async function startPlaying(resumeStartedAt){
+  const rec=getTodayRec()
+  if(rec?.completed){ showAlreadyDone(); return }
+  if(!resumeStartedAt){
+    try{
+      const data=await zipFetchJson('/api/zip/start',{method:'POST',headers:{'Content-Type':'application/json'}})
+      resumeStartedAt=data.startedAt
+    }catch(e){
+      alert('無法開始每日任務，請確認登入狀態或稍後再試。')
+      goPrestart()
+      return
+    }
+  }
   buildPuzzle(); markDailyStart(); renderGrid()
-  path=[]; pathSet=new Set(); solved=false; seconds=0
-  showPage('pagePlaying'); startTimer()
+  path=[]; pathSet=new Set(); solved=false
+  showPage('pagePlaying'); startTimer(getAccumulatedSecs())
 }
 
 function showResult(time){
@@ -753,9 +797,17 @@ function showResult(time){
   renderHistory('historyListResult')
   showPage('pageResult')
   // 回報成績到伺服器
-  fetch('/api/zip/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds:time})})
-    .then(()=>{ setTimeout(loadBoards,1000) })
-    .catch(()=>{})
+  setTimeout(loadBoards,1000)
+}
+
+function showScoreSyncError(localSecs,message){
+  solved=false
+  document.getElementById('resultTitle').textContent='成績同步失敗'
+  document.getElementById('resultDate').textContent=todayLabel()
+  document.getElementById('resultTime').textContent=fmt(localSecs)
+  document.getElementById('resultRank').textContent='尚未寫入排行榜，請重新整理後再試。'+(message?` (${message})`:'')
+  renderHistory('historyListResult')
+  showPage('pageResult')
 }
 
 function showAlreadyDone(){
@@ -784,14 +836,31 @@ function resetPath(){ path=[]; pathSet=new Set(); renderPath(); syncUI() }
 function syncUI(){ document.getElementById('btnUndo').disabled=path.length===0; document.getElementById('playProgress').textContent=`${path.length} / ${gridSize*gridSize} 格` }
 function shuffleArr(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]} }
 
-document.getElementById('btnStart').addEventListener('click',startPlaying)
+document.getElementById('btnStart').addEventListener('click',()=>startPlaying())
 document.getElementById('btnTutorial').addEventListener('click',()=>showPage('pageTutorial'))
 document.getElementById('btnTutBack').addEventListener('click',goPrestart)
 document.getElementById('btnTutDone').addEventListener('click',goPrestart)
 document.getElementById('btnUndo').addEventListener('click',()=>{ if(path.length===0)return; const last=path.pop(); pathSet.delete(key(last.row,last.col)); renderPath(); syncUI() })
 document.getElementById('btnReset').addEventListener('click',resetPath)
 
-;(function init(){ const rec=getTodayRec(); if(rec&&rec.completed){showAlreadyDone()}else{goPrestart()} })()
+window.addEventListener('beforeunload',pauseActiveTimer)
+window.addEventListener('pagehide',pauseActiveTimer)
+document.addEventListener('visibilitychange',()=>{ if(document.hidden)pauseActiveTimer(); else resumeVisibleTimer() })
+
+;(async function init(){
+  try{
+    const td=await zipFetchJson('/api/zip/today')
+    if(td.played&&td.mySeconds!=null){
+      markDailyComplete(td.mySeconds); saveHistory(td.mySeconds); showAlreadyDone()
+    }else if(td.started&&td.startedAt){
+      startPlaying(td.startedAt)
+    }else{
+      const rec=getTodayRec(); if(rec&&rec.completed){showAlreadyDone()}else{goPrestart()}
+    }
+  }catch(e){
+    const rec=getTodayRec(); if(rec&&rec.completed){showAlreadyDone()}else{goPrestart()}
+  }
+})()
 </script>
 </body>
 </html>
