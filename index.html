@@ -17,6 +17,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
     <style>
+        @import url("https://font.emtech.cc/css/MuzaiPixel");
+
         /* ===== CSS 變數 ===== */
         :root {
             --bg:          #fbfaf6;
@@ -108,6 +110,7 @@
         }
         .sidebar-logo-title {
             font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.2;
+            font-family: 'MuzaiPixel', sans-serif;
         }
         .sidebar-logo-sub {
             font-size: 10px; color: var(--muted);
@@ -359,6 +362,7 @@
         }
         .topbar-title {
             font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em;
+            font-family: 'MuzaiPixel', sans-serif;
         }
         .topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .topbar-btn {
@@ -794,7 +798,7 @@
         .login-title {
             font-size: 32px; font-weight: 900; color: var(--primary);
             margin: 0 0 4px; letter-spacing: 0;
-            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-family: 'MuzaiPixel', sans-serif;
         }
         .login-sub {
             font-size: 11px; color: var(--accent); font-weight: 900;
@@ -5552,23 +5556,22 @@ createApp({
 
         const submitFeedback = async () => {
             if (!feedbackContent.value.trim()) return;
-            const uid  = currentUserId.value;
-            const me   = users.value.find(u => u.id === uid);
             try {
-                await fetch('/api/feedback', {
+                const res = await fetch('/api/feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        uid,
-                        name:      me?.name || fbUser.value?.displayName || '未知',
-                        email:     me?.email || fbUser.value?.email || '',
-                        avatarUrl: me?.avatarUrl || fbUser.value?.photoURL || '',
-                        content:   feedbackContent.value,
-                        imgUrl:    feedbackImgUrl.value || '',
-                        timestamp: Date.now(),
+                        content: feedbackContent.value,
+                        imgUrl:  feedbackImgUrl.value || '',
                     })
                 });
-            } catch(e) { console.warn('反饋送出失敗', e); }
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    console.warn('反饋送出失敗', res.status, err);
+                    alert('反饋送出失敗，請稍後再試。');
+                    return;
+                }
+            } catch(e) { console.warn('反饋送出失敗', e); alert('網路錯誤，請稍後再試。'); return; }
 
             showFeedbackConfirm.value = false;
             showFeedbackModal.value   = false;

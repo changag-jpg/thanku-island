@@ -705,11 +705,18 @@ app.post('/api/gacha-items/seed', requireLogin, async (req, res) => {
 
 // ===== 意見回饋 Feedback API =====
 app.post('/api/feedback', requireLogin, async (req, res) => {
-  const { uid, name, email, avatarUrl, content, imgUrl, timestamp } = req.body;
+  const { content, imgUrl } = req.body;
+  // 優先使用 session 資訊，確保資料正確
+  const sessionUser = req.session.user;
+  const uid      = sessionUser?.employee_code || req.body.uid || '';
+  const name     = sessionUser?.name     || req.body.name     || '未知';
+  const email    = sessionUser?.email    || req.body.email    || '';
+  const avatarUrl = sessionUser?.avatar  || req.body.avatarUrl || '';
+  if (!content || !content.trim()) return res.status(400).json({ error: '內容不可空白' });
   try {
     await pool.query(
       'INSERT INTO feedbacks (uid, name, email, avatar_url, content, img_url, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [uid || '', name || '', email || '', avatarUrl || '', content || '', imgUrl || '', timestamp || Date.now()]
+      [uid, name, email, avatarUrl, content.trim(), imgUrl || '', Date.now()]
     );
     res.json({ success: true });
   } catch (err) {
