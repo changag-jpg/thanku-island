@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const axios = require('axios');
 const mysql = require('mysql2/promise');
 
@@ -274,12 +275,25 @@ function startSettlementScheduler() {
   }, 30000);
 }
 
-// Session 設定
+// Session 設定（存入 MySQL，重啟伺服器後不流失）
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '3306'),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  clearExpired: true,
+  checkExpirationInterval: 15 * 60 * 1000,  // 每 15 分鐘清一次過期 session
+  expiration: 30 * 24 * 60 * 60 * 1000,     // session 保留 30 天
+  createDatabaseTable: true,
+  charset: 'utf8mb4_unicode_ci',
+});
 app.use(session({
   secret: process.env.SESSION_SECRET || 'thanku-island-secret-2026',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+  cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 }  // 30 天
 }));
 
 app.use(express.json({ limit: '10mb' }));
