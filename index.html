@@ -5372,13 +5372,13 @@ createApp({
         };
         const switchTab  = (tab) => {
             const prev = currentTab.value;
+            if (prev === 'task' && tab !== 'task') window.destroyZipGame?.();
             currentTab.value = tab;
             nextTick(() => {
                 document.getElementById('main-content')?.scrollTo(0, 0);
                 if(tab==='home')   window.initIslandCanvas?.();
                 if(tab==='island') window.initIslandEditorCanvas?.();
                 if(tab==='task')   window.initZipGame?.();
-                if(prev==='task')  window.destroyZipGame?.();
                 if(prev==='island' && tab!=='island'){
                     window.islandEngine?.save();
                     setTimeout(() => { window.initIslandCanvas?.(); saveTiles(); }, 50);
@@ -7381,7 +7381,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   window.destroyZipGame = function() {
-    if (timerItv && !solved) saveAccumulatedSecs(seconds)  // 離開前存下累積秒數
+    pauseActiveTimer()  // 離開前存下累積秒數並停止計時
     stopTimer()
     if (boardRefreshItv) { clearInterval(boardRefreshItv); boardRefreshItv = null }
     if (_mouseUpHandler) { document.removeEventListener('mouseup', _mouseUpHandler); _mouseUpHandler = null }

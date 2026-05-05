@@ -1111,21 +1111,47 @@ app.post('/api/zip/score', requireLogin, async (req, res) => {
   const uid = req.session.user.employee_code;
   const today = getUTC8Date();
   try {
+    const { seconds: clientSeconds } = req.body;
+    const parsedSeconds = parseInt(clientSeconds, 10);
+    if (!Number.isFinite(parsedSeconds) || parsedSeconds <= 0) {
+      return res.status(400).json({ error: 'invalid seconds' });
+    }
+    const fallbackSeconds = Math.min(parsedSeconds, 24 * 60 * 60);
+
     const [rows] = await pool.query('SELECT seconds, started_at, completed FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
     const record = rows[0];
-    if (!record) return res.status(400).json({ error: 'game not started' });
+    const now = Date.now();
+    if (!record) {
+      const recoveredStartedAt = now - fallbackSeconds * 1000;
+      await pool.query(
+        `INSERT INTO zip_scores (uid, display_name, avatar_url, date, seconds, played_at, started_at, completed)
+         VALUES (?,?,?,?,?,?,?,1)
+         ON DUPLICATE KEY UPDATE seconds=VALUES(seconds), played_at=VALUES(played_at), started_at=VALUES(started_at), completed=1`,
+        [uid, req.session.user.name || '', req.session.user.avatar || '', today, fallbackSeconds, now, recoveredStartedAt]
+      );
+      return res.json({ success: true, seconds: fallbackSeconds, recoveredStart: true });
+    }
     if (record.completed) return res.json({ success: true, seconds: record.seconds, alreadyCompleted: true });
-    if (!record.started_at) return res.status(400).json({ error: 'no start time recorded' });
+    if (!record.started_at) {
+      const recoveredStartedAt = now - fallbackSeconds * 1000;
+      await pool.query(
+        `UPDATE zip_scores SET seconds=?, completed=1, played_at=?, started_at=? WHERE date=? AND uid=?`,
+        [fallbackSeconds, now, recoveredStartedAt, today, uid]
+      );
+      return res.json({ success: true, seconds: fallbackSeconds, recoveredStart: true });
+    }
     // 接受前端送來的實際遊玩秒數，但不能超過牆鐘時間（防止偽造低秒數）
-    const { seconds: clientSeconds } = req.body;
-    const maxSeconds = Math.round((Date.now() - record.started_at) / 1000);
-    const seconds = (clientSeconds > 0 && clientSeconds <= maxSeconds) ? clientSeconds : maxSeconds;
+    const maxSeconds = Math.max(1, Math.round((now - record.started_at) / 1000));
+    const seconds = (fallbackSeconds > 0 && fallbackSeconds <= maxSeconds) ? fallbackSeconds : maxSeconds;
     await pool.query(
       `UPDATE zip_scores SET seconds=?, completed=1, played_at=? WHERE date=? AND uid=?`,
-      [seconds, Date.now(), today, uid]
+      [seconds, now, today, uid]
     );
     res.json({ success: true, seconds });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error('POST /api/zip/score error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/zip/weekly', async (req, res) => {
