@@ -3,7 +3,9 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:vocus.cc)",
-      "WebFetch(domain:font.emtech.cc)"
+      "WebFetch(domain:font.emtech.cc)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
