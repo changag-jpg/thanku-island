@@ -4934,14 +4934,16 @@ createApp({
             const oldHL = prevHL[item.id] ?? 0;
 
             // 在目前位置附近小範圍移動（±15%）
-            let newX, newY, tries = 0;
+            let newX, newY, tries = 0, validFound = false;
             do {
                 newX = Math.min(85, Math.max(10, oldX + (Math.random() - 0.5) * 28));
                 newY = Math.min(75, Math.max(10, oldY + (Math.random() - 0.5) * 28));
                 const t = getTerrainAt(newX, newY);
                 tries++;
-                if (t.onIsland && t.ci !== 1) break;
+                if (t.onIsland && t.ci !== 1) { validFound = true; break; }
             } while (tries < 10);
+
+            if (!validFound) return; // 找不到合法格子，本次不移動
 
             state.x    = newX;
             state.y    = newY;
@@ -5995,9 +5997,14 @@ createApp({
             const idx  = user.warehouse.findIndex(w => w.id === item.id);
             if (idx === -1) return;
 
-            // 預設放在草地區域（避開湖水）
-            const x = 25 + Math.random() * 50;
-            const y = 20 + Math.random() * 40;
+            // 尋找島嶼板塊內的有效位置（排除湖水與島外）
+            let x = 50, y = 40;
+            for (let i = 0; i < 30; i++) {
+                const tx = 25 + Math.random() * 50;
+                const ty = 20 + Math.random() * 40;
+                const t  = getTerrainAt(tx, ty);
+                if (t.onIsland && t.ci !== 1) { x = tx; y = ty; break; }
+            }
 
             user.warehouse.splice(idx, 1);
             user.island.push({ ...item, x, y });
