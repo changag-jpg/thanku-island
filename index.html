@@ -6956,6 +6956,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let isDrawing = false, timerItv = null, seconds = 0, solved = false
   let serverStartedAt = null
   let boardRefreshItv = null
+  let _beforeUnloadHandler = null
   let _mouseUpHandler = null
 
   // ── puzzle gen ──
@@ -7130,7 +7131,9 @@ window.addEventListener('DOMContentLoaded', () => {
   function loadState()     { try { return JSON.parse(localStorage.getItem(STATE_KEY)||'{}') } catch { return {} } }
   function getTodayRec()   { return loadState()[todayStr()] || null }
   function markDailyStart() { const s=loadState(),t=todayStr(); if(!s[t])s[t]={diff:difficulty,started:true,completed:false,time:null}; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
-  function markDailyComplete(time) { const s=loadState(),t=todayStr(); if(!s[t])s[t]={diff:difficulty}; s[t].completed=true; if(s[t].time==null||s[t].time>time)s[t].time=time; const co=new Date(); co.setDate(co.getDate()-60); for(const d of Object.keys(s))if(new Date(d)<co)delete s[d]; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
+  function markDailyComplete(time) { const s=loadState(),t=todayStr(); if(!s[t])s[t]={diff:difficulty}; s[t].completed=true; delete s[t].accumulated; if(s[t].time==null||s[t].time>time)s[t].time=time; const co=new Date(); co.setDate(co.getDate()-60); for(const d of Object.keys(s))if(new Date(d)<co)delete s[d]; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
+  function getAccumulatedSecs() { const rec=getTodayRec(); return (rec?.completed ? 0 : rec?.accumulated) || 0 }
+  function saveAccumulatedSecs(secs) { const s=loadState(),t=todayStr(); if(!s[t])s[t]={diff:difficulty,started:true,completed:false,time:null}; s[t].accumulated=secs; localStorage.setItem(STATE_KEY,JSON.stringify(s)) }
   function loadHistory()   { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]') } catch { return [] } }
   function saveHistory(time) { const h=loadHistory(),today=todayStr(),ex=h.findIndex(e=>e.date===today),entry={date:today,diff:difficulty,label:DIFF_CFG[difficulty].label,time,name:getPlayerName()}; if(ex>=0){if(h[ex].time>time)h[ex]=entry}else{h.unshift(entry)}; if(h.length>HISTORY_MAX)h.length=HISTORY_MAX; localStorage.setItem(HISTORY_KEY,JSON.stringify(h)) }
   function getPlayerName() { return window.__zipPlayerName || '玩家' }
@@ -7187,11 +7190,11 @@ window.addEventListener('DOMContentLoaded', () => {
       } catch(e) {}
     }
     serverStartedAt = resumeStartedAt || Date.now()
-    // 計時器永遠從 0 開始 — 只計算實際在遊戲畫面的時間，不算離開的時間
+    const initialSecs = getAccumulatedSecs()  // 從上次離開的秒數繼續
     buildPuzzle(); markDailyStart()
     path = []; pathSet = new Set(); solved = false
     renderGrid(); renderPath(); syncUI()
-    ztShowPage('pagePlaying'); startTimer(0)
+    ztShowPage('pagePlaying'); startTimer(initialSecs)
   }
 
   function showResult(time) {
@@ -7266,6 +7269,11 @@ window.addEventListener('DOMContentLoaded', () => {
     _mouseUpHandler = () => { isDrawing = false }
     document.addEventListener('mouseup', _mouseUpHandler)
 
+    // F5 重整時也能存下累積秒數
+    if (_beforeUnloadHandler) window.removeEventListener('beforeunload', _beforeUnloadHandler)
+    _beforeUnloadHandler = () => { if (timerItv && !solved) saveAccumulatedSecs(seconds) }
+    window.addEventListener('beforeunload', _beforeUnloadHandler)
+
     // 後端是唯一真相：先 await 確認今天是否玩過，再決定顯示哪頁
     // localStorage 只做後備（後端失敗時才用）
     let played = false, started = false, mySeconds = null, startedAt = null
@@ -7309,9 +7317,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   window.destroyZipGame = function() {
+    if (timerItv && !solved) saveAccumulatedSecs(seconds)  // 離開前存下累積秒數
     stopTimer()
     if (boardRefreshItv) { clearInterval(boardRefreshItv); boardRefreshItv = null }
     if (_mouseUpHandler) { document.removeEventListener('mouseup', _mouseUpHandler); _mouseUpHandler = null }
+    if (_beforeUnloadHandler) { window.removeEventListener('beforeunload', _beforeUnloadHandler); _beforeUnloadHandler = null }
   }
 })()
 </script>
