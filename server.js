@@ -1046,12 +1046,15 @@ app.get('/api/zip/today', async (req, res) => {
   const today = getUTC8Date();
   const myUid = req.session.user?.employee_code;
   try {
-    const [rows] = await pool.query(
-      'SELECT uid, display_name, avatar_url, seconds FROM zip_scores WHERE date=? ORDER BY seconds ASC LIMIT 10', [today]
-    );
+    const [[rows], [myRows]] = await Promise.all([
+      pool.query('SELECT uid, display_name, avatar_url, seconds FROM zip_scores WHERE date=? ORDER BY seconds ASC LIMIT 10', [today]),
+      myUid ? pool.query('SELECT seconds FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, myUid]) : Promise.resolve([[]])
+    ]);
+    const myRecord = myRows[0] || null;
     res.json({
       date: today,
-      played: rows.some(r => r.uid === myUid),
+      played: !!myRecord,
+      mySeconds: myRecord?.seconds ?? null,
       board: rows.map((r, i) => ({
         rank: i + 1, uid: r.uid, name: r.display_name,
         avatar: r.avatar_url, seconds: r.seconds, isMe: r.uid === myUid

@@ -7138,6 +7138,16 @@ window.addEventListener('DOMContentLoaded', () => {
       ])
       renderBoard('todayBoard',  td.board  || [], r => `<div class="zt-board-val">${r.seconds}秒</div>`)
       renderBoard('weeklyBoard', wk.board  || [], r => `<div class="zt-board-val">${r.daysPlayed}天 均${r.avgSeconds}秒</div>`)
+
+      // 後端是紀錄真相：若已有分數但 localStorage 不知道（如清除快取），同步並切到完成畫面
+      if (td.played) {
+        const localRec = getTodayRec()
+        if (!localRec || !localRec.completed) {
+          const secs = td.mySeconds  // 伺服器直接回傳自己的成績，不限排名
+          if (secs != null) markDailyComplete(secs)
+          showAlreadyDone(secs)
+        }
+      }
     } catch(e) {
       const el = ztEl('todayBoard'); if (el) el.innerHTML = '<div class="zt-board-empty">無法載入</div>'
     }
@@ -7188,11 +7198,13 @@ window.addEventListener('DOMContentLoaded', () => {
       .then(() => setTimeout(loadBoards, 1000)).catch(()=>{})
   }
 
-  function showAlreadyDone() {
-    const rec = getTodayRec(), cfg = DIFF_CFG[rec.diff || getDailyDiff()]
+  function showAlreadyDone(backendSeconds) {
+    const rec = getTodayRec()
+    const time = backendSeconds ?? rec?.time
+    const cfg  = DIFF_CFG[rec?.diff || getDailyDiff()]
     const rTitle = ztEl('resultTitle'); if (rTitle) rTitle.textContent = '今日草皮已修剪完畢 ✅'
     const rDate  = ztEl('resultDate');  if (rDate)  rDate.textContent  = `${todayLabel()} · ${cfg.label}`
-    const rTime  = ztEl('resultTime');  if (rTime)  rTime.textContent  = fmt(rec.time)
+    const rTime  = ztEl('resultTime');  if (rTime)  rTime.textContent  = time != null ? fmt(time) : '—'
     const rRank  = ztEl('resultRank');  if (rRank)  rRank.textContent  = '明天再來挑戰新的草皮！'
     renderHistory('historyListResult')
     ztShowPage('pageResult')
