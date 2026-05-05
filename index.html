@@ -6363,6 +6363,9 @@ createApp({
                 console.error('/api/me 失敗：', e);
             } finally {
                 fbLoading.value = false;
+                // Vue 渲染完成後才掃描 DOM，確保 emfont-MuzaiPixel 等 class 已存在
+                await nextTick();
+                if (window.emfont) emfont.init();
             }
         });
         onUnmounted(() => {
@@ -7262,11 +7265,5 @@ window.addEventListener('DOMContentLoaded', () => {
 })()
 </script>
 
-<script>
-// emfont：掃描 DOM 載入所需字體子集
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.emfont) emfont.init();
-});
-</script>
 </body>
 </html>

@@ -171,6 +171,8 @@ async function initDB() {
       `ALTER TABLE user_data ADD COLUMN last_daily_login DATE NULL DEFAULT NULL`,
       `ALTER TABLE gacha_pools ADD COLUMN cover_img TEXT NULL DEFAULT NULL`,
       `ALTER TABLE profiles ADD COLUMN shells INT DEFAULT 0`,
+      `ALTER TABLE profiles ADD COLUMN tile_count INT DEFAULT 6`,
+      `ALTER TABLE profiles ADD COLUMN island_json LONGTEXT`,
       `ALTER TABLE gacha_items ADD COLUMN idle_sprite_url TEXT`,
       `ALTER TABLE gacha_items ADD COLUMN idle_sprite_frames INT DEFAULT 4`,
       `ALTER TABLE gacha_items ADD COLUMN is_unique TINYINT(1) DEFAULT 0`,
@@ -414,20 +416,25 @@ app.delete('/api/user', requireLogin, async (req, res) => {
 app.get('/api/profiles', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM profiles ORDER BY updated_at DESC');
-    res.json(rows.map(r => ({
-      id: r.id,
-      name: r.name,
-      email: r.email,
-      avatarUrl: r.avatar_url,
-      avatarPosX: r.avatar_pos_x,
-      avatarPosY: r.avatar_pos_y,
-      energy: r.energy,
-      shells: r.shells || 0,
-      tileCount: r.tile_count,
-      island: JSON.parse(r.island_json || '[]'),
-      updatedAt: r.updated_at
-    })));
+    res.json(rows.map(r => {
+      let island = [];
+      try { island = JSON.parse(r.island_json || '[]'); } catch(e) {}
+      return {
+        id: r.id,
+        name: r.name,
+        email: r.email,
+        avatarUrl: r.avatar_url,
+        avatarPosX: r.avatar_pos_x,
+        avatarPosY: r.avatar_pos_y,
+        energy: r.energy,
+        shells: r.shells || 0,
+        tileCount: r.tile_count,
+        island,
+        updatedAt: r.updated_at
+      };
+    }));
   } catch (err) {
+    console.error('GET /api/profiles error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
