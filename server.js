@@ -1111,10 +1111,10 @@ app.post('/api/zip/score', requireLogin, async (req, res) => {
   const uid = req.session.user.employee_code;
   const today = getUTC8Date();
   try {
-    const [rows] = await pool.query('SELECT started_at, completed FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
+    const [rows] = await pool.query('SELECT seconds, started_at, completed FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
     const record = rows[0];
     if (!record) return res.status(400).json({ error: 'game not started' });
-    if (record.completed) return res.status(400).json({ error: 'already completed' });
+    if (record.completed) return res.json({ success: true, seconds: record.seconds, alreadyCompleted: true });
     if (!record.started_at) return res.status(400).json({ error: 'no start time recorded' });
     // 接受前端送來的實際遊玩秒數，但不能超過牆鐘時間（防止偽造低秒數）
     const { seconds: clientSeconds } = req.body;

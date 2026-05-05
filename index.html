@@ -6957,6 +6957,8 @@ window.addEventListener('DOMContentLoaded', () => {
   let serverStartedAt = null
   let boardRefreshItv = null
   let _beforeUnloadHandler = null
+  let _visibilityHandler = null
+  let _pageHideHandler = null
   let _mouseUpHandler = null
 
   // ── puzzle gen ──
@@ -7037,16 +7039,13 @@ window.addEventListener('DOMContentLoaded', () => {
     solved = true; stopTimer(); animateSolve()
     const localSecs = seconds  // 先存起來，setTimeout 後不會變
     setTimeout(async () => {
-      let finalSecs = localSecs
       try {
-        const res = await fetch('/api/zip/score', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ seconds: localSecs })
-        })
-        const data = await res.json()
-        if (data.success && data.seconds) finalSecs = data.seconds
-      } catch(e) {}
-      markDailyComplete(finalSecs); saveHistory(finalSecs); showResult(finalSecs)
+        const finalSecs = await submitScore(localSecs)
+        markDailyComplete(finalSecs); saveHistory(finalSecs); showResult(finalSecs)
+      } catch(e) {
+        saveAccumulatedSecs(localSecs)
+        showScoreSyncError(localSecs, e.message)
+      }
     }, 800)
   }
 
@@ -7123,8 +7122,26 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── timer ──
-  function startTimer(initialSecs) { seconds=initialSecs||0; timerItv=setInterval(()=>{ seconds++; const el=ztEl('playTimer'); if(el)el.textContent=fmt(seconds) },1000) }
+  function startTimer(initialSecs) {
+    stopTimer()
+    seconds = initialSecs || 0
+    const el = ztEl('playTimer'); if (el) el.textContent = fmt(seconds)
+    timerItv = setInterval(()=>{ seconds++; const el=ztEl('playTimer'); if(el)el.textContent=fmt(seconds) },1000)
+  }
   function stopTimer()  { clearInterval(timerItv); timerItv=null }
+  function pauseActiveTimer() {
+    if (!timerItv || solved) return
+    saveAccumulatedSecs(seconds)
+    stopTimer()
+  }
+  function isPlayingPageVisible() {
+    const page = ztEl('pagePlaying')
+    return !!page && !page.classList.contains('hidden')
+  }
+  function resumeVisibleTimer() {
+    if (timerItv || solved || document.hidden || !isPlayingPageVisible()) return
+    startTimer(getAccumulatedSecs() || seconds)
+  }
   function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}` }
 
   // ── storage ──
@@ -7146,11 +7163,35 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── leaderboard ──
+  async function zipFetchJson(url, options) {
+    const res = await fetch(url, options)
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+    return data
+  }
+
+  async function fetchTodayZip() {
+    return zipFetchJson('/api/zip/today')
+  }
+
+  async function submitScore(scoreSeconds) {
+    const data = await zipFetchJson('/api/zip/score', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ seconds: scoreSeconds })
+    })
+    const syncedSeconds = Number(data.seconds)
+    if (!data.success || !Number.isFinite(syncedSeconds) || syncedSeconds <= 0) {
+      throw new Error(data.error || 'score sync failed')
+    }
+    return syncedSeconds
+  }
+
   async function loadBoards() {
     try {
       const [td, wk] = await Promise.all([
-        fetch('/api/zip/today').then(r => r.json()),
-        fetch('/api/zip/weekly').then(r => r.json()),
+        zipFetchJson('/api/zip/today'),
+        zipFetchJson('/api/zip/weekly'),
       ])
       renderBoard('todayBoard',  td.board  || [], r => `<div class="zt-board-val">${r.seconds}秒</div>`)
       renderBoard('weeklyBoard', wk.board  || [], r => `<div class="zt-board-val">${r.daysPlayed}天 均${r.avgSeconds}秒</div>`)
@@ -7187,10 +7228,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (todayRec?.completed) { showAlreadyDone(todayRec.time); return }
     if (!resumeStartedAt) {
       try {
-        const res = await fetch('/api/zip/start', { method:'POST', headers:{'Content-Type':'application/json'} })
-        const data = await res.json()
+        const data = await zipFetchJson('/api/zip/start', { method:'POST', headers:{'Content-Type':'application/json'} })
         resumeStartedAt = data.startedAt
-      } catch(e) {}
+      } catch(e) {
+        alert('無法開始每日任務，請確認登入狀態或稍後再試。')
+        goPrestart()
+        return
+      }
     }
     serverStartedAt = resumeStartedAt || Date.now()
     const initialSecs = getAccumulatedSecs()  // 從上次離開的秒數繼續
@@ -7223,6 +7267,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const rDate  = ztEl('resultDate');  if (rDate)  rDate.textContent  = `${todayLabel()} · ${cfg.label}`
     const rTime  = ztEl('resultTime');  if (rTime)  rTime.textContent  = time != null ? fmt(time) : '—'
     const rRank  = ztEl('resultRank');  if (rRank)  rRank.textContent  = '明天再來挑戰新的草皮！'
+    renderHistory('historyListResult')
+    ztShowPage('pageResult')
+  }
+
+  function showScoreSyncError(localSecs, message) {
+    solved = false
+    const rTitle = ztEl('resultTitle'); if (rTitle) rTitle.textContent = '成績同步失敗'
+    const rDate  = ztEl('resultDate');  if (rDate)  rDate.textContent  = todayLabel()
+    const rTime  = ztEl('resultTime');  if (rTime)  rTime.textContent  = fmt(localSecs)
+    const rRank  = ztEl('resultRank');  if (rRank)  rRank.textContent  = '尚未寫入排行榜，請重新整理後再試。' + (message ? ` (${message})` : '')
     renderHistory('historyListResult')
     ztShowPage('pageResult')
   }
@@ -7274,14 +7328,23 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // F5 重整時也能存下累積秒數
     if (_beforeUnloadHandler) window.removeEventListener('beforeunload', _beforeUnloadHandler)
-    _beforeUnloadHandler = () => { if (timerItv && !solved) saveAccumulatedSecs(seconds) }
+    _beforeUnloadHandler = () => { pauseActiveTimer() }
     window.addEventListener('beforeunload', _beforeUnloadHandler)
+    if (_pageHideHandler) window.removeEventListener('pagehide', _pageHideHandler)
+    _pageHideHandler = () => { pauseActiveTimer() }
+    window.addEventListener('pagehide', _pageHideHandler)
+    if (_visibilityHandler) document.removeEventListener('visibilitychange', _visibilityHandler)
+    _visibilityHandler = () => {
+      if (document.hidden) pauseActiveTimer()
+      else resumeVisibleTimer()
+    }
+    document.addEventListener('visibilitychange', _visibilityHandler)
 
     // 後端是唯一真相：先 await 確認今天是否玩過，再決定顯示哪頁
     // localStorage 只做後備（後端失敗時才用）
     let played = false, started = false, mySeconds = null, startedAt = null
     try {
-      const td = await fetch('/api/zip/today').then(r => r.json())
+      const td = await fetchTodayZip()
       played  = !!td.played
       started = !!td.started
       mySeconds = td.mySeconds ?? null
@@ -7289,21 +7352,19 @@ window.addEventListener('DOMContentLoaded', () => {
       // 後端說未完成，但 localStorage 有今日完成紀錄 → 補送並顯示完成畫面
       if (!played) {
         const rec = getTodayRec()
-        if (rec?.completed) {
-          played = true
-          if (mySeconds == null) mySeconds = rec.time ?? null
-          // 嘗試補送（後端若有 started_at 就能接受）
-          if (startedAt) {
-            fetch('/api/zip/score', {
-              method:'POST', headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({ seconds: rec.time })
-            }).catch(()=>{})
+        if (rec?.completed && startedAt) {
+          try {
+            mySeconds = await submitScore(rec.time)
+            played = true
+          } catch(e) {
+            played = false
           }
         }
       }
       if (played && mySeconds != null) {
         const rec = getTodayRec()
         if (!rec?.completed) markDailyComplete(mySeconds)
+        saveHistory(mySeconds)
       }
     } catch(e) {
       const rec = getTodayRec()
@@ -7325,6 +7386,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (boardRefreshItv) { clearInterval(boardRefreshItv); boardRefreshItv = null }
     if (_mouseUpHandler) { document.removeEventListener('mouseup', _mouseUpHandler); _mouseUpHandler = null }
     if (_beforeUnloadHandler) { window.removeEventListener('beforeunload', _beforeUnloadHandler); _beforeUnloadHandler = null }
+    if (_pageHideHandler) { window.removeEventListener('pagehide', _pageHideHandler); _pageHideHandler = null }
+    if (_visibilityHandler) { document.removeEventListener('visibilitychange', _visibilityHandler); _visibilityHandler = null }
   }
 })()
 </script>
