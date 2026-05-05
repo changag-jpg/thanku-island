@@ -6954,6 +6954,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let difficulty = 'easy', gridSize = 6, cellPx = 62
   let numbers = [], solutionPath = [], path = [], pathSet = new Set()
   let isDrawing = false, timerItv = null, seconds = 0, solved = false
+  let serverStartedAt = null
   let boardRefreshItv = null
   let _mouseUpHandler = null
 
@@ -7032,8 +7033,16 @@ window.addEventListener('DOMContentLoaded', () => {
     let last = 0
     for (const cell of path) { const n=getNum(cell.row,cell.col); if (n!==null) { if (n!==last+1) return; last=n } }
     if (last < numbers.length) return
-    solved = true; stopTimer(); markDailyComplete(seconds); saveHistory(seconds); animateSolve()
-    setTimeout(() => showResult(seconds), 800)
+    solved = true; stopTimer(); animateSolve()
+    setTimeout(async () => {
+      let finalSecs = seconds
+      try {
+        const res = await fetch('/api/zip/score', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+        const data = await res.json()
+        if (data.success && data.seconds) finalSecs = data.seconds
+      } catch(e) {}
+      markDailyComplete(finalSecs); saveHistory(finalSecs); showResult(finalSecs)
+    }, 800)
   }
 
   // ── rendering ──
@@ -7109,7 +7118,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── timer ──
-  function startTimer() { seconds=0; timerItv=setInterval(()=>{ seconds++; const el=ztEl('playTimer'); if(el)el.textContent=fmt(seconds) },1000) }
+  function startTimer(initialSecs) { seconds=initialSecs||0; timerItv=setInterval(()=>{ seconds++; const el=ztEl('playTimer'); if(el)el.textContent=fmt(seconds) },1000) }
   function stopTimer()  { clearInterval(timerItv); timerItv=null }
   function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}` }
 
@@ -7138,16 +7147,6 @@ window.addEventListener('DOMContentLoaded', () => {
       ])
       renderBoard('todayBoard',  td.board  || [], r => `<div class="zt-board-val">${r.seconds}秒</div>`)
       renderBoard('weeklyBoard', wk.board  || [], r => `<div class="zt-board-val">${r.daysPlayed}天 均${r.avgSeconds}秒</div>`)
-
-      // 後端是紀錄真相：若已有分數但 localStorage 不知道（如清除快取），同步並切到完成畫面
-      if (td.played) {
-        const localRec = getTodayRec()
-        if (!localRec || !localRec.completed) {
-          const secs = td.mySeconds  // 伺服器直接回傳自己的成績，不限排名
-          if (secs != null) markDailyComplete(secs)
-          showAlreadyDone(secs)
-        }
-      }
     } catch(e) {
       const el = ztEl('todayBoard'); if (el) el.innerHTML = '<div class="zt-board-empty">無法載入</div>'
     }
@@ -7175,11 +7174,21 @@ window.addEventListener('DOMContentLoaded', () => {
     ztShowPage('pagePrestart')
   }
 
-  function startPlaying() {
+  async function startPlaying(resumeStartedAt) {
+    // Lock started_at in DB on first click; COALESCE ensures it's never overwritten
+    if (!resumeStartedAt) {
+      try {
+        const res = await fetch('/api/zip/start', { method:'POST', headers:{'Content-Type':'application/json'} })
+        const data = await res.json()
+        resumeStartedAt = data.startedAt
+      } catch(e) {}
+    }
+    serverStartedAt = resumeStartedAt || Date.now()
+    const initialSecs = Math.floor((Date.now() - serverStartedAt) / 1000)
     buildPuzzle(); markDailyStart()
-    path = []; pathSet = new Set(); solved = false; seconds = 0
+    path = []; pathSet = new Set(); solved = false
     renderGrid(); renderPath(); syncUI()
-    ztShowPage('pagePlaying'); startTimer()
+    ztShowPage('pagePlaying'); startTimer(initialSecs)
   }
 
   function showResult(time) {
@@ -7194,8 +7203,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     renderHistory('historyListResult')
     ztShowPage('pageResult')
-    fetch('/api/zip/score', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({seconds:time}) })
-      .then(() => setTimeout(loadBoards, 1000)).catch(()=>{})
+    setTimeout(loadBoards, 1000)
   }
 
   function showAlreadyDone(backendSeconds) {
@@ -7240,7 +7248,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── public API ──
-  window.initZipGame = function() {
+  window.initZipGame = async function() {
     if (!ztEl('wrap')) return
     try { const u = document.querySelector('.sidebar-user-name'); if (u) window.__zipPlayerName = u.textContent.trim() } catch(e){}
 
@@ -7255,8 +7263,27 @@ window.addEventListener('DOMContentLoaded', () => {
     _mouseUpHandler = () => { isDrawing = false }
     document.addEventListener('mouseup', _mouseUpHandler)
 
-    const rec = getTodayRec()
-    if (rec && rec.completed) showAlreadyDone()
+    // 後端是唯一真相：先 await 確認今天是否玩過，再決定顯示哪頁
+    // localStorage 只做後備（後端失敗時才用）
+    let played = false, started = false, mySeconds = null, startedAt = null
+    try {
+      const td = await fetch('/api/zip/today').then(r => r.json())
+      played  = !!td.played
+      started = !!td.started
+      mySeconds = td.mySeconds ?? null
+      startedAt = td.startedAt ?? null
+      if (played && mySeconds != null) {
+        const rec = getTodayRec()
+        if (!rec?.completed) markDailyComplete(mySeconds)
+      }
+    } catch(e) {
+      const rec = getTodayRec()
+      played  = !!rec?.completed
+      started = !!rec?.started
+    }
+
+    if (played) showAlreadyDone(mySeconds)
+    else if (started && startedAt) startPlaying(startedAt)  // 繼續未完成局
     else goPrestart()
     loadBoards()
     if (boardRefreshItv) clearInterval(boardRefreshItv)

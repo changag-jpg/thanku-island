@@ -176,7 +176,12 @@ async function initDB() {
       `ALTER TABLE gacha_items ADD COLUMN idle_sprite_url TEXT`,
       `ALTER TABLE gacha_items ADD COLUMN idle_sprite_frames INT DEFAULT 4`,
       `ALTER TABLE gacha_items ADD COLUMN is_unique TINYINT(1) DEFAULT 0`,
+      `ALTER TABLE zip_scores ADD COLUMN started_at BIGINT NULL DEFAULT NULL`,
+      `ALTER TABLE zip_scores ADD COLUMN completed TINYINT(1) NOT NULL DEFAULT 0`,
     ]) { try { await pool.query(sql); } catch(e) {} }
+
+    // 補標記：舊資料沒有 started_at，視為已完成
+    try { await pool.query(`UPDATE zip_scores SET completed = 1 WHERE started_at IS NULL AND completed = 0`); } catch(e) {}
 
     console.log('資料庫初始化完成');
   } catch (err) {
@@ -200,7 +205,7 @@ async function settleDailyZip(date) {
   const [ex] = await pool.query('SELECT 1 FROM zip_settlements WHERE type=? AND period=?', ['daily', date]);
   if (ex.length > 0) return;
   const [rows] = await pool.query(
-    'SELECT uid, display_name, seconds FROM zip_scores WHERE date=? ORDER BY seconds ASC LIMIT 3', [date]
+    'SELECT uid, display_name, seconds FROM zip_scores WHERE date=? AND completed=1 ORDER BY seconds ASC LIMIT 3', [date]
   );
   const ts = Date.now();
   const rankLabels = ['第 1 名', '第 2 名', '第 3 名'];
@@ -228,7 +233,7 @@ async function settleWeeklyZip(weekStart) {
   const [rows] = await pool.query(
     `SELECT uid, display_name,
        COUNT(*) as days_played, ROUND(AVG(seconds)) as avg_seconds, MIN(seconds) as best_seconds
-     FROM zip_scores WHERE date IN (?)
+     FROM zip_scores WHERE date IN (?) AND completed=1
      GROUP BY uid, display_name
      ORDER BY days_played DESC, avg_seconds ASC, best_seconds ASC LIMIT 3`,
     [dates]
@@ -1047,14 +1052,16 @@ app.get('/api/zip/today', async (req, res) => {
   const myUid = req.session.user?.employee_code;
   try {
     const [[rows], [myRows]] = await Promise.all([
-      pool.query('SELECT uid, display_name, avatar_url, seconds FROM zip_scores WHERE date=? ORDER BY seconds ASC LIMIT 10', [today]),
-      myUid ? pool.query('SELECT seconds FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, myUid]) : Promise.resolve([[]])
+      pool.query('SELECT uid, display_name, avatar_url, seconds FROM zip_scores WHERE date=? AND completed=1 ORDER BY seconds ASC LIMIT 10', [today]),
+      myUid ? pool.query('SELECT seconds, started_at, completed FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, myUid]) : Promise.resolve([[]])
     ]);
     const myRecord = myRows[0] || null;
     res.json({
       date: today,
-      played: !!myRecord,
-      mySeconds: myRecord?.seconds ?? null,
+      played: !!(myRecord?.completed),
+      started: !!(myRecord?.started_at),
+      startedAt: myRecord?.started_at ?? null,
+      mySeconds: myRecord?.completed ? (myRecord?.seconds ?? null) : null,
       board: rows.map((r, i) => ({
         rank: i + 1, uid: r.uid, name: r.display_name,
         avatar: r.avatar_url, seconds: r.seconds, isMe: r.uid === myUid
@@ -1063,18 +1070,38 @@ app.get('/api/zip/today', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/zip/start', requireLogin, async (req, res) => {
+  const uid = req.session.user.employee_code;
+  const today = getUTC8Date();
+  const now = Date.now();
+  try {
+    // Insert row if not exists; if exists, only fill started_at if it's still NULL (never overwrite)
+    await pool.query(
+      `INSERT INTO zip_scores (uid, display_name, avatar_url, date, seconds, played_at, started_at, completed)
+       VALUES (?, ?, ?, ?, 0, ?, ?, 0)
+       ON DUPLICATE KEY UPDATE started_at = COALESCE(started_at, VALUES(started_at))`,
+      [uid, req.session.user.name || '', req.session.user.avatar || '', today, now, now]
+    );
+    const [rows] = await pool.query('SELECT started_at FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
+    res.json({ startedAt: rows[0]?.started_at ?? now });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/zip/score', requireLogin, async (req, res) => {
   const uid = req.session.user.employee_code;
-  const { seconds } = req.body;
-  if (!seconds || seconds < 1) return res.status(400).json({ error: 'invalid seconds' });
   const today = getUTC8Date();
   try {
+    const [rows] = await pool.query('SELECT started_at, completed FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
+    const record = rows[0];
+    if (!record) return res.status(400).json({ error: 'game not started' });
+    if (record.completed) return res.status(400).json({ error: 'already completed' });
+    if (!record.started_at) return res.status(400).json({ error: 'no start time recorded' });
+    const seconds = Math.round((Date.now() - record.started_at) / 1000);
     await pool.query(
-      `INSERT INTO zip_scores (uid, display_name, avatar_url, date, seconds, played_at) VALUES (?,?,?,?,?,?)
-       ON DUPLICATE KEY UPDATE seconds = IF(seconds > VALUES(seconds), VALUES(seconds), seconds)`,
-      [uid, req.session.user.name || '', req.session.user.avatar || '', today, seconds, Date.now()]
+      `UPDATE zip_scores SET seconds=?, completed=1, played_at=? WHERE date=? AND uid=?`,
+      [seconds, Date.now(), today, uid]
     );
-    res.json({ success: true });
+    res.json({ success: true, seconds });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1089,7 +1116,7 @@ app.get('/api/zip/weekly', async (req, res) => {
     const [rows] = await pool.query(
       `SELECT uid, display_name, avatar_url,
          COUNT(*) as days_played, ROUND(AVG(seconds)) as avg_seconds, MIN(seconds) as best_seconds
-       FROM zip_scores WHERE date IN (?)
+       FROM zip_scores WHERE date IN (?) AND completed=1
        GROUP BY uid, display_name, avatar_url
        ORDER BY days_played DESC, avg_seconds ASC, best_seconds ASC LIMIT 10`,
       [dates]
