@@ -13,12 +13,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js"></script>
 
-    <!-- Google Fonts：Noto Sans TC 思源黑體 -->
+    <!-- Google Fonts：Noto Sans TC 思源黑體（後備字體） -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <!-- emfont：MuzaiPixel 像素標題字體 -->
-    <link rel="stylesheet" href="https://font.emtech.cc/css/MuzaiPixel/400">
-    <!-- emfont：jfOpenHuninn jf open 粉圓 全站內文字體 -->
-    <link rel="stylesheet" href="https://font.emtech.cc/css/jfOpenHuninn">
+    <!-- emfont：載入 JS 後用 class 方式套用字體 -->
+    <script src="https://font.emtech.cc/emfont.js"></script>
 
     <style>
 
@@ -2780,7 +2778,7 @@
         .zt-board-empty { font-size: 12px; color: var(--text-sub); text-align: center; padding: 14px 0; font-weight: 500; }
     </style>
 </head>
-<body>
+<body class="emfont-jfOpenHuninn">
 <div id="app" v-cloak class="app">
 
     <!-- 錯誤畫面 -->
@@ -2794,7 +2792,7 @@
     <div v-show="!fbUser && !fbLoading" class="login-screen">
         <div class="login-card">
             <div class="login-hero-sprite"></div>
-            <h1 class="login-title">感恩小島</h1>
+            <h1 class="login-title emfont-MuzaiPixel">感恩小島</h1>
             <p class="login-sub">ThankU Island</p>
             <p class="login-desc">登入後開始你的感恩旅程<br>與朋友分享每一份感謝 🌿</p>
             <div id="seatalk_login_app_info"
@@ -2817,7 +2815,7 @@
     <div v-if="fbLoading" class="login-screen">
         <div class="login-card">
             <div class="login-hero-sprite"></div>
-            <h1 class="login-title">感恩小島</h1>
+            <h1 class="login-title emfont-MuzaiPixel">感恩小島</h1>
             <p class="login-sub">ThankU Island</p>
             <p style="color:var(--text-sub);font-weight:700;margin-top:16px;font-size:14px;">載入中...</p>
         </div>
@@ -2888,7 +2886,7 @@
         <div class="sidebar-logo">
             <div class="sidebar-logo-mark">T</div>
             <div>
-                <div class="sidebar-logo-title">感恩小島</div>
+                <div class="sidebar-logo-title emfont-MuzaiPixel">感恩小島</div>
                 <div class="sidebar-logo-sub">ThankU Island</div>
             </div>
         </div>
@@ -2970,7 +2968,7 @@
     <div class="content-area">
         <!-- 頂部標題列 -->
         <div class="topbar">
-            <span class="topbar-title">
+            <span class="topbar-title emfont-MuzaiPixel">
                 {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 傳說兌換' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
             </span>
             <div v-if="currentTab === 'home'" class="topbar-actions">
@@ -7262,6 +7260,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (_mouseUpHandler) { document.removeEventListener('mouseup', _mouseUpHandler); _mouseUpHandler = null }
   }
 })()
+</script>
+
+<script>
+// emfont：掃描 DOM 載入所需字體子集
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.emfont) emfont.init();
+});
 </script>
 </body>
 </html>
