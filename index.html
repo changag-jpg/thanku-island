@@ -2639,11 +2639,12 @@
             --zt-border: #e5e5e5; --zt-border-b: #ccc; --zt-radius: 16px; --zt-bg: #f7f7f7;
             font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
             user-select: none; -webkit-user-select: none;
-            display: flex; flex-direction: column; align-items: center; width: 100%;
+            display: flex; flex-direction: column; align-items: stretch; width: 100%;
         }
-        .zt-wrap .page { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .zt-wrap .page { width: 100%; display: flex; flex-direction: column; align-items: stretch; }
         .zt-wrap .page.hidden { display: none; }
-        .zt-wrap .prestart-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 26px 24px; max-width: 400px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
+        .zt-wrap #zt-pagePlaying { align-items: center; }
+        .zt-wrap .prestart-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 26px 24px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
         .zt-wrap .ps-icon { font-size: 40px; line-height: 1; margin-bottom: 9px; }
         .zt-wrap .ps-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 17px; font-weight: 400; color: var(--zt-text); margin-bottom: 5px; letter-spacing: 0.03em; }
         .zt-wrap .ps-subtitle { font-size: 12px; font-weight: 600; color: var(--zt-muted); margin-bottom: 14px; line-height: 1.5; }
@@ -2658,7 +2659,7 @@
         .zt-wrap .btn-tutorial { width: 100%; background: #fff; border: 2px solid var(--duo-blue); border-radius: 11px; padding: 8px 13px; font-size: 12px; font-weight: 800; color: var(--duo-blue); cursor: pointer; margin-bottom: 9px; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; box-shadow: 0 3px 0 var(--duo-blue-dark); transition: transform 80ms,box-shadow 80ms; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .zt-wrap .btn-tutorial:hover { filter: brightness(0.97); }
         .zt-wrap .btn-tutorial:active { transform: translateY(3px); box-shadow: none; }
-        .zt-wrap .history-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 14px; max-width: 400px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); }
+        .zt-wrap .history-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 14px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); }
         .zt-wrap .history-title { font-size: 11px; font-weight: 800; color: var(--zt-muted); margin-bottom: 9px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
         .zt-wrap .history-row { display: flex; align-items: center; gap: 9px; padding: 7px 0; border-bottom: 2px solid var(--zt-border); font-size: 12px; }
         .zt-wrap .history-row:last-child { border-bottom: none; }
@@ -2696,7 +2697,7 @@
         .zt-wrap .btn-control:active { transform: translateY(4px); border-bottom-width: 0; }
         .zt-wrap .btn-control:disabled { opacity: 0.35; cursor: not-allowed; transform: none; border-bottom-width: 2px; }
         .zt-wrap .playing-hint { font-size: 11px; font-weight: 600; color: var(--zt-muted); text-align: center; }
-        .zt-wrap .result-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 28px 24px; max-width: 380px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
+        .zt-wrap .result-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 28px 24px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
         .zt-wrap .result-icon { font-size: 40px; line-height: 1; margin-bottom: 9px; }
         .zt-wrap .result-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 20px; font-weight: 400; color: var(--zt-text); margin-bottom: 4px; letter-spacing: 0.03em; }
         .zt-wrap .result-date { font-size: 11px; font-weight: 600; color: var(--zt-muted); margin-bottom: 14px; }
@@ -2704,7 +2705,7 @@
         .zt-wrap .result-time-label { font-size: 10px; font-weight: 700; color: var(--zt-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
         .zt-wrap .result-rank { font-size: 13px; font-weight: 700; color: var(--duo-green-dark); background: var(--duo-green-lit); border: 2px solid var(--duo-green); border-radius: 11px; padding: 8px 14px; display: inline-block; margin-bottom: 12px; }
         .zt-wrap .result-tomorrow { font-size: 12px; font-weight: 600; color: var(--zt-muted); background: var(--zt-bg); border-radius: 11px; padding: 8px 13px; border: 2px solid var(--zt-border); }
-        .zt-wrap .tut-wrap { max-width: 400px; width: 100%; display: flex; flex-direction: column; gap: 11px; }
+        .zt-wrap .tut-wrap { width: 100%; display: flex; flex-direction: column; gap: 11px; }
         .zt-wrap .tut-header { text-align: center; padding: 5px 0 2px; }
         .zt-wrap .tut-back { float: left; font-size: 11px; padding: 5px 11px; margin-bottom: 5px; }
         .zt-wrap .tut-icon { font-size: 34px; line-height: 1; margin-bottom: 5px; }
@@ -3854,8 +3855,8 @@
                                     <div class="continue-warning hidden" id="zt-continueWarning">
                                         ⚠️ 你今天已開始修剪但尚未完成，繼續挑戰！（計時重新開始）
                                     </div>
-                                    <button class="btn-tutorial" id="zt-btnTutorial">📖 觀看教學</button>
-                                    <button class="btn-start" id="zt-btnStart">🚜 拿起割草機，開始！</button>
+                                    <button class="btn-tutorial" onclick="window.__zt?.showTutorial()">📖 觀看教學</button>
+                                    <button class="btn-start" onclick="window.__zt?.startPlaying()">🚜 拿起割草機，開始！</button>
                                 </div>
                                 <div class="history-card">
                                     <div class="history-title">📋 我的歷史紀錄</div>
@@ -3867,7 +3868,7 @@
                             <div class="page hidden" id="zt-pageTutorial">
                             <div class="tut-wrap">
                                 <div class="tut-header">
-                                    <button class="btn-control tut-back" id="zt-btnTutBack">← 返回</button>
+                                    <button class="btn-control tut-back" onclick="window.__zt?.goPrestart()">← 返回</button>
                                     <div style="clear:both;"></div>
                                     <div class="tut-icon">🌿</div>
                                     <div class="tut-title">如何玩？</div>
@@ -3924,7 +3925,7 @@
                                         <div class="tut-step"><div class="tut-step-badge green">✓</div><div class="tut-step-text">確保終點的鄰格留在最後，別讓自己困住</div></div>
                                     </div>
                                 </div>
-                                <button class="btn-tut-done" id="zt-btnTutDone">✅ 我學會了，開始挑戰！</button>
+                                <button class="btn-tut-done" onclick="window.__zt?.goPrestart()">✅ 我學會了，開始挑戰！</button>
                             </div>
                             </div>
 
@@ -3940,8 +3941,8 @@
                                     <canvas class="path-canvas" id="zt-pathCanvas"></canvas>
                                 </div>
                                 <div class="playing-controls">
-                                    <button class="btn-control" id="zt-btnUndo" disabled>↩ 復原</button>
-                                    <button class="btn-control" id="zt-btnReset">↺ 重置路線</button>
+                                    <button class="btn-control" id="zt-btnUndo" onclick="window.__zt?.undo()" disabled>↩ 復原</button>
+                                    <button class="btn-control" onclick="window.__zt?.resetPath()">↺ 重置路線</button>
                                 </div>
                                 <div class="playing-hint" id="zt-playHint">從標記 1 開始，填滿所有格子後才能進入藍色終點</div>
                             </div>
@@ -3975,7 +3976,7 @@
                         <div class="zt-board-section">
                             <div class="zt-board-section-title">
                                 今日榜 · 用時最短
-                                <button class="zt-board-refresh" id="zt-refreshBtn">↻ 更新</button>
+                                <button class="zt-board-refresh" onclick="window.__zt?.loadBoards()">↻ 更新</button>
                             </div>
                             <div id="zt-todayBoard"><div class="zt-board-empty">載入中...</div></div>
                         </div>
@@ -6886,7 +6887,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <script>
 // ══════════════════════════════════════════════════════════
-// 每日任務遊戲邏輯（封裝於 IIFE，透過 window.initZipGame / destroyZipGame 呼叫）
+// 每日任務遊戲邏輯（IIFE；按鈕透過 window.__zt 直接呼叫）
 // ══════════════════════════════════════════════════════════
 ;(function() {
   const DIFF_CFG = {
@@ -7208,34 +7209,32 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function shuffleArr(arr) { for (let i=arr.length-1;i>0;i--) { const j=Math.floor(rng()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]] } }
 
-  // ── wire up (run once after DOM ready) ──
-  let _wired = false
-  function wireButtons() {
-    if (_wired) return; _wired = true
-    ztEl('btnStart')   ?.addEventListener('click', startPlaying)
-    ztEl('btnTutorial')?.addEventListener('click', () => ztShowPage('pageTutorial'))
-    ztEl('btnTutBack') ?.addEventListener('click', goPrestart)
-    ztEl('btnTutDone') ?.addEventListener('click', goPrestart)
-    ztEl('btnUndo')    ?.addEventListener('click', () => { if(path.length===0)return; const last=path.pop(); pathSet.delete(key(last.row,last.col)); renderPath(); syncUI() })
-    ztEl('btnReset')   ?.addEventListener('click', resetPath)
-    ztEl('refreshBtn') ?.addEventListener('click', loadBoards)
+  // ── 按鈕直接用 window.__zt 呼叫，不依賴 addEventListener 時序 ──
+  window.__zt = {
+    startPlaying,
+    goPrestart,
+    showTutorial: () => ztShowPage('pageTutorial'),
+    undo: () => { if(path.length===0)return; const last=path.pop(); pathSet.delete(key(last.row,last.col)); renderPath(); syncUI() },
+    resetPath,
+    loadBoards
+  }
 
+  // ── public API ──
+  window.initZipGame = function() {
+    if (!ztEl('wrap')) return
+    try { const u = document.querySelector('.sidebar-user-name'); if (u) window.__zipPlayerName = u.textContent.trim() } catch(e){}
+
+    // 觸控事件綁到 gridOuter（每次 tab 開啟重新綁定）
     const gridOuter = ztEl('gridOuter')
     if (gridOuter) {
       gridOuter.addEventListener('touchstart', e => { e.preventDefault(); isDrawing=true; const t=e.touches[0]; const c=cellAt(t.clientX,t.clientY); if(!c)return; if(path.length>0&&getNum(c.row,c.col)===1){resetPath();return}; tryMove(c.row,c.col) }, {passive:false})
       gridOuter.addEventListener('touchmove',  e => { e.preventDefault(); if(!isDrawing)return; const t=e.touches[0]; const c=cellAt(t.clientX,t.clientY); if(c)tryMove(c.row,c.col) }, {passive:false})
       gridOuter.addEventListener('touchend',   () => { isDrawing=false })
     }
+    if (_mouseUpHandler) document.removeEventListener('mouseup', _mouseUpHandler)
     _mouseUpHandler = () => { isDrawing = false }
     document.addEventListener('mouseup', _mouseUpHandler)
-  }
 
-  // ── public API ──
-  window.initZipGame = function() {
-    if (!ztEl('wrap')) return   // tab not yet in DOM
-    // sync player name from Vue state
-    try { const u = document.querySelector('.sidebar-user-name'); if (u) window.__zipPlayerName = u.textContent.trim() } catch(e){}
-    wireButtons()
     const rec = getTodayRec()
     if (rec && rec.completed) showAlreadyDone()
     else goPrestart()
