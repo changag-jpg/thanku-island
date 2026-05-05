@@ -1089,15 +1089,21 @@ app.post('/api/zip/start', requireLogin, async (req, res) => {
   const today = getUTC8Date();
   const now = Date.now();
   try {
-    // Insert row if not exists; if exists, only fill started_at if it's still NULL (never overwrite)
-    await pool.query(
-      `INSERT INTO zip_scores (uid, display_name, avatar_url, date, seconds, played_at, started_at, completed)
-       VALUES (?, ?, ?, ?, 0, ?, ?, 0)
-       ON DUPLICATE KEY UPDATE started_at = COALESCE(started_at, VALUES(started_at))`,
-      [uid, req.session.user.name || '', req.session.user.avatar || '', today, now, now]
-    );
-    const [rows] = await pool.query('SELECT started_at FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
-    res.json({ startedAt: rows[0]?.started_at ?? now });
+    const [existing] = await pool.query('SELECT started_at, completed FROM zip_scores WHERE date=? AND uid=? LIMIT 1', [today, uid]);
+    if (existing.length === 0) {
+      await pool.query(
+        `INSERT INTO zip_scores (uid, display_name, avatar_url, date, seconds, played_at, started_at, completed) VALUES (?,?,?,?,0,?,?,0)`,
+        [uid, req.session.user.name || '', req.session.user.avatar || '', today, now, now]
+      );
+      res.json({ startedAt: now });
+    } else if (existing[0].started_at) {
+      // 已有 started_at，不覆蓋（防作弊關鍵）
+      res.json({ startedAt: existing[0].started_at });
+    } else {
+      // 有記錄但 started_at 為空，補填
+      await pool.query('UPDATE zip_scores SET started_at=? WHERE date=? AND uid=?', [now, today, uid]);
+      res.json({ startedAt: now });
+    }
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1110,7 +1116,10 @@ app.post('/api/zip/score', requireLogin, async (req, res) => {
     if (!record) return res.status(400).json({ error: 'game not started' });
     if (record.completed) return res.status(400).json({ error: 'already completed' });
     if (!record.started_at) return res.status(400).json({ error: 'no start time recorded' });
-    const seconds = Math.round((Date.now() - record.started_at) / 1000);
+    // 接受前端送來的實際遊玩秒數，但不能超過牆鐘時間（防止偽造低秒數）
+    const { seconds: clientSeconds } = req.body;
+    const maxSeconds = Math.round((Date.now() - record.started_at) / 1000);
+    const seconds = (clientSeconds > 0 && clientSeconds <= maxSeconds) ? clientSeconds : maxSeconds;
     await pool.query(
       `UPDATE zip_scores SET seconds=?, completed=1, played_at=? WHERE date=? AND uid=?`,
       [seconds, Date.now(), today, uid]

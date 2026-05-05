@@ -7034,10 +7034,14 @@ window.addEventListener('DOMContentLoaded', () => {
     for (const cell of path) { const n=getNum(cell.row,cell.col); if (n!==null) { if (n!==last+1) return; last=n } }
     if (last < numbers.length) return
     solved = true; stopTimer(); animateSolve()
+    const localSecs = seconds  // 先存起來，setTimeout 後不會變
     setTimeout(async () => {
-      let finalSecs = seconds
+      let finalSecs = localSecs
       try {
-        const res = await fetch('/api/zip/score', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+        const res = await fetch('/api/zip/score', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ seconds: localSecs })
+        })
         const data = await res.json()
         if (data.success && data.seconds) finalSecs = data.seconds
       } catch(e) {}
@@ -7175,7 +7179,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   async function startPlaying(resumeStartedAt) {
-    // Lock started_at in DB on first click; COALESCE ensures it's never overwritten
     if (!resumeStartedAt) {
       try {
         const res = await fetch('/api/zip/start', { method:'POST', headers:{'Content-Type':'application/json'} })
@@ -7184,11 +7187,11 @@ window.addEventListener('DOMContentLoaded', () => {
       } catch(e) {}
     }
     serverStartedAt = resumeStartedAt || Date.now()
-    const initialSecs = Math.floor((Date.now() - serverStartedAt) / 1000)
+    // 計時器永遠從 0 開始 — 只計算實際在遊戲畫面的時間，不算離開的時間
     buildPuzzle(); markDailyStart()
     path = []; pathSet = new Set(); solved = false
     renderGrid(); renderPath(); syncUI()
-    ztShowPage('pagePlaying'); startTimer(initialSecs)
+    ztShowPage('pagePlaying'); startTimer(0)
   }
 
   function showResult(time) {
@@ -7272,6 +7275,21 @@ window.addEventListener('DOMContentLoaded', () => {
       started = !!td.started
       mySeconds = td.mySeconds ?? null
       startedAt = td.startedAt ?? null
+      // 後端說未完成，但 localStorage 有今日完成紀錄 → 補送並顯示完成畫面
+      if (!played) {
+        const rec = getTodayRec()
+        if (rec?.completed) {
+          played = true
+          if (mySeconds == null) mySeconds = rec.time ?? null
+          // 嘗試補送（後端若有 started_at 就能接受）
+          if (startedAt) {
+            fetch('/api/zip/score', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ seconds: rec.time })
+            }).catch(()=>{})
+          }
+        }
+      }
       if (played && mySeconds != null) {
         const rec = getTodayRec()
         if (!rec?.completed) markDailyComplete(mySeconds)
