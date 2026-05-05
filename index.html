@@ -3839,7 +3839,7 @@
                         <div class="zt-wrap" id="zt-wrap">
 
                             <!-- PRE-START -->
-                            <div class="page" id="zt-pagePrestart">
+                            <div class="page hidden" id="zt-pagePrestart">
                                 <div class="prestart-card">
                                     <div class="ps-icon">🌿</div>
                                     <div class="ps-title">【每日任務 — 草皮修剪大賽】</div>
@@ -7182,6 +7182,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   async function startPlaying(resumeStartedAt) {
+    // 已完成今日遊戲 → 直接跳結果頁，不可重新開始
+    const todayRec = getTodayRec()
+    if (todayRec?.completed) { showAlreadyDone(todayRec.time); return }
     if (!resumeStartedAt) {
       try {
         const res = await fetch('/api/zip/start', { method:'POST', headers:{'Content-Type':'application/json'} })
