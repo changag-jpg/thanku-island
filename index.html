@@ -13,10 +13,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js"></script>
 
-    <!-- Google Fonts：Noto Sans TC 思源黑體（後備字體） -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <!-- emfont：載入 JS 後用 class 方式套用字體 -->
-    <script src="https://font.emtech.cc/emfont.js"></script>
+    <!-- jf open 粉圓 全站字體 -->
+    <link rel="stylesheet" href="https://font.emtech.cc/css/jfOpenHuninn/400">
 
     <style>
 
@@ -66,7 +64,7 @@
                 linear-gradient(135deg, #fbfaf6 0%, #f1f5f1 55%, #eef4f5 100%);
             min-height: 100vh; min-width: 320px;
             overflow-x: auto; overflow-y: auto;
-            font-family: "jfOpenHuninn", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             color: var(--text);
             -webkit-tap-highlight-color: transparent;
         }
@@ -111,7 +109,7 @@
         }
         .sidebar-logo-title {
             font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.2;
-            font-family: 'MuzaiPixel', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
         }
         .sidebar-logo-sub {
             font-size: 10px; color: var(--muted);
@@ -218,7 +216,7 @@
             width: 100%; padding: 13px; border-radius: var(--radius-pill);
             border: none; background: var(--accent); color: #fff;
             font-size: 14px; font-weight: 800; cursor: pointer;
-            transition: all 0.15s; font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif;
+            transition: all 0.15s; font-family: 'jfOpenHuninn', sans-serif;
             box-shadow: 0 4px 14px rgba(232,168,124,0.4); margin-top: 16px;
         }
         .feedback-submit-btn:hover { background: #D4784A; transform: translateY(-1px); }
@@ -363,7 +361,7 @@
         }
         .topbar-title {
             font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em;
-            font-family: 'MuzaiPixel', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
         }
         .topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .topbar-btn {
@@ -799,7 +797,7 @@
         .login-title {
             font-size: 32px; font-weight: 900; color: var(--primary);
             margin: 0 0 4px; letter-spacing: 0;
-            font-family: 'MuzaiPixel', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
         }
         .login-sub {
             font-size: 11px; color: var(--accent); font-weight: 900;
@@ -1049,7 +1047,7 @@
             border: 2px solid #9B8BE0; background: #F0EAF8;
             font-size: 14px; font-weight: 800; color: #6A5ACD;
             cursor: pointer; transition: all 0.18s; white-space: nowrap;
-            font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
         }
         .anon-btn:hover:not(:disabled) { background: #6A5ACD; color: #fff; border-color: #6A5ACD; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(106,90,205,0.35); }
         .anon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -1081,7 +1079,7 @@
             border: 1.5px solid var(--border); background: var(--surface);
             font-size: 12px; font-weight: 700; color: var(--text-sub);
             cursor: pointer; transition: all 0.15s; white-space: nowrap;
-            font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
         }
         .tf-btn:hover { border-color: var(--primary); color: var(--primary-h); background: var(--primary-lt); }
         .tf-btn.on { background: var(--primary); color: #fff; border-color: var(--primary-h); }
@@ -1191,7 +1189,7 @@
             width: 100%; padding: 10px 40px 10px 40px;
             border: 2px solid var(--border); border-radius: var(--radius-pill);
             background: var(--surface); font-size: 14px; color: var(--text);
-            font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif; font-weight: 500;
+            font-family: 'jfOpenHuninn', sans-serif; font-weight: 500;
             transition: border-color 0.15s; outline: none;
         }
         .sea-search-input:focus { border-color: var(--primary); }
@@ -1253,7 +1251,7 @@
             background: var(--primary); color: #fff; border: none;
             font-size: 13px; font-weight: 800; cursor: pointer;
             transition: all 0.15s; white-space: nowrap;
-            font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
         }
         .visit-banner-home:hover { background: var(--primary-h); transform: scale(1.04); }
 
@@ -1649,14 +1647,14 @@
             flex: 1; padding: 12px; border-radius: var(--radius-pill);
             border: 2px solid var(--border); background: var(--surface);
             font-size: 14px; font-weight: 700; color: var(--text-sub);
-            cursor: pointer; transition: all 0.15s; font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif;
+            cursor: pointer; transition: all 0.15s; font-family: 'jfOpenHuninn', sans-serif;
         }
         .send-confirm-cancel:hover { border-color: var(--text-sub); color: var(--text); }
         .send-confirm-ok {
             flex: 2; padding: 12px; border-radius: var(--radius-pill);
             border: none; background: var(--primary);
             font-size: 14px; font-weight: 800; color: #fff;
-            cursor: pointer; transition: all 0.15s; font-family: 'jfOpenHuninn', 'Noto Sans TC', sans-serif;
+            cursor: pointer; transition: all 0.15s; font-family: 'jfOpenHuninn', sans-serif;
             box-shadow: 0 4px 14px rgba(123,174,138,0.4);
         }
         .send-confirm-ok:hover { background: var(--primary-h); transform: translateY(-1px); }
@@ -2000,7 +1998,6 @@
     </style>
 
     <style id="duolingo-island-style">
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@500;700;800;900&display=swap');
 
         :root {
             --bg: #ffffff;
@@ -2049,7 +2046,7 @@
         input,
         textarea,
         select {
-            font-family: "jfOpenHuninn", "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             letter-spacing: .03em;
             font-weight: 500;
         }
@@ -2081,13 +2078,13 @@
             border-radius: 12px;
             background: var(--primary);
             box-shadow: var(--duo-button-shadow);
-            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-size: 25px;
             line-height: 1;
         }
 
         .sidebar-logo-title {
-            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-size: 21px;
             font-weight: 800;
             color: var(--primary);
@@ -2189,7 +2186,7 @@
         }
 
         .sidebar-user-name {
-            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-size: 20px;
             color: var(--text);
             letter-spacing: 0;
@@ -2223,7 +2220,7 @@
         }
 
         .topbar-title {
-            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             color: var(--primary);
             font-size: 30px;
             font-weight: 800;
@@ -2439,7 +2436,7 @@
         .feedback-modal-title,
         .avatar-modal-title,
         .letter-modal-from {
-            font-family: "Baloo 2", "Nunito", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             color: var(--primary);
             letter-spacing: 0;
         }
@@ -2487,13 +2484,13 @@
         body.duolingo-preview input,
         body.duolingo-preview textarea,
         body.duolingo-preview select {
-            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-optical-sizing: auto;
         }
 
         body.duolingo-preview .sidebar-logo-title,
         body.duolingo-preview .topbar-title {
-            font-family: "Noto Sans TC", "Baloo 2", "Nunito", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-weight: 900;
         }
 
@@ -2509,7 +2506,7 @@
         body.duolingo-preview .reward-claim-name,
         body.duolingo-preview .gacha-partner-name,
         body.duolingo-preview .login-title {
-            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-weight: 800;
             letter-spacing: 0;
         }
@@ -2521,7 +2518,7 @@
         body.duolingo-preview .sea-name,
         body.duolingo-preview .shop-item-name,
         body.duolingo-preview .pool-item-name {
-            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-weight: 700;
             letter-spacing: 0;
         }
@@ -2547,7 +2544,7 @@
         body.duolingo-preview .imb-btn,
         body.duolingo-preview .imb-sz,
         body.duolingo-preview .imb-act {
-            font-family: "Noto Sans TC", "Nunito", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             font-weight: 800;
             letter-spacing: .02em;
         }
@@ -2642,7 +2639,7 @@
             --marker: #ff9600; --marker-done: #3f8f01; --marker-next: #ff4b4b;
             --zt-surface: #ffffff; --zt-text: #4b4b4b; --zt-muted: #afafaf;
             --zt-border: #e5e5e5; --zt-border-b: #ccc; --zt-radius: 16px; --zt-bg: #f7f7f7;
-            font-family: 'Nunito Sans', 'Noto Sans TC', sans-serif;
+            font-family: 'jfOpenHuninn', sans-serif;
             user-select: none; -webkit-user-select: none;
             display: flex; flex-direction: column; align-items: stretch; width: 100%;
         }
@@ -2651,17 +2648,17 @@
         .zt-wrap #zt-pagePlaying { align-items: center; }
         .zt-wrap .prestart-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 26px 24px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
         .zt-wrap .ps-icon { font-size: 40px; line-height: 1; margin-bottom: 9px; }
-        .zt-wrap .ps-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 17px; font-weight: 400; color: var(--zt-text); margin-bottom: 5px; letter-spacing: 0.03em; }
+        .zt-wrap .ps-title { font-family: 'jfOpenHuninn', sans-serif; font-size: 17px; font-weight: 400; color: var(--zt-text); margin-bottom: 5px; letter-spacing: 0.03em; }
         .zt-wrap .ps-subtitle { font-size: 12px; font-weight: 600; color: var(--zt-muted); margin-bottom: 14px; line-height: 1.5; }
         .zt-wrap .ps-date-row { display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 12px; font-weight: 700; color: var(--zt-text); background: var(--zt-bg); border-radius: 11px; padding: 7px 13px; margin-bottom: 12px; border: 2px solid var(--zt-border); }
         .zt-wrap .ps-diff-badge { font-size: 10px; font-weight: 700; background: var(--duo-green); color: white; border-radius: 999px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.06em; }
         .zt-wrap .ps-rules { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
         .zt-wrap .ps-rule { font-size: 12px; font-weight: 600; color: var(--zt-text); display: flex; align-items: center; gap: 8px; text-align: left; background: var(--zt-bg); border-radius: 10px; padding: 7px 11px; border: 2px solid var(--zt-border); }
         .zt-wrap .continue-warning { background: #fff9e6; border: 2px solid var(--duo-gold); border-radius: 10px; padding: 7px 11px; font-size: 11px; font-weight: 600; color: #7a5500; margin-bottom: 12px; text-align: left; }
-        .zt-wrap .btn-start { width: 100%; border: 2px solid var(--duo-green-dark); border-radius: 12px; padding: 11px 14px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; background: var(--duo-green); color: white; box-shadow: 0 4px 0 var(--duo-green-dark); transition: transform 80ms,box-shadow 80ms,filter 80ms; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.04em; }
+        .zt-wrap .btn-start { width: 100%; border: 2px solid var(--duo-green-dark); border-radius: 12px; padding: 11px 14px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: 'jfOpenHuninn', sans-serif; background: var(--duo-green); color: white; box-shadow: 0 4px 0 var(--duo-green-dark); transition: transform 80ms,box-shadow 80ms,filter 80ms; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.04em; }
         .zt-wrap .btn-start:hover { filter: brightness(1.06); }
         .zt-wrap .btn-start:active { transform: translateY(4px); box-shadow: none; }
-        .zt-wrap .btn-tutorial { width: 100%; background: #fff; border: 2px solid var(--duo-blue); border-radius: 11px; padding: 8px 13px; font-size: 12px; font-weight: 800; color: var(--duo-blue); cursor: pointer; margin-bottom: 9px; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; box-shadow: 0 3px 0 var(--duo-blue-dark); transition: transform 80ms,box-shadow 80ms; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .zt-wrap .btn-tutorial { width: 100%; background: #fff; border: 2px solid var(--duo-blue); border-radius: 11px; padding: 8px 13px; font-size: 12px; font-weight: 800; color: var(--duo-blue); cursor: pointer; margin-bottom: 9px; font-family: 'jfOpenHuninn', sans-serif; box-shadow: 0 3px 0 var(--duo-blue-dark); transition: transform 80ms,box-shadow 80ms; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .zt-wrap .btn-tutorial:hover { filter: brightness(0.97); }
         .zt-wrap .btn-tutorial:active { transform: translateY(3px); box-shadow: none; }
         .zt-wrap .history-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 14px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); }
@@ -2688,7 +2685,7 @@
         .zt-wrap .cell.path-head::after { display: none; }
         @keyframes zt-mow-flash { 0% { filter: brightness(1.3); } 100% { filter: brightness(1); } }
         .zt-wrap .cell.mow-anim { animation: zt-mow-flash 0.5s ease-out forwards; }
-        .zt-wrap .cell-num { width: 26px; height: 26px; border-radius: 50%; background: var(--marker); color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; border: 2px solid rgba(0,0,0,0.15); box-shadow: 0 3px 0 rgba(0,0,0,0.25); pointer-events: none; transition: all 120ms; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; }
+        .zt-wrap .cell-num { width: 26px; height: 26px; border-radius: 50%; background: var(--marker); color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; border: 2px solid rgba(0,0,0,0.15); box-shadow: 0 3px 0 rgba(0,0,0,0.25); pointer-events: none; transition: all 120ms; font-family: 'jfOpenHuninn', sans-serif; }
         .zt-wrap .cell-num.visited { background: var(--marker-done); transform: scale(0.8); box-shadow: none; opacity: 0.75; }
         .zt-wrap .cell-num.next-target { background: var(--marker-next); animation: zt-pulse-marker 0.8s ease-in-out infinite; }
         .zt-wrap .cell-num.endpoint { background: var(--duo-blue); box-shadow: 0 3px 0 var(--duo-blue-dark); }
@@ -2697,16 +2694,16 @@
         @keyframes zt-pulse-endpoint { 0%,100%{transform:scale(1);box-shadow:0 3px 0 var(--duo-blue-dark),0 0 0 0 rgba(28,176,246,0.4);}50%{transform:scale(1.18);box-shadow:0 5px 0 var(--duo-blue-dark),0 0 0 6px rgba(28,176,246,0);} }
         @keyframes zt-pulse-marker { 0%,100%{transform:scale(1);box-shadow:0 3px 0 rgba(0,0,0,0.2),0 0 0 0 rgba(255,75,75,0.4);}50%{transform:scale(1.18);box-shadow:0 5px 0 rgba(0,0,0,0.15),0 0 0 6px rgba(255,75,75,0);} }
         .zt-wrap .playing-controls { display: flex; gap: 9px; margin-bottom: 9px; }
-        .zt-wrap .btn-control { border: 2px solid var(--zt-border); border-bottom: 4px solid var(--zt-border-b); background: var(--zt-surface); border-radius: 10px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Nunito Sans','Noto Sans TC',sans-serif; color: var(--zt-text); transition: transform 80ms; }
+        .zt-wrap .btn-control { border: 2px solid var(--zt-border); border-bottom: 4px solid var(--zt-border-b); background: var(--zt-surface); border-radius: 10px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'jfOpenHuninn', sans-serif; color: var(--zt-text); transition: transform 80ms; }
         .zt-wrap .btn-control:hover { filter: brightness(0.97); }
         .zt-wrap .btn-control:active { transform: translateY(4px); border-bottom-width: 0; }
         .zt-wrap .btn-control:disabled { opacity: 0.35; cursor: not-allowed; transform: none; border-bottom-width: 2px; }
         .zt-wrap .playing-hint { font-size: 11px; font-weight: 600; color: var(--zt-muted); text-align: center; }
         .zt-wrap .result-card { background: var(--zt-surface); border-radius: var(--zt-radius); padding: 28px 24px; width: 100%; border: 2px solid var(--zt-border); box-shadow: 0 4px 0 var(--zt-border); text-align: center; margin-bottom: 14px; }
         .zt-wrap .result-icon { font-size: 40px; line-height: 1; margin-bottom: 9px; }
-        .zt-wrap .result-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 20px; font-weight: 400; color: var(--zt-text); margin-bottom: 4px; letter-spacing: 0.03em; }
+        .zt-wrap .result-title { font-family: 'jfOpenHuninn', sans-serif; font-size: 20px; font-weight: 400; color: var(--zt-text); margin-bottom: 4px; letter-spacing: 0.03em; }
         .zt-wrap .result-date { font-size: 11px; font-weight: 600; color: var(--zt-muted); margin-bottom: 14px; }
-        .zt-wrap .result-time { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 48px; font-weight: 400; color: var(--duo-blue); font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 4px; }
+        .zt-wrap .result-time { font-family: 'jfOpenHuninn', sans-serif; font-size: 48px; font-weight: 400; color: var(--duo-blue); font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 4px; }
         .zt-wrap .result-time-label { font-size: 10px; font-weight: 700; color: var(--zt-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
         .zt-wrap .result-rank { font-size: 13px; font-weight: 700; color: var(--duo-green-dark); background: var(--duo-green-lit); border: 2px solid var(--duo-green); border-radius: 11px; padding: 8px 14px; display: inline-block; margin-bottom: 12px; }
         .zt-wrap .result-tomorrow { font-size: 12px; font-weight: 600; color: var(--zt-muted); background: var(--zt-bg); border-radius: 11px; padding: 8px 13px; border: 2px solid var(--zt-border); }
@@ -2714,7 +2711,7 @@
         .zt-wrap .tut-header { text-align: center; padding: 5px 0 2px; }
         .zt-wrap .tut-back { float: left; font-size: 11px; padding: 5px 11px; margin-bottom: 5px; }
         .zt-wrap .tut-icon { font-size: 34px; line-height: 1; margin-bottom: 5px; }
-        .zt-wrap .tut-title { font-family: 'Fredoka One','Noto Sans TC',cursive; font-size: 20px; color: var(--zt-text); letter-spacing: 0.03em; }
+        .zt-wrap .tut-title { font-family: 'jfOpenHuninn', sans-serif; font-size: 20px; color: var(--zt-text); letter-spacing: 0.03em; }
         .zt-wrap .tut-subtitle { font-size: 10px; font-weight: 700; color: var(--zt-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
         .zt-wrap .tut-card { background: var(--zt-surface); border: 2px solid var(--zt-border); border-radius: var(--zt-radius); padding: 14px; box-shadow: 0 4px 0 var(--zt-border); }
         .zt-wrap .tut-card-important { border-color: var(--duo-blue); box-shadow: 0 4px 0 var(--duo-blue-dark); }
@@ -2759,7 +2756,7 @@
         .zt-wrap .diff-nums { display:flex;flex-wrap:wrap;gap:3px; }
         .zt-wrap .diff-dot { width:15px;height:15px;border-radius:50%;background:var(--marker);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:white; }
         .zt-wrap .diff-dot.ep { background:var(--duo-blue); }
-        .zt-wrap .btn-tut-done { width:100%;border:2px solid var(--duo-green-dark);border-radius:11px;padding:11px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito Sans','Noto Sans TC',sans-serif;background:var(--duo-green);color:white;box-shadow:0 4px 0 var(--duo-green-dark);transition:transform 80ms,box-shadow 80ms;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px; }
+        .zt-wrap .btn-tut-done { width:100%;border:2px solid var(--duo-green-dark);border-radius:11px;padding:11px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:'jfOpenHuninn',sans-serif;background:var(--duo-green);color:white;box-shadow:0 4px 0 var(--duo-green-dark);transition:transform 80ms,box-shadow 80ms;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px; }
         .zt-wrap .btn-tut-done:hover { filter:brightness(1.06); }
         .zt-wrap .btn-tut-done:active { transform:translateY(4px);box-shadow:none; }
         /* 排行榜面板 */
@@ -2778,7 +2775,7 @@
         .zt-board-empty { font-size: 12px; color: var(--text-sub); text-align: center; padding: 14px 0; font-weight: 500; }
     </style>
 </head>
-<body class="emfont-jfOpenHuninn">
+<body>
 <div id="app" v-cloak class="app">
 
     <!-- 錯誤畫面 -->
@@ -2792,7 +2789,7 @@
     <div v-show="!fbUser && !fbLoading" class="login-screen">
         <div class="login-card">
             <div class="login-hero-sprite"></div>
-            <h1 class="login-title emfont-MuzaiPixel">感恩小島</h1>
+            <h1 class="login-title">感恩小島</h1>
             <p class="login-sub">ThankU Island</p>
             <p class="login-desc">登入後開始你的感恩旅程<br>與朋友分享每一份感謝 🌿</p>
             <div id="seatalk_login_app_info"
@@ -2815,7 +2812,7 @@
     <div v-if="fbLoading" class="login-screen">
         <div class="login-card">
             <div class="login-hero-sprite"></div>
-            <h1 class="login-title emfont-MuzaiPixel">感恩小島</h1>
+            <h1 class="login-title">感恩小島</h1>
             <p class="login-sub">ThankU Island</p>
             <p style="color:var(--text-sub);font-weight:700;margin-top:16px;font-size:14px;">載入中...</p>
         </div>
@@ -2886,7 +2883,7 @@
         <div class="sidebar-logo">
             <div class="sidebar-logo-mark">T</div>
             <div>
-                <div class="sidebar-logo-title emfont-MuzaiPixel">感恩小島</div>
+                <div class="sidebar-logo-title">感恩小島</div>
                 <div class="sidebar-logo-sub">ThankU Island</div>
             </div>
         </div>
@@ -2968,7 +2965,7 @@
     <div class="content-area">
         <!-- 頂部標題列 -->
         <div class="topbar">
-            <span class="topbar-title emfont-MuzaiPixel">
+            <span class="topbar-title">
                 {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 傳說兌換' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
             </span>
             <div v-if="currentTab === 'home'" class="topbar-actions">
@@ -6363,9 +6360,6 @@ createApp({
                 console.error('/api/me 失敗：', e);
             } finally {
                 fbLoading.value = false;
-                // Vue 渲染完成後才掃描 DOM，確保 emfont-MuzaiPixel 等 class 已存在
-                await nextTick();
-                if (window.emfont) emfont.init();
             }
         });
         onUnmounted(() => {
