@@ -4,14 +4,17 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const axios = require('axios');
 const mysql = require('mysql2/promise');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 9337;
+app.set('trust proxy', 1);
 
 // SeaTalk 設定
-const SEATALK_APP_ID = 'MDIxMjA0MDE0MTg3';
+const SEATALK_APP_ID = process.env.SEATALK_APP_ID || 'MDIxMjA0MDE0MTg3';
 const SEATALK_APP_SECRET = process.env.SEATALK_APP_SECRET;
-const REDIRECT_URI = 'https://thankuisland.run.ingarena.net/auth/seatalk/callback';
+const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || process.env.APP_BASE_URL || '';
+const SEATALK_REDIRECT_URI = process.env.SEATALK_REDIRECT_URI || '';
 
 // MySQL 連線池
 const pool = mysql.createPool({
@@ -293,7 +296,12 @@ app.use(session({
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 }  // 30 天
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.SESSION_COOKIE_SECURE === 'true',
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  }  // 30 天
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -327,8 +335,30 @@ async function requireAdmin(req, res, next) {
 }
 
 // ===== SeaTalk OAuth =====
+function trimTrailingSlash(value) {
+  return String(value || '').replace(/\/+$/, '');
+}
+
+function getRequestOrigin(req) {
+  const forwardedProto = (req.get('x-forwarded-proto') || '').split(',')[0].trim();
+  const forwardedHost = (req.get('x-forwarded-host') || '').split(',')[0].trim();
+  const proto = forwardedProto || req.protocol || (req.secure ? 'https' : 'http');
+  const host = forwardedHost || req.get('host');
+  if (host) return `${proto}://${host}`;
+  return trimTrailingSlash(PUBLIC_BASE_URL) || 'https://thankuisland.run.ingarena.net';
+}
+
+function getSeatalkRedirectUri(req) {
+  if (SEATALK_REDIRECT_URI) return SEATALK_REDIRECT_URI;
+  const baseUrl = trimTrailingSlash(PUBLIC_BASE_URL) || getRequestOrigin(req);
+  return `${baseUrl}/auth/seatalk/callback`;
+}
+
 async function getAppAccessToken() {
   try {
+    if (!SEATALK_APP_SECRET) {
+      throw new Error('SEATALK_APP_SECRET is not configured');
+    }
     const res = await axios.post('https://openapi.seatalk.io/auth/app_access_token', {
       app_id: SEATALK_APP_ID,
       app_secret: SEATALK_APP_SECRET
@@ -340,6 +370,32 @@ async function getAppAccessToken() {
     throw err;
   }
 }
+
+app.get('/auth/seatalk/config', (req, res) => {
+  res.json({
+    appId: SEATALK_APP_ID,
+    redirectUri: getSeatalkRedirectUri(req)
+  });
+});
+
+app.get('/auth/seatalk/login', (req, res) => {
+  const state = crypto.randomBytes(16).toString('hex');
+  req.session.oauthState = state;
+
+  const loginUrl = new URL('https://open.seatalk.io/open_login/');
+  loginUrl.searchParams.set('redirect_uri', getSeatalkRedirectUri(req));
+  loginUrl.searchParams.set('appid', SEATALK_APP_ID);
+  loginUrl.searchParams.set('response_type', 'code');
+  loginUrl.searchParams.set('state', state);
+
+  req.session.save((err) => {
+    if (err) {
+      console.error('Save oauth state error:', err.message);
+      return res.redirect('/?error=session_error');
+    }
+    res.redirect(loginUrl.toString());
+  });
+});
 
 app.get('/auth/seatalk/callback', async (req, res) => {
   const { code, state } = req.query;
@@ -365,7 +421,13 @@ app.get('/auth/seatalk/callback', async (req, res) => {
       email: employee.email,
       avatar: employee.avatar
     };
-    res.redirect('/');
+    req.session.save((err) => {
+      if (err) {
+        console.error('Save login session error:', err.message);
+        return res.redirect('/?error=session_error');
+      }
+      res.redirect('/');
+    });
   } catch (err) {
     console.error('Callback error:', err.message);
     res.redirect('/?error=server_error');

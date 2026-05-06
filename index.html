@@ -11,7 +11,6 @@
 
     <!-- FontAwesome (圖示) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js"></script>
 
     <!-- jf open 粉圓 全站字體 -->
     <link rel="stylesheet" href="https://font.emtech.cc/css/jfOpenHuninn/400">
@@ -807,6 +806,14 @@
             font-size: 14px; color: var(--text-sub); font-weight: 600;
             line-height: 1.7; margin-bottom: 32px;
         }
+        .login-fallback-btn {
+            display: none; align-items: center; justify-content: center;
+            margin-top: 12px; padding: 12px 24px;
+            border-radius: 999px; background: var(--primary); color: #fff;
+            font-size: 14px; font-weight: 900;
+            box-shadow: 0 8px 22px rgba(50, 90, 72, .18);
+        }
+        .login-fallback-btn.show { display: inline-flex; }
         .login-error { margin-top: 16px; font-size: 12px; color: var(--alert); font-weight: 700; }
 
         /* 登入後右上角使用者資訊 */
@@ -2804,7 +2811,13 @@
               data-align="center"
               data-copywriting="使用 SeaTalk 帳號登入">
             </div>
+            <button id="seatalk_login_fallback" class="login-fallback-btn" type="button" @click="signInWithGoogle">
+                使用 SeaTalk 登入
+            </button>
             <div v-if="loginError" class="login-error">{{ loginError }}</div>
+            <div id="seatalk_login_load_error" class="login-error" style="display:none;">
+                SeaTalk 登入元件載入失敗，請確認 VPN 已連線後重新整理頁面。
+            </div>
         </div>
     </div>
 
@@ -4970,12 +4983,71 @@ createApp({
         const fbUser    = ref(null);
         const fbLoading = ref(true);
         const loginError = ref('');
+        const loginErrorMap = {
+            no_code: 'SeaTalk 沒有回傳登入授權碼，請重新登入一次。',
+            invalid_state: '登入驗證狀態不一致，請重新整理後再試一次。',
+            auth_failed: 'SeaTalk 驗證失敗，請確認帳號權限或重新登入。',
+            server_error: '伺服器處理 SeaTalk 登入時發生錯誤，請通知管理員查看後端 log。',
+            session_error: '登入狀態寫入失敗，請重新登入一次。',
+            login_unavailable: 'SeaTalk 登入元件暫時無法使用，請確認 VPN 後重新整理。'
+        };
+        const authError = new URLSearchParams(window.location.search).get('error');
+        if (authError) {
+            loginError.value = loginErrorMap[authError] || `登入失敗：${authError}`;
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        }
 
         const signInWithGoogle = () => {
-            window.location.href = '/auth/seatalk/login';
+            const widgetButton = document.querySelector('#seatalk_login_button > *');
+            if (widgetButton) widgetButton.click();
+            else window.location.href = '/auth/seatalk/login';
         };
         const signOut = () => {
             window.location.href = '/auth/logout';
+        };
+        const loadSeatalkLogin = async () => {
+            const appInfo = document.getElementById('seatalk_login_app_info');
+            const errorEl = document.getElementById('seatalk_login_load_error');
+            const fallbackEl = document.getElementById('seatalk_login_fallback');
+            const showFallback = () => {
+                if (errorEl) errorEl.style.display = 'block';
+                if (fallbackEl) fallbackEl.classList.add('show');
+            };
+            if (!appInfo) return;
+
+            try {
+                const res = await fetch('/auth/seatalk/config', { cache: 'no-store' });
+                if (res.ok) {
+                    const cfg = await res.json();
+                    if (cfg.appId) appInfo.setAttribute('data-appid', cfg.appId);
+                    if (cfg.redirectUri) appInfo.setAttribute('data-redirect_uri', cfg.redirectUri);
+                } else {
+                    appInfo.setAttribute('data-redirect_uri', `${window.location.origin}/auth/seatalk/callback`);
+                }
+            } catch(e) {
+                appInfo.setAttribute('data-redirect_uri', `${window.location.origin}/auth/seatalk/callback`);
+            }
+
+            if (window.SEATALK_LOGIN?.init) {
+                window.SEATALK_LOGIN.init();
+                setTimeout(() => {
+                    if (!document.querySelector('#seatalk_login_button > *')) showFallback();
+                }, 500);
+                return;
+            }
+
+            if (document.getElementById('seatalk_auth_sdk')) return;
+            const script = document.createElement('script');
+            script.id = 'seatalk_auth_sdk';
+            script.src = 'https://static.cdn.haiserve.com/seatalk/client/shared/sop/auth.js';
+            script.onload = () => {
+                window.SEATALK_LOGIN?.init?.();
+                setTimeout(() => {
+                    if (!document.querySelector('#seatalk_login_button > *')) showFallback();
+                }, 500);
+            };
+            script.onerror = showFallback;
+            document.head.appendChild(script);
         };
 
         // ===== 資料持久化（Firestore）=====
@@ -6309,6 +6381,7 @@ createApp({
         watch([users, letters], () => { if (fbUser.value) saveData(); }, { deep: true });
 
         onMounted(async () => {
+            loadSeatalkLogin();
             // 從 server session 取得登入用戶（取代 Firebase Auth）
             try {
                 const res = await fetch('/api/me');
