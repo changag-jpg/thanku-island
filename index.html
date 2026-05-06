@@ -5370,6 +5370,21 @@ createApp({
                 setTimeout(() => window.islandEngine?.center(), 300);
             }, 50);
         };
+        const initTaskTab = () => {
+            let tries = 0;
+            const tryInit = () => {
+                if (currentTab.value !== 'task') return;
+                const hasGame = document.getElementById('zt-wrap');
+                const hasBoards = document.getElementById('zt-todayBoard') && document.getElementById('zt-weeklyBoard');
+                if (hasGame && hasBoards) {
+                    window.initZipGame?.();
+                    return;
+                }
+                if (tries++ < 15) setTimeout(tryInit, 80);
+            };
+            tryInit();
+        };
+
         const switchTab  = (tab) => {
             const prev = currentTab.value;
             if (prev === 'task' && tab !== 'task') window.destroyZipGame?.();
@@ -5378,7 +5393,7 @@ createApp({
                 document.getElementById('main-content')?.scrollTo(0, 0);
                 if(tab==='home')   window.initIslandCanvas?.();
                 if(tab==='island') window.initIslandEditorCanvas?.();
-                if(tab==='task')   window.initZipGame?.();
+                if(tab==='task')   initTaskTab();
                 if(prev==='island' && tab!=='island'){
                     window.islandEngine?.save();
                     setTimeout(() => { window.initIslandCanvas?.(); saveTiles(); }, 50);
@@ -6914,7 +6929,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const wrap = document.getElementById('zt-wrap')
     if (!wrap) return
     wrap.querySelectorAll('.page').forEach(p => p.classList.add('hidden'))
-    ztEl(id).classList.remove('hidden')
+    const page = ztEl(id)
+    if (page) page.classList.remove('hidden')
   }
 
   // ── RNG ──
