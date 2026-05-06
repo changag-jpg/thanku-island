@@ -1016,7 +1016,7 @@ app.delete('/api/admin/users/:uid', requireAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ===== 傳說點券兌換 =====
+// ===== 起源之力兌換 =====
 app.post('/api/legend-exchange', requireLogin, async (req, res) => {
   const uid = req.session.user.employee_code;
   const { amount, note } = req.body;
@@ -1027,7 +1027,7 @@ app.post('/api/legend-exchange', requireLogin, async (req, res) => {
     const usersArr = JSON.parse(rows[0].users_json || '[]');
     const me = usersArr.find(u => u.id === uid) || usersArr[0];
     if (!me) return res.status(400).json({ error: 'user data not found' });
-    if ((me.shells || 0) < amount) return res.status(400).json({ error: 'insufficient shells' });
+    if ((me.shells || 0) < amount) return res.status(400).json({ error: 'insufficient origin power' });
     me.shells = (me.shells || 0) - amount;
     await pool.query('UPDATE user_data SET users_json=? WHERE uid=?', [JSON.stringify(usersArr), uid]);
     await pool.query(

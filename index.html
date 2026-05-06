@@ -2905,7 +2905,7 @@
                 <i class="fa-solid fa-list-ol"></i><span class="nav-label">Sea群島</span>
             </button>
             <button @click="switchTab('exchange')" class="nav-btn" :class="{ active: currentTab === 'exchange' }">
-                <i class="fa-solid fa-ticket-simple"></i><span class="nav-label">傳說兌換</span>
+                <i class="fa-solid fa-ticket-simple"></i><span class="nav-label">起源兌換處</span>
             </button>
             <button @click="switchTab('task')" class="nav-btn" :class="{ active: currentTab === 'task' }">
                 <i class="fa-solid fa-seedling"></i><span class="nav-label">每日任務</span>
@@ -2942,7 +2942,7 @@
             </div>
             <div class="sidebar-stats">
                 <div class="sidebar-stat">
-                    <span class="sidebar-stat-label">傳說點券</span>
+                    <span class="sidebar-stat-label">起源之力</span>
                     <span class="sidebar-stat-val">🎫 {{ currentUser.shells }}</span>
                 </div>
                 <div class="sidebar-stat">
@@ -2966,7 +2966,7 @@
         <!-- 頂部標題列 -->
         <div class="topbar">
             <span class="topbar-title">
-                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 傳說兌換' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
+                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 起源兌換處' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
             </span>
             <div v-if="currentTab === 'home'" class="topbar-actions">
                 <button @click="toggleEditMode" class="topbar-btn" :class="{ active: isEditMode }">
@@ -3665,18 +3665,18 @@
                 </div>
             </div>
 
-            <!-- 傳說兌換 -->
+            <!-- 起源兌換處 -->
             <div v-else-if="currentTab === 'exchange'" key="exchange" class="tab-content">
                 <div class="sea-hero" style="margin-bottom:24px;">
                     <div class="sea-hero-icon">🎫</div>
-                    <h2 class="sea-hero-title">傳說兌換</h2>
-                    <p class="sea-hero-sub">使用傳說點券送出兌換申請</p>
+                    <h2 class="sea-hero-title">起源兌換處</h2>
+                    <p class="sea-hero-sub">使用起源之力送出兌換申請</p>
                 </div>
 
                 <div class="letter-card" style="max-width:520px;margin:0 auto;">
                     <div class="letter-header" style="margin-bottom:16px;">
                         <div>
-                            <div class="letter-from" style="font-size:16px;font-weight:800;">🎫 我的傳說點券</div>
+                            <div class="letter-from" style="font-size:16px;font-weight:800;">🎫 我的起源之力</div>
                             <div class="letter-time" style="font-size:22px;font-weight:900;color:var(--primary);margin-top:4px;">{{ currentUser?.shells || 0 }} 點</div>
                         </div>
                     </div>
@@ -3684,7 +3684,7 @@
                     <div v-if="exchangeSuccess" class="empty-state" style="padding:20px 0;">
                         <div style="font-size:40px;margin-bottom:8px;">✅</div>
                         <div style="font-weight:800;color:var(--primary);">兌換申請送出成功！</div>
-                        <div style="font-size:13px;margin-top:6px;color:var(--text-sub);">管理員收到後會盡快處理 🌿</div>
+                        <div style="font-size:13px;margin-top:6px;color:var(--text-sub);">起源之力已送交後台，工作人員會在幾天內發送到傳說對決遊戲中 🌿</div>
                         <button @click="exchangeSuccess=false" class="btn-primary" style="margin-top:16px;padding:10px 24px;">再次兌換</button>
                     </div>
 
@@ -3701,7 +3701,7 @@
 
                         <div style="margin-bottom:20px;">
                             <label style="font-size:13px;font-weight:800;display:block;margin-bottom:6px;">備註（選填）</label>
-                            <textarea v-model="exchangeNote" placeholder="例如：要兌換什麼獎品..." style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;resize:vertical;min-height:80px;outline:none;"></textarea>
+                            <textarea v-model="exchangeNote" placeholder="例如：遊戲 UID、伺服器或方便後台核對的資訊..." style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;resize:vertical;min-height:80px;outline:none;"></textarea>
                         </div>
 
                         <div v-if="exchangeError" style="color:var(--danger);font-size:13px;font-weight:700;margin-bottom:12px;">{{ exchangeError }}</div>
@@ -3709,9 +3709,9 @@
                         <button @click="submitExchange"
                             class="btn-primary" style="width:100%;padding:14px;"
                             :disabled="exchangeAmt<=0||(currentUser?.shells||0)<=0||exchangeSubmitting">
-                            {{ exchangeSubmitting ? '送出中...' : `🎫 送出兌換申請（${exchangeAmt} 點）` }}
+                            {{ exchangeSubmitting ? '送出中...' : `🎫 送出起源兌換申請（${exchangeAmt} 點）` }}
                         </button>
-                        <div style="font-size:12px;color:var(--text-sub);margin-top:10px;text-align:center;">送出後點券會立即扣除，管理員確認後完成兌換</div>
+                        <div style="font-size:12px;color:var(--text-sub);margin-top:10px;text-align:center;">送出後起源之力會立即扣除，申請會進到後台；工作人員會在幾天內發送到傳說對決遊戲中。</div>
                     </div>
                 </div>
             </div>
@@ -3759,6 +3759,7 @@
                             <div class="letter-body" style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">{{ letter.content }}</div>
                             <div class="reward-row">
                                 <span><i class="fa-solid fa-bolt"></i> +{{ (letter.cardCost || 1) * 100 }} 能量</span>
+                                <span class="reward-coins">🎫 +{{ letter.cardCost||1 }} 起源之力</span>
                                 <span class="reward-coins">🏝️ +{{ letter.cardCost||1 }} 板塊</span>
                             </div>
                         </div>
@@ -3776,7 +3777,7 @@
                                     <div class="letter-time">系統公告</div>
                                 </div>
                             </div>
-                            <div class="letter-body">🎉 歡迎來到感恩小島！<br><br>每個月你有 3 張感謝卡，快去寄出你的第一份感謝吧！<br><br>• 寄出 3 張感謝卡 = 獲得 1 片島嶼板塊<br>• 收到感謝卡 = 在信箱領取 1 片島嶼板塊<br>• 每月 1 號自動補充感謝卡（上限 6 張）<br>• 感恩節、聖誕節、AOV Day 會有驚喜加給 🎁</div>
+                            <div class="letter-body">🎉 歡迎來到感恩小島！<br><br>每個月你有 3 張感謝卡，快去寄出你的第一份感謝吧！<br><br>• 寄出 3 張感謝卡 = 獲得 1 片島嶼板塊<br>• 收到 1 張感謝卡 = 獲得 1 點起源之力，並在信箱領取 1 片島嶼板塊<br>• 起源之力可在「起源兌換處」送出申請，後台人員會在幾天內發送到傳說對決遊戲中<br>• 每月 1 號自動補充感謝卡（上限 6 張）<br>• 感恩節、聖誕節、AOV Day 會有驚喜加給 🎁</div>
                         </div>
                         <!-- 動態公告（新成員歡迎 etc.）-->
                         <div v-for="ann in announcements" :key="ann.id" class="letter-card notice-card">
@@ -4032,6 +4033,7 @@
                 <div class="letter-modal-content">{{ openLetter.content }}</div>
                 <div class="letter-modal-reward">
                     <div class="letter-modal-reward-item"><i class="fa-solid fa-bolt"></i> +{{ (openLetter.cardCost||1)*100 }} 能量</div>
+                    <div class="letter-modal-reward-item">🎫 +{{ openLetter.cardCost||1 }} 起源之力</div>
                     <div class="letter-modal-reward-item">🏝️ +{{ openLetter.cardCost||1 }} 板塊（信箱領取）</div>
                 </div>
             </div>
@@ -4421,7 +4423,7 @@ createApp({
             } catch(e) {}
         };
 
-        // ── 傳說點券兌換 ──
+        // ── 起源之力兌換 ──
         const exchangeAmt = ref(1);
         const exchangeNote = ref('');
         const exchangeError = ref('');
@@ -4432,7 +4434,7 @@ createApp({
             const me = currentUser.value;
             if (!me) return;
             if (exchangeAmt.value <= 0 || exchangeAmt.value > (me.shells || 0)) {
-                exchangeError.value = '點券數量不足或無效';
+                exchangeError.value = '起源之力數量不足或無效';
                 return;
             }
             exchangeSubmitting.value = true;
@@ -5145,10 +5147,10 @@ createApp({
                                         likes: [],
                                         read: item.read || false,
                                     });
-                                    // 加入能量和板塊道具（第一次讀取時）
+                                    // 加入能量、起源之力和板塊道具（第一次讀取時）
                                     if (me && !item.processed) {
                                         me.energy  = (me.energy  || 0) + (item.energy || 0);
-                                        me.shells  = (me.shells  || 0) + (item.bonus  || 0);
+                                        me.shells  = (me.shells  || 0) + (item.originPower ?? item.bonus ?? 0);
                                         if (!me.rewards) me.rewards = [];
                                         for (let i = 0; i < (item.tiles || 1); i++) {
                                             me.rewards.push({
@@ -5474,7 +5476,6 @@ createApp({
 
             // ── 寫入收件人的 inbox（任何人可寫，本人可讀）──
             try {
-                const bonus = (Math.floor(Math.random() * 450) + 50) * cost;
                 await fetch('/api/inbox', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -5487,7 +5488,7 @@ createApp({
                         timestamp: ts,
                         cardCost: cost,
                         energy: 100 * cost,
-                        bonus,
+                        originPower: cost,
                         tiles: cost,
                         read: false,
                         claimed: false,
@@ -5853,17 +5854,18 @@ createApp({
                 lines: [
                     '感恩小島是一個讓你把感謝說出口的地方！',
                     '每個月你有 3 張感謝卡，可以送給讓你感動的隊友或同事。',
-                    '收到感謝的人會獲得能量 ⚡ 和傳說點券 🎫，用來打造自己的小島！',
+                    '收到感謝的人會獲得能量 ⚡ 和起源之力 🎫，用來打造自己的小島並連結傳說戰場！',
                     '讓好事循環流動，讓正能量在團隊裡發光 ✨',
                 ]
             },
             {
-                icon: '⚡', title: '能量與傳說點券怎麼用？',
+                icon: '⚡', title: '能量與起源之力怎麼用？',
                 lines: [
                     '能量 ⚡ 是抽卡的燃料 — 去「感恩商鋪」召喚動物夥伴和島嶼裝飾！',
-                    '傳說點券 🎫 可在「傳說兌換」窗口送出兌換申請！',
-                    '每收到一張感謝卡，你會獲得 100 能量！',
-                    '收到更多感謝 = 能量更多 = 島嶼更豐富！',
+                    '起源之力 🎫 可在「起源兌換處」送出兌換申請！',
+                    '每收到一張感謝卡，你會獲得 100 能量與 1 點起源之力。',
+                    '送出申請後，起源之力會進到後台；工作人員會在幾天內發送到傳說對決遊戲中。',
+                    '收到更多感謝 = 能量更多、起源之力更多 = 小島與傳說戰場一起成長！',
                 ]
             },
             {
@@ -5920,7 +5922,7 @@ createApp({
                 '  ✦ 1 張 — 謝謝你的小小幫助 🌱',
                 '  ✦ 2 張 — 你真的幫了我好大的忙 🌸',
                 '  ✦ 3 張 — 沒有你我不知道怎麼辦 🌟',
-                '對方收到後會獲得能量，你的感謝也會出現在佈告欄！',
+                '對方每收到 1 張感謝卡，就會獲得 100 能量與 1 點起源之力；你的感謝也會出現在佈告欄！',
                 '每月只有 3 張卡，把它們送給最值得的人吧 💝',
             ],
             shop: [
