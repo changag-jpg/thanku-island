@@ -846,6 +846,60 @@ app.get('/api/admin/check', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get('/api/admin/profiles', requireAdmin, async (req, res) => {
+  try {
+    const [[profileRows], [userRows]] = await Promise.all([
+      pool.query('SELECT * FROM profiles ORDER BY updated_at DESC'),
+      pool.query('SELECT uid, users_json, updated_at FROM user_data'),
+    ]);
+    const profileMap = new Map();
+
+    for (const r of profileRows) {
+      let island = [];
+      try { island = JSON.parse(r.island_json || '[]'); } catch(e) {}
+      profileMap.set(r.id, {
+        id: r.id,
+        name: r.name,
+        email: r.email,
+        avatarUrl: r.avatar_url,
+        avatarPosX: r.avatar_pos_x,
+        avatarPosY: r.avatar_pos_y,
+        energy: r.energy || 0,
+        shells: r.shells || 0,
+        cards: null,
+        tileCount: r.tile_count,
+        island,
+        updatedAt: r.updated_at || 0,
+      });
+    }
+
+    for (const row of userRows) {
+      let users = [];
+      try { users = JSON.parse(row.users_json || '[]'); } catch(e) {}
+      const self = users.find(u => u.id === row.uid) || users[0];
+      if (!self?.id) continue;
+      const existing = profileMap.get(self.id) || {};
+      profileMap.set(self.id, {
+        ...existing,
+        id: self.id,
+        name: existing.name || self.name || '',
+        email: existing.email || self.email || '',
+        avatarUrl: existing.avatarUrl || self.avatarUrl || '',
+        avatarPosX: existing.avatarPosX ?? self.avatarPosX ?? 50,
+        avatarPosY: existing.avatarPosY ?? self.avatarPosY ?? 50,
+        energy: self.energy ?? existing.energy ?? 0,
+        shells: self.shells ?? existing.shells ?? 0,
+        cards: self.cards ?? existing.cards ?? 0,
+        tileCount: self.tileCount ?? existing.tileCount ?? 6,
+        island: self.island || existing.island || [],
+        updatedAt: Math.max(existing.updatedAt || 0, row.updated_at || 0),
+      });
+    }
+
+    res.json([...profileMap.values()].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/admin/whitelist', requireAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT email FROM admin_whitelist');
