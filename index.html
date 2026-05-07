@@ -4698,6 +4698,12 @@ createApp({
         const otherUsers = computed(() =>
             users.value.filter(u => u.id !== currentUserId.value)
         );
+        const refreshUserView = (uid = currentUserId.value) => {
+            const idx = users.value.findIndex(u => u.id === uid);
+            if (idx === -1) return null;
+            users.value.splice(idx, 1, { ...users.value[idx] });
+            return users.value[idx];
+        };
         // ── 時間篩選工具函式 ──
         const timeFilterFn = (filter, timestamp) => {
             if (filter === 'all') return true;
@@ -5197,7 +5203,7 @@ createApp({
                     });
                 }
 
-                await fetch('/api/user', {
+                const userRes = await fetch('/api/user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -5206,9 +5212,10 @@ createApp({
                         updatedAt: Date.now()
                     })
                 });
+                if (!userRes.ok) throw new Error(`POST /api/user ${userRes.status}`);
                 // 同步更新公開 profile（含 island items 供訪島用）
                 if (me) {
-                    await fetch('/api/profiles', {
+                    const profileRes = await fetch('/api/profiles', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -5223,8 +5230,13 @@ createApp({
                             island:     JSON.parse(JSON.stringify(me.island || [])),
                         })
                     });
+                    if (!profileRes.ok) throw new Error(`POST /api/profiles ${profileRes.status}`);
                 }
-            } catch(e) {}
+                return true;
+            } catch(e) {
+                console.error('saveData failed:', e);
+                return false;
+            }
         };
 
         const saveTiles = async () => {
@@ -5667,7 +5679,7 @@ createApp({
 
             const ts = Date.now();
 
-            sender.cards -= cost;
+            sender.cards = Math.max(0, (Number(sender.cards) || 0) - cost);
 
             // 寄出累積卡數 → 每 3 張送 1 片板塊
             if (!sender.sentCards) sender.sentCards = 0;
@@ -5676,6 +5688,7 @@ createApp({
                 sender.sentCards -= 3;
                 sender.tileCount = (sender.tileCount || 6) + 1;
             }
+            refreshUserView(sender.id);
 
             // ── 寫入收件人的 inbox（任何人可寫，本人可讀）──
             try {
@@ -6348,7 +6361,10 @@ createApp({
             if (!isTest && (currentUser.value?.energy || 0) < cost) {
                 alert(`能量不足 (需要 ${cost} ⚡)`); return;
             }
-            if (!isTest) currentUser.value.energy -= cost;
+            if (!isTest) {
+                currentUser.value.energy = Math.max(0, (Number(currentUser.value.energy) || 0) - cost);
+                refreshUserView();
+            }
             drawType.value   = type;
             isDrawing.value  = true;
             drawResult.value = null;
@@ -6394,6 +6410,7 @@ createApp({
                     isUnique: drawResult.value.isUnique || false,
                     type:     drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (drawResult.value.type || 'decor')
                 });
+                refreshUserView();
                 saveData();
             }
             isDrawing.value  = false;
@@ -6405,7 +6422,10 @@ createApp({
             if (!isTest && (currentUser.value?.energy || 0) < cost) {
                 alert(`能量不足 (需要 ${cost} ⚡)`); return;
             }
-            if (!isTest) currentUser.value.energy -= cost;
+            if (!isTest) {
+                currentUser.value.energy = Math.max(0, (Number(currentUser.value.energy) || 0) - cost);
+                refreshUserView();
+            }
             drawType.value    = type;
             isDrawing.value   = true;
             drawResult.value  = null;
@@ -6466,6 +6486,7 @@ createApp({
                         type:     drawType.value === 'pet' ? 'animal' : drawType.value === 'decor' ? 'decor' : (item.type || 'decor')
                     });
                 });
+                refreshUserView();
                 saveData();
             }
             isDrawing.value     = false;
