@@ -133,6 +133,13 @@
             color: var(--ink); background: #fff;
             box-shadow: var(--shadow-sm);
         }
+        .nav-btn.visiting {
+            color: #0f7fb8;
+            background: #e8f7ff;
+            border: 2px solid #1cb0f6;
+            box-shadow: 0 4px 0 #0f8bc8;
+        }
+        .nav-btn.visiting i { background: #d9f2ff; color: #1cb0f6; }
         .nav-btn i {
             width: 28px; height: 28px; flex-shrink: 0;
             display: inline-flex; align-items: center; justify-content: center;
@@ -673,14 +680,14 @@
             100% { transform: scale(1) rotateY(0deg); opacity: 1; }
         }
         .gacha10-item.gacha10-legend {
-            background: linear-gradient(135deg, rgba(255,200,50,0.35), rgba(255,140,0,0.25));
-            border-color: rgba(255,200,80,0.7);
-            box-shadow: 0 0 24px rgba(255,180,0,0.5), inset 0 0 20px rgba(255,220,100,0.1);
+            background: radial-gradient(circle at 50% 0%, rgba(247,190,74,.16), transparent 52%), linear-gradient(160deg,#ffffff,#fbfaf6);
+            border-color: rgba(222,171,54,.72);
+            box-shadow: 0 20px 38px rgba(132,88,19,.18), 0 0 24px rgba(244,190,68,.22), inset 0 0 0 1px rgba(255,255,255,.9);
         }
         .gacha10-item.gacha10-rare {
-            background: linear-gradient(135deg, rgba(120,180,255,0.3), rgba(80,120,255,0.2));
-            border-color: rgba(120,180,255,0.6);
-            box-shadow: 0 0 16px rgba(100,150,255,0.4);
+            background: radial-gradient(circle at 50% 0%, rgba(117,177,255,.14), transparent 52%), linear-gradient(160deg,#ffffff,#fbfaf6);
+            border-color: rgba(116,165,238,.62);
+            box-shadow: 0 16px 30px rgba(63,114,190,.14), inset 0 0 0 1px rgba(255,255,255,.86);
         }
         .gacha10-shine {
             position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
@@ -1261,6 +1268,29 @@
             font-family: 'jfOpenHuninn', sans-serif;
         }
         .visit-banner-home:hover { background: var(--primary-h); transform: scale(1.04); }
+        .visit-mode-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 14px; width: 100%; margin-bottom: 14px; padding: 12px 14px;
+            border: 2px solid #1cb0f6; border-bottom: 5px solid #0f8bc8;
+            border-radius: 14px; background: #e8f7ff; color: #116b98;
+            font-size: 13px; font-weight: 900;
+        }
+        .visit-mode-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .visit-mode-avatar {
+            width: 34px; height: 34px; border-radius: 50%; overflow: hidden;
+            border: 2px solid #1cb0f6; background: #fff; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: #116b98;
+        }
+        .visit-mode-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .visit-mode-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .visit-mode-home {
+            display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+            border-radius: 12px; background: #1cb0f6; color: #fff;
+            border-bottom: 4px solid #0f8bc8; font-size: 12px; font-weight: 900;
+            white-space: nowrap;
+        }
+        .visit-mode-home:active { transform: translateY(3px); border-bottom-width: 1px; }
 
         /* 編輯模式：物品操作按鈕組 */
         .item-edit-btns {
@@ -2004,11 +2034,11 @@
         .gacha-loading-sub { margin-top: 8px; font-size: 13px; font-weight: 800; color: rgba(255,255,255,.62); }
         .gacha-result-card {
             width: min(360px, 86vw); min-height: 510px; padding: 24px 24px 26px;
-            border-radius: 12px; border: 1px solid rgba(255,255,255,.64);
+            border-radius: 12px; border: 1px solid rgba(226,221,210,.92);
             background:
-                linear-gradient(160deg, rgba(255,255,255,.96), rgba(246,242,232,.9)),
-                radial-gradient(circle at 50% 0%, var(--result-glow, rgba(143,169,155,.28)), transparent 58%);
-            box-shadow: 0 28px 70px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.7);
+                radial-gradient(circle at 50% 0%, var(--result-glow, rgba(143,169,155,.12)), transparent 46%),
+                linear-gradient(160deg, #ffffff, #fbfaf6);
+            box-shadow: 0 28px 70px rgba(0,0,0,.26), inset 0 0 0 1px rgba(255,255,255,.86);
             display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden;
             animation: gachaCardReveal .72s cubic-bezier(.18,.9,.18,1.08) both;
         }
@@ -2022,14 +2052,16 @@
         }
         .gacha-result-card.result-common { --result-glow: rgba(143,169,155,.28); }
         .gacha-result-card.result-rare {
-            --result-glow: rgba(80,166,223,.42);
-            background: linear-gradient(160deg, #f8fcff, #dcefff);
-            box-shadow: 0 28px 70px rgba(0,0,0,.3), 0 0 42px rgba(92,172,232,.32), inset 0 0 0 1px rgba(255,255,255,.78);
+            --result-glow: rgba(80,166,223,.16);
+            background: radial-gradient(circle at 50% 0%, rgba(80,166,223,.14), transparent 46%), linear-gradient(160deg, #ffffff, #fbfaf6);
+            border-color: rgba(98,169,220,.55);
+            box-shadow: 0 28px 70px rgba(0,0,0,.26), 0 0 20px rgba(92,172,232,.16), inset 0 0 0 1px rgba(255,255,255,.86);
         }
         .gacha-result-card.result-legend {
-            --result-glow: rgba(247,190,74,.62);
-            background: linear-gradient(160deg, #fff9e8, #f7d990 58%, #fff6dd);
-            box-shadow: 0 30px 74px rgba(0,0,0,.32), 0 0 58px rgba(244,190,68,.48), inset 0 0 0 1px rgba(255,255,255,.84);
+            --result-glow: rgba(247,190,74,.18);
+            background: radial-gradient(circle at 50% 0%, rgba(247,190,74,.16), transparent 48%), linear-gradient(160deg, #ffffff, #fbfaf6);
+            border-color: rgba(222,171,54,.72);
+            box-shadow: 0 30px 74px rgba(0,0,0,.27), 0 0 28px rgba(244,190,68,.24), inset 0 0 0 1px rgba(255,255,255,.9);
         }
         .gacha-result-top, .gacha-result-art, .gacha-partner-label, .gacha-partner-name, .gacha-result-card .btn-primary { position: relative; z-index:1; }
         .gacha-result-top { display:flex; gap:7px; align-items:center; justify-content:center; min-height:28px; margin-bottom:18px; }
@@ -2043,13 +2075,13 @@
         .gacha10-sub { font-size:12px; font-weight:800; color:rgba(255,255,255,.76); margin-bottom:18px; letter-spacing:.12em; text-transform:uppercase; }
         .gacha10-grid { grid-template-columns: repeat(5, minmax(118px, 1fr)); gap:12px; perspective:1200px; }
         .gacha10-item {
-            --card-glow: rgba(255,255,255,.22);
+            --card-glow: rgba(143,169,155,.08);
             min-height:154px; border-radius:8px;
             background:
-                linear-gradient(160deg, rgba(255,255,255,.92), rgba(244,239,228,.84)),
-                radial-gradient(circle at 50% 0%, var(--card-glow), transparent 58%);
-            border:1px solid rgba(255,255,255,.68);
-            box-shadow:0 16px 28px rgba(28,35,35,.2), inset 0 0 0 1px rgba(255,255,255,.55);
+                radial-gradient(circle at 50% 0%, var(--card-glow), transparent 52%),
+                linear-gradient(160deg, #ffffff, #fbfaf6);
+            border:1px solid rgba(226,221,210,.92);
+            box-shadow:0 16px 28px rgba(28,35,35,.18), inset 0 0 0 1px rgba(255,255,255,.86);
             transform-style:preserve-3d;
             animation:gacha10Flip .68s cubic-bezier(.18,.9,.18,1.08) both;
         }
@@ -2059,9 +2091,9 @@
             transform:translateX(-130%); animation:gachaSweep 1.2s ease both; animation-delay:inherit; pointer-events:none;
         }
         .gacha10-item::after { content:''; position:absolute; inset:7px; border-radius:6px; border:1px solid rgba(89,117,104,.16); pointer-events:none; }
-        .gacha10-common { --card-glow: rgba(143,169,155,.22); }
-        .gacha10-rare { --card-glow:rgba(80,166,223,.42); background:linear-gradient(160deg,#f8fcff,#dcefff); border-color:rgba(90,168,228,.7); box-shadow:0 18px 32px rgba(45,111,170,.24),0 0 28px rgba(92,172,232,.28),inset 0 0 0 1px rgba(255,255,255,.75); }
-        .gacha10-legend { --card-glow:rgba(247,190,74,.58); background:linear-gradient(160deg,#fff9e8,#f7d990 58%,#fff6dd); border-color:rgba(233,177,62,.85); box-shadow:0 20px 38px rgba(132,88,19,.28),0 0 36px rgba(244,190,68,.42),inset 0 0 0 1px rgba(255,255,255,.82); }
+        .gacha10-common { --card-glow: rgba(143,169,155,.08); }
+        .gacha10-rare { --card-glow:rgba(80,166,223,.12); background:radial-gradient(circle at 50% 0%, rgba(80,166,223,.12), transparent 52%), linear-gradient(160deg,#ffffff,#fbfaf6); border-color:rgba(90,168,228,.5); box-shadow:0 18px 32px rgba(45,111,170,.16),0 0 16px rgba(92,172,232,.12),inset 0 0 0 1px rgba(255,255,255,.86); }
+        .gacha10-legend { --card-glow:rgba(247,190,74,.16); background:radial-gradient(circle at 50% 0%, rgba(247,190,74,.16), transparent 52%), linear-gradient(160deg,#ffffff,#fbfaf6); border-color:rgba(222,171,54,.72); box-shadow:0 20px 38px rgba(132,88,19,.18),0 0 24px rgba(244,190,68,.22),inset 0 0 0 1px rgba(255,255,255,.9); }
         .gacha10-name { color:var(--text); text-shadow:0 1px 0 rgba(255,255,255,.8); }
         .gacha10-item img { width:66px; height:66px; }
         .gacha10-item .rarity-badge, .gacha10-item .unique-badge, .gacha10-name, .gacha10-item img, .gacha10-emoji { position:relative; z-index:1; }
@@ -3033,8 +3065,8 @@
         </div>
 
         <nav class="sidebar-nav">
-            <button @click="switchTab('home')"   class="nav-btn" :class="{ active: currentTab === 'home' }">
-                <i class="fa-solid fa-house"></i><span class="nav-label">我的小島</span>
+            <button @click="visitingId ? stopVisiting() : switchTab('home')" class="nav-btn" :class="{ active: currentTab === 'home', visiting: visitingId && currentTab === 'home' }">
+                <i :class="visitingId ? 'fa-solid fa-ship' : 'fa-solid fa-house'"></i><span class="nav-label">{{ visitingId ? '參觀中' : '我的小島' }}</span>
             </button>
             <button @click="switchTab('write')"  class="nav-btn" :class="{ active: currentTab === 'write' }">
                 <i class="fa-solid fa-pen"></i><span class="nav-label">寄出感謝</span>
@@ -3110,9 +3142,9 @@
         <!-- 頂部標題列 -->
         <div class="topbar">
             <span class="topbar-title">
-                {{ currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 起源兌換處' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
+                {{ currentTab === 'home' && visitingId ? '⛵ 參觀 ' + getDisplayName(visitingId) + ' 的小島' : currentTab === 'home' ? '我的小島' : currentTab === 'island' ? '🏝️ 島嶼地形' : currentTab === 'write' ? '寄出感謝' : currentTab === 'shop' ? '感恩商鋪' : currentTab === 'wall' ? '佈告欄' : currentTab === 'rank' ? 'Sea 群島' : currentTab === 'exchange' ? '🎫 起源兌換處' : currentTab === 'task' ? '📋 每日任務' : '收件匣' }}
             </span>
-            <div v-if="currentTab === 'home'" class="topbar-actions">
+            <div v-if="currentTab === 'home' && !visitingId" class="topbar-actions">
                 <button @click="toggleEditMode" class="topbar-btn" :class="{ active: isEditMode }">
                     <i :class="isEditMode ? 'fa-solid fa-check' : 'fa-solid fa-pen-to-square'"></i>
                     {{ isEditMode ? '完成編輯' : '裝飾小島' }}
@@ -3137,14 +3169,24 @@
         </div>
 
         <!-- 主要捲動區 -->
-        <main id="main-content" class="main" :class="{'home-active': currentTab === 'home'}"  >
+        <main id="main-content" class="main" :class="{'home-active': currentTab === 'home', 'visit-active': currentTab === 'home' && visitingId}"  >
             <transition name="fade" mode="out-in">
 
             <!-- Home -->
             <div v-if="currentTab === 'home'" key="home" class="tab-content">
 
                 <!-- 狀態列 -->
-                <div class="status-row">
+                <div v-if="visitingId" class="visit-mode-bar">
+                    <div class="visit-mode-info">
+                        <div class="visit-mode-avatar">
+                            <img v-if="getUserAvatar(visitingId)" :src="getUserAvatar(visitingId).url" :style="{objectPosition: getUserAvatar(visitingId).posX+'% '+getUserAvatar(visitingId).posY+'%'}">
+                            <span v-else>{{ getDisplayName(visitingId)[0] }}</span>
+                        </div>
+                        <div class="visit-mode-text">正在參觀 {{ getDisplayName(visitingId) }} 的小島，畫面已從伺服器重新讀取最新狀態</div>
+                    </div>
+                    <button class="visit-mode-home" @click="stopVisiting"><i class="fa-solid fa-house"></i> 回到我的小島</button>
+                </div>
+                <div v-if="!visitingId" class="status-row">
                     <div class="resource-pill">
                         <span class="dot coral"></span>
                         {{ unreadCount > 0 ? '未讀 '+unreadCount+' 封感謝' : '今日暫無新感謝' }}
@@ -3170,7 +3212,7 @@
                         style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:var(--radius-lg);z-index:0;">
                     </canvas>
 
-                    <div v-if="displayIslandItems.length === 0 && !isEditMode" class="island-empty">目前沒有任何擺設，進入編輯模式從倉庫放置物品</div>
+                    <div v-if="displayIslandItems.length === 0 && !isEditMode" class="island-empty">{{ visitingId ? '這座小島目前沒有擺設' : '目前沒有任何擺設，進入編輯模式從倉庫放置物品' }}</div>
 
                         <div v-for="(item, index) in displayIslandItems" :key="item.id || index"
                              class="float-item"
@@ -5508,6 +5550,11 @@ createApp({
 
         const visitUser = async (id) => {
             if (id === currentUserId.value) return;
+            visitingIslandItems.value.forEach(item => {
+                if (item.type === 'animal') delete animalStates.value[item.id];
+            });
+            isEditMode.value = false;
+            warehouseCollapsed.value = true;
             visitingId.value = id;
             visitingIslandItems.value = [];
 
@@ -5515,50 +5562,62 @@ createApp({
             switchTab('home');
             await new Promise(r => setTimeout(r, 300));
 
-            // 並行讀取對方的 tiles 和 island items（從 profiles 公開讀）
-            const [tilesResult, profileResult] = await Promise.allSettled([
-                fetch('/api/tiles/' + id).then(r => r.json()),
-                fetch('/api/profiles/' + id).then(r => r.json()),
-            ]);
+            const stamp = Date.now();
+            const islandResult = await fetch('/api/island/' + encodeURIComponent(id) + '?t=' + stamp, {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            }).then(r => r.json()).catch(() => ({ exists: false }));
 
-            // 載入地形
-            if (tilesResult.status === 'fulfilled' && tilesResult.value.exists) {
-                const td = tilesResult.value;
-                window.islandEngine?.importTiles(td.tiles?.length ? td.tiles : []);
-            } else {
+            if (!islandResult.exists) {
                 window.islandEngine?.importTiles([]);
+                visitingIslandItems.value = [];
+                window.initIslandCanvas?.();
+                return;
             }
 
-            // 載入島嶼物品（從 profiles）
-            if (profileResult.status === 'fulfilled' && profileResult.value.exists) {
-                const islandItems = profileResult.value.island || [];
+            const pIdx = allProfiles.value.findIndex(p => p.id === id);
+            const latestProfile = {
+                id,
+                name: islandResult.name || getDisplayName(id),
+                email: islandResult.email || '',
+                avatarUrl: islandResult.avatarUrl || '',
+                avatarPosX: islandResult.avatarPosX ?? 50,
+                avatarPosY: islandResult.avatarPosY ?? 50,
+                island: islandResult.island || [],
+                updatedAt: islandResult.updatedAt || stamp,
+            };
+            if (pIdx >= 0) allProfiles.value.splice(pIdx, 1, { ...allProfiles.value[pIdx], ...latestProfile });
+            else allProfiles.value.push(latestProfile);
 
-                // 用最新卡池圖片即時同步（不需要等對方登入）
-                const imgMap = {};
-                [...gachaPool.value, ...shopItems.value].forEach(g => {
-                    if (g.name) imgMap[g.name] = { imgUrl: g.imgUrl||'', spriteUrl: g.spriteUrl||'' };
-                });
-                islandItems.forEach(item => {
-                    const latest = imgMap[item.name];
-                    if (latest) {
-                        item.imgUrl    = latest.imgUrl;
-                        item.spriteUrl = latest.spriteUrl;
-                    }
-                });
+            // 載入地形與島嶼物品（每次參觀都向伺服器重新讀取）
+            window.islandEngine?.importTiles(islandResult.tiles || []);
+            const islandItems = JSON.parse(JSON.stringify(islandResult.island || []));
 
-                visitingIslandItems.value = islandItems;
+            // 用最新卡池圖片即時同步（不需要等對方登入）
+            const imgMap = {};
+            [...gachaPool.value, ...shopItems.value].forEach(g => {
+                if (g.name) imgMap[g.name] = { imgUrl: g.imgUrl||'', spriteUrl: g.spriteUrl||'' };
+            });
+            islandItems.forEach(item => {
+                const latest = imgMap[item.name];
+                if (latest) {
+                    item.imgUrl    = latest.imgUrl;
+                    item.spriteUrl = latest.spriteUrl;
+                }
+            });
 
-                // 初始化對方動物的位置到 animalStates（用存好的 x/y，沒有才隨機）
-                islandItems.forEach(item => {
-                    if (item.type === 'animal') {
-                        animalStates.value[item.id] = {
-                            x:    item.x ?? (15 + Math.random() * 55),
-                            y:    item.y ?? (15 + Math.random() * 45),
-                            flip: Math.random() > 0.5
-                        };
-                    }
-                });
-            }
+            visitingIslandItems.value = islandItems;
+
+            // 初始化對方動物的位置到 animalStates（用存好的 x/y，沒有才隨機）
+            islandItems.forEach(item => {
+                if (item.type === 'animal') {
+                    animalStates.value[item.id] = {
+                        x:    item.x ?? (15 + Math.random() * 55),
+                        y:    item.y ?? (15 + Math.random() * 45),
+                        flip: Math.random() > 0.5
+                    };
+                }
+            });
 
             // 重繪 canvas 並置中
             window.initIslandCanvas?.();
@@ -5575,11 +5634,9 @@ createApp({
             window.islandEngine?.importTiles([]);
             try {
                 if (fbUser.value) {
-                    const tilesRes = await fetch('/api/tiles');
+                    const tilesRes = await fetch('/api/tiles?t=' + Date.now(), { cache: 'no-store' });
                     const tilesData = await tilesRes.json();
-                    if (tilesData.exists && tilesData.tiles?.length) {
-                        window.islandEngine?.importTiles(tilesData.tiles);
-                    }
+                    window.islandEngine?.importTiles(tilesData.tiles || []);
                 }
             } catch(_) {}
             setTimeout(() => {
@@ -7081,8 +7138,10 @@ window.islandEngine={
     return [...tiles.values()].map(({tx,ty,cells})=>({tx,ty,cells:Array.from(cells)}));
   },
   importTiles(arr){
-    if(!arr||!arr.length) return;
     tiles.clear();
+    spawnAnims.clear();
+    shrinkAnims.clear();
+    if(!arr||!arr.length) return;
     arr.forEach(({tx,ty,cells})=>tiles.set(TK(tx,ty),{tx,ty,cells:new Uint8Array(cells)}));
   },
   isOnIsland(xPct, yPct, W, H){

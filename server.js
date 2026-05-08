@@ -543,6 +543,51 @@ app.get('/api/profiles/:id', async (req, res) => {
   }
 });
 
+app.get('/api/island/:uid', async (req, res) => {
+  const uid = req.params.uid;
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  try {
+    const [[profileRows], [userRows], [tileRows]] = await Promise.all([
+      pool.query('SELECT * FROM profiles WHERE id = ?', [uid]),
+      pool.query('SELECT users_json, updated_at FROM user_data WHERE uid = ?', [uid]),
+      pool.query('SELECT tiles_json, updated_at FROM tiles WHERE uid = ?', [uid]),
+    ]);
+
+    const profile = profileRows[0] || null;
+    let self = null;
+    if (userRows[0]) {
+      try {
+        const usersArr = JSON.parse(userRows[0].users_json || '[]');
+        self = usersArr.find(u => u.id === uid) || usersArr[0] || null;
+      } catch(e) {}
+    }
+
+    if (!profile && !self && !tileRows[0]) return res.json({ exists: false });
+
+    let profileIsland = [];
+    try { profileIsland = JSON.parse(profile?.island_json || '[]'); } catch(e) {}
+    let tiles = [];
+    try { tiles = JSON.parse(tileRows[0]?.tiles_json || '[]'); } catch(e) {}
+
+    res.json({
+      exists: true,
+      id: uid,
+      name: self?.name || profile?.name || '',
+      email: self?.email || profile?.email || '',
+      avatarUrl: self?.avatarUrl || profile?.avatar_url || '',
+      avatarPosX: self?.avatarPosX ?? profile?.avatar_pos_x ?? 50,
+      avatarPosY: self?.avatarPosY ?? profile?.avatar_pos_y ?? 50,
+      island: Array.isArray(self?.island) ? self.island : profileIsland,
+      tiles,
+      updatedAt: Math.max(userRows[0]?.updated_at || 0, profile?.updated_at || 0, tileRows[0]?.updated_at || 0),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/profiles', requireLogin, async (req, res) => {
   const uid = req.session.user.employee_code;
   const { name, email, avatarUrl, avatarPosX, avatarPosY, energy, shells, tileCount, island } = req.body;
