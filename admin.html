@@ -40,6 +40,14 @@ input,textarea,select{font-family:inherit}
 .nb i{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--sage-lt);color:var(--sage-deep);border-radius:7px;font-size:12px;flex-shrink:0;transition:all .15s}
 .nb:hover i{background:var(--priltd);color:var(--sage-deep)}
 .nbg{background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:var(--rp);margin-left:auto}
+.inline-icon-text{display:inline-flex;align-items:center;gap:5px}
+.origin-icon{display:inline-block;object-fit:contain;flex-shrink:0;vertical-align:-.18em;filter:drop-shadow(0 2px 3px rgba(92,64,12,.18))}
+.origin-icon-xs{width:14px;height:14px}.origin-icon-sm{width:18px;height:18px}.origin-icon-md{width:24px;height:24px}.origin-icon-lg{width:48px;height:48px}
+.nav-origin-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:var(--sage-lt);border-radius:7px;flex-shrink:0;transition:all .15s}
+.nav-origin-icon img{width:22px;height:22px}
+.nb:hover .nav-origin-icon{background:var(--priltd)}
+.nb.on .nav-origin-icon{background:#fff}
+.ri .origin-icon{width:34px;height:34px}
 .sf{padding:12px 14px;border-top:1px solid var(--line)}
 .mn{flex:1;overflow-y:auto;padding:32px 36px;background:var(--bg)}
 .lw{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#edf2ef,#f3ede6)}
@@ -223,7 +231,8 @@ input[type=range]{flex:1;accent-color:var(--pri)}
       </div>
       <nav class="snav">
         <button v-for="t in tabs" :key="t.id" class="nb" :class="{on:tab===t.id}" @click="tab=t.id">
-          <i :class="t.icon"></i>
+          <span v-if="t.img" class="nav-origin-icon"><img :src="t.img" :alt="t.label"></span>
+          <i v-else :class="t.icon"></i>
           <span class="nl">{{ t.label }}</span>
           <span v-if="t.id==='feedback'&&unreadFb>0" class="nbg">{{ unreadFb }}</span>
         </button>
@@ -259,7 +268,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
                 <td style="color:var(--sub);font-size:12px">{{ p.email }}</td>
                 <td style="text-align:center;font-weight:700">💌 {{ p.cards ?? 0 }}/6</td>
                 <td style="text-align:center;font-weight:700">⚡ {{ p.energy||0 }}</td>
-                <td style="text-align:center;font-weight:700">🎫 {{ p.shells||0 }}</td>
+                <td style="text-align:center;font-weight:700"><span class="inline-icon-text"><img src="assets/ui/origin-power-256.png" alt="起源之力" class="origin-icon origin-icon-sm"> {{ p.shells||0 }}</span></td>
                 <td style="text-align:center">
                   <button class="btn bd bsm" @click="openDeleteUser(p)">
                     <i class="fa-solid fa-trash"></i> 刪除
@@ -298,7 +307,7 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           <div class="ct"><i class="fa-solid fa-gift"></i> 道具類型</div>
           <div class="rg" style="grid-template-columns:repeat(3,1fr)">
             <div v-for="rt in rtypes" :key="rt.id" class="rc" :class="{on:rType===rt.id}" @click="rType=rt.id;selectedItem=null;itemSearch=''">
-              <div class="ri">{{ rt.icon }}</div>
+              <div class="ri"><img v-if="rt.img" :src="rt.img" :alt="rt.label" class="origin-icon"><span v-else>{{ rt.icon }}</span></div>
               <div class="rl">{{ rt.label }}</div>
               <div style="font-size:9px;color:var(--sub);margin-top:3px;font-weight:500">{{ rt.hint }}</div>
             </div>
@@ -529,23 +538,23 @@ input[type=range]{flex:1;accent-color:var(--pri)}
 
       <!-- 起源之力兌換申請 -->
       <div v-if="tab==='exchange'">
-        <div class="ph"><div class="pht">🎫 起源之力兌換申請</div><div class="phs">查看使用者送出的起源之力兌換記錄</div></div>
+        <div class="ph"><div class="pht inline-icon-text"><img src="assets/ui/origin-power-256.png" alt="起源之力" class="origin-icon origin-icon-md"> 起源之力兌換申請</div><div class="phs">查看使用者送出的起源之力兌換記錄</div></div>
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-            <div class="ct" style="margin:0;border:none;padding:0">🎫 兌換記錄（共 {{ exchanges.length }} 筆）</div>
+            <div class="ct" style="margin:0;border:none;padding:0"><img src="assets/ui/origin-power-256.png" alt="起源之力" class="origin-icon origin-icon-sm"> 兌換記錄（共 {{ exchanges.length }} 筆）</div>
             <div style="display:flex;gap:8px">
               <button class="btn bg bsm" @click="exportExchangesCSV"><i class="fa-solid fa-download"></i> 匯出 CSV</button>
               <button class="btn bd bsm" @click="confirmClearExchanges"><i class="fa-solid fa-trash"></i> 清空所有</button>
             </div>
           </div>
-          <div v-if="!exchanges.length" class="empty"><div style="font-size:48px;margin-bottom:12px">🎫</div><div style="font-size:14px;font-weight:600">目前沒有兌換記錄</div></div>
+          <div v-if="!exchanges.length" class="empty"><div style="margin-bottom:12px"><img src="assets/ui/origin-power-512.png" alt="起源之力" class="origin-icon origin-icon-lg"></div><div style="font-size:14px;font-weight:600">目前沒有兌換記錄</div></div>
           <table v-else class="tbl">
             <thead><tr><th>使用者</th><th>信箱</th><th style="text-align:center">起源之力</th><th>備註</th><th style="text-align:center">時間</th></tr></thead>
             <tbody>
               <tr v-for="ex in exchanges" :key="ex.id">
                 <td style="font-weight:700">{{ ex.name }}</td>
                 <td style="color:var(--sub);font-size:12px">{{ ex.email }}</td>
-                <td style="text-align:center;font-weight:900;color:var(--prih)">🎫 {{ ex.amount }}</td>
+                <td style="text-align:center;font-weight:900;color:var(--prih)"><span class="inline-icon-text"><img src="assets/ui/origin-power-256.png" alt="起源之力" class="origin-icon origin-icon-sm"> {{ ex.amount }}</span></td>
                 <td style="font-size:13px;color:var(--sub)">{{ ex.note || '—' }}</td>
                 <td style="text-align:center;font-size:12px;color:var(--sub)">{{ fmtTs(ex.timestamp) }}</td>
               </tr>
@@ -945,7 +954,7 @@ createApp({setup(){
     {id:'gacha',icon:'fa-solid fa-wand-magic-sparkles',label:'卡池管理'},
     {id:'announce',icon:'fa-solid fa-bullhorn',label:'全站公告'},
     {id:'feedback',icon:'fa-solid fa-comment-dots',label:'使用者反饋'},
-    {id:'exchange',icon:'fa-solid fa-ticket-simple',label:'兌換申請'},
+    {id:'exchange',img:'assets/ui/origin-power-256.png',label:'兌換申請'},
     {id:'whitelist',icon:'fa-solid fa-shield',label:'白名單'},
   ];
   const profiles=ref([]),feedbacks=ref([]),anns=ref([]),wl=ref([]),exchanges=ref([]);
@@ -957,7 +966,7 @@ createApp({setup(){
     {id:'energy',icon:'⚡',label:'能量',hint:'直接加入使用者能量'},
     {id:'cards',icon:'💌',label:'感謝卡',hint:'上限6張'},
     {id:'tiles',icon:'🏝️',label:'島嶼板塊',hint:'擴張地形用'},
-    {id:'shells',icon:'🎫',label:'起源之力',hint:'起源兌換處使用'},
+    {id:'shells',icon:'',img:'assets/ui/origin-power-256.png',label:'起源之力',hint:'起源兌換處使用'},
     {id:'pet',icon:'🐾',label:'指定島民',hint:'選擇要發放的動物夥伴'},
     {id:'decor',icon:'🏕️',label:'指定裝飾',hint:'選擇要發放的裝飾品'},
   ];
@@ -1338,13 +1347,13 @@ createApp({setup(){
               await api('/api/inbox', {method:'POST', body:{toUid:uid,...inboxData}});
             }
           } else {
-            const inboxData={type:'admin_reward',rewardType:rType.value,amount:amt,note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+rt.icon+rt.label+' ×'+amt+'！'};
+            const inboxData={type:'admin_reward',rewardType:rType.value,amount:amt,note:rNote.value||'',timestamp:ts,read:false,processed:false,title:'🎁 管理員送你 '+(rt.icon||'')+rt.label+' ×'+amt+'！'};
             await api('/api/inbox', {method:'POST', body:{toUid:uid,...inboxData}});
           }
         }catch(ue){console.warn(uid,ue);}
       }
       if(rTarget.value==='all'){
-        const dispName=isItem?items.map(i=>i.emoji+' '+i.name).join('、'):rt.icon+rt.label+' ×'+amt;
+        const dispName=isItem?items.map(i=>i.emoji+' '+i.name).join('、'):(rt.icon||'')+rt.label+' ×'+amt;
         await api('/api/admin/announcements', {method:'POST', body:{type:'admin_reward',title:'🎁 全站發放！所有人都有 '+dispName,content:'快去信箱的「領取道具」分頁領取你的獎勵！'+(rNote.value?'\n\n'+rNote.value:''),timestamp:ts}});
       }
       toast('✅ 已通知 '+targets.length+' 位使用者，他們登入後可在信箱領取！');
