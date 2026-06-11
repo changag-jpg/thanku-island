@@ -551,7 +551,6 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
             <div class="ct" style="margin:0;border:none;padding:0"><img src="assets/ui/origin-power-256.png" alt="起源之力" class="origin-icon origin-icon-sm"> 兌換記錄（共 {{ exchanges.length }} 筆）</div>
             <div style="display:flex;gap:8px">
-              <button class="btn bg bsm" @click="exportExchangesCSV"><i class="fa-solid fa-table"></i> 匯出原始 CSV</button>
               <button class="btn bd bsm" @click="confirmClearExchanges"><i class="fa-solid fa-trash"></i> 清空所有</button>
             </div>
           </div>
@@ -1319,8 +1318,26 @@ createApp({setup(){
   const fmtTs=(ts)=>{if(!ts)return'';const d=new Date(ts);return(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
   const gname=(uid)=>profiles.value.find(p=>p.id===uid)?.name||uid;
   const normalizeEmail=(v)=>String(v||'').trim().toLowerCase();
-  const csvCell=(v)=>'"'+String(v??'').replace(/"/g,'""')+'"';
-  const csvPreviewCell=(v)=>String(v??'').replace(/\r?\n/g,' ');
+  const excelText=(v)=>({__excelText:true,value:String(v??'')});
+  const displayCellValue=(v)=>v&&v.__excelText?v.value:v;
+  const csvCell=(v)=>{
+    const raw=displayCellValue(v);
+    const text=v&&v.__excelText?`="${String(raw).replace(/"/g,'""')}"`:String(raw??'');
+    return '"'+text.replace(/"/g,'""')+'"';
+  };
+  const csvPreviewCell=(v)=>String(displayCellValue(v)??'').replace(/\r?\n/g,' ');
+  const numberToPlainText=(v)=>{
+    if(typeof v!=='number')return String(v??'').trim();
+    if(!Number.isFinite(v))return '';
+    return v.toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:0});
+  };
+  const sheetCellText=(ws,row,col,fallback='')=>{
+    const addr=window.XLSX.utils.encode_cell({r:row,c:col});
+    const cell=ws[addr];
+    if(!cell)return String(fallback??'').trim();
+    if(cell.t==='n')return numberToPlainText(cell.v);
+    return String(cell.v ?? cell.w ?? fallback ?? '').trim();
+  };
   const downloadRowsAsCsv=(rows,filename)=>{
     const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1347,12 +1364,12 @@ createApp({setup(){
       const buffer=await file.arrayBuffer();
       const wb=window.XLSX.read(buffer,{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+      const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
       const map=new Map();
       rows.forEach((row,idx)=>{
-        const email=normalizeEmail(row[0]);
-        const serverNo=String(row[1]??'').trim();
-        const gameUid=String(row[2]??'').trim();
+        const email=normalizeEmail(sheetCellText(ws,idx,0,row[0]));
+        const serverNo=sheetCellText(ws,idx,1,row[1]);
+        const gameUid=sheetCellText(ws,idx,2,row[2]);
         if(!email||email.includes('信箱')||!email.includes('@'))return;
         if(!serverNo||!gameUid)return;
         map.set(email,{serverNo,gameUid,row:idx+1});
@@ -1387,7 +1404,7 @@ createApp({setup(){
         missing.push({id:ex.id,name:ex.name,email:ex.email,amount:ex.amount});
         return;
       }
-      rows.push([1,2,matched.serverNo,matched.gameUid,giftTitle,giftMsg,4,11018048,Number(ex.amount)||0,0,200200200]);
+      rows.push([1,2,matched.serverNo,excelText(matched.gameUid),giftTitle,giftMsg,4,11018048,Number(ex.amount)||0,0,excelText(200200200)]);
     });
     uidMappingMissing.value=missing;
     uidExportPreviewRows.value=rows.slice(0,3);
@@ -1416,11 +1433,6 @@ createApp({setup(){
       toast('✅ 兌換記錄已清空');
       showClearExchangeModal.value=false;
     }catch(e){toast('清空失敗','err');}
-  };
-  const exportExchangesCSV=()=>{
-    if(!exchanges.value.length){toast('沒有記錄可匯出');return;}
-    const rows=[['ID','姓名','信箱','起源之力','備註','時間'],...exchanges.value.map(e=>[e.id,e.name,e.email,e.amount,e.note||'',fmtDate(e.timestamp)])];
-    downloadRowsAsCsv(rows,'origin_power_exchanges.csv');
   };
   const toggleU=(uid)=>{const i=selUsers.value.indexOf(uid);if(i>=0)selUsers.value.splice(i,1);else selUsers.value.push(uid);};
 
@@ -1558,7 +1570,7 @@ createApp({setup(){
     poolCoverUploading,poolSettings,onPoolCoverChange,
     deletedPools,showTrashModal,openTrash,restorePool,daysLeft,
     openDeleteUser,confirmDeleteUser,
-    exchanges,showClearExchangeModal,confirmClearExchanges,doClearExchanges,exportExchangesCSV,fmtTs,
+    exchanges,showClearExchangeModal,confirmClearExchanges,doClearExchanges,fmtTs,
     serverUidFileInput,serverUidFileName,serverUidMappedCount,uidMappingMissing,uidExportPreviewRows,
     openServerUidPicker,onServerUidFileChange,previewOriginGiftCSV,exportOriginGiftCSV,csvPreviewCell,
   };
