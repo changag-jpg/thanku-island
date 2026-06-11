@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>感恩小島 — 管理後台</title>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -68,6 +69,13 @@ input,textarea,select{font-family:inherit}
 .sl{font-size:12px;color:var(--sub);margin-top:4px;font-weight:600}
 .card{background:var(--paper);border-radius:var(--rlg);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:24px 28px;margin-bottom:20px}
 .ct{font-size:15px;font-weight:900;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;color:var(--ink)}
+.uid-map-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);background:var(--s2);flex-wrap:wrap}
+.uid-map-info{display:flex;flex-direction:column;gap:3px;min-width:220px}
+.uid-map-title{font-size:13px;font-weight:900;color:var(--ink)}
+.uid-map-sub{font-size:12px;color:var(--sub);font-weight:600}
+.uid-missing{margin:12px 0;padding:12px 14px;border-radius:var(--r);background:var(--redlt);color:var(--red);font-size:12px;font-weight:700;line-height:1.7}
+.uid-preview{margin-top:12px;padding:12px 14px;border-radius:var(--r);background:#fff;border:1px solid var(--border);font-size:11px;color:var(--sub);line-height:1.65;overflow:auto}
+.uid-preview code{display:block;white-space:nowrap;font-family:Consolas,monospace}
 .fr{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
 .fl{font-size:13px;font-weight:800;color:var(--ink)}
 .fi{padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:14px;color:var(--text);background:var(--paper);outline:none;transition:border-color .15s;width:100%}
@@ -543,9 +551,32 @@ input[type=range]{flex:1;accent-color:var(--pri)}
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
             <div class="ct" style="margin:0;border:none;padding:0"><img src="assets/ui/origin-power-256.png" alt="起源之力" class="origin-icon origin-icon-sm"> 兌換記錄（共 {{ exchanges.length }} 筆）</div>
             <div style="display:flex;gap:8px">
-              <button class="btn bg bsm" @click="exportExchangesCSV"><i class="fa-solid fa-download"></i> 匯出 CSV</button>
+              <button class="btn bg bsm" @click="exportExchangesCSV"><i class="fa-solid fa-table"></i> 匯出原始 CSV</button>
               <button class="btn bd bsm" @click="confirmClearExchanges"><i class="fa-solid fa-trash"></i> 清空所有</button>
             </div>
+          </div>
+          <div class="uid-map-panel">
+            <input ref="serverUidFileInput" type="file" accept=".xlsx,.xls" style="display:none" @change="onServerUidFileChange">
+            <div class="uid-map-info">
+              <div class="uid-map-title">發獎 CSV 匯出格式</div>
+              <div class="uid-map-sub">
+                {{ serverUidFileName ? `已載入 ${serverUidFileName}，共 ${serverUidMappedCount} 筆信箱對照` : '請先選擇本機伺服器UID.xlsx，檔案不會上傳到伺服器' }}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn bg bsm" @click="openServerUidPicker"><i class="fa-solid fa-file-excel"></i> 選擇伺服器UID.xlsx</button>
+              <button class="btn bg bsm" @click="previewOriginGiftCSV"><i class="fa-solid fa-eye"></i> 預覽格式</button>
+              <button class="btn bp bsm" @click="exportOriginGiftCSV"><i class="fa-solid fa-download"></i> 匯出發獎 CSV</button>
+            </div>
+          </div>
+          <div v-if="uidMappingMissing.length" class="uid-missing">
+            有 {{ uidMappingMissing.length }} 筆兌換申請找不到伺服器編號或 UID，請補齊 Excel 後再匯出：
+            <div v-for="m in uidMappingMissing.slice(0,8)" :key="m.id">{{ m.name || '未命名' }}｜{{ m.email || '無信箱' }}｜{{ m.amount }} 點</div>
+            <div v-if="uidMappingMissing.length > 8">另有 {{ uidMappingMissing.length - 8 }} 筆未顯示</div>
+          </div>
+          <div v-if="uidExportPreviewRows.length" class="uid-preview">
+            <div style="font-weight:900;color:var(--ink);margin-bottom:6px">匯出格式預覽（前 {{ uidExportPreviewRows.length }} 筆，不含標題列）</div>
+            <code v-for="(row,idx) in uidExportPreviewRows" :key="idx">{{ row.map(csvPreviewCell).join(',') }}</code>
           </div>
           <div v-if="!exchanges.length" class="empty"><div style="margin-bottom:12px"><img src="assets/ui/origin-power-512.png" alt="起源之力" class="origin-icon origin-icon-lg"></div><div style="font-size:14px;font-weight:600">目前沒有兌換記錄</div></div>
           <table v-else class="tbl">
@@ -959,6 +990,7 @@ createApp({setup(){
   ];
   const profiles=ref([]),feedbacks=ref([]),anns=ref([]),wl=ref([]),exchanges=ref([]);
   const showClearExchangeModal=ref(false);
+  const serverUidFileInput=ref(null),serverUidFileName=ref(''),serverUidMappedCount=ref(0),serverUidMap=ref(new Map()),uidMappingMissing=ref([]),uidExportPreviewRows=ref([]);
   const stats=ref({users:0,letters:0,ann:0}),toasts=ref([]),prevImg=ref(null);
   const rTarget=ref('all'),selUsers=ref([]),uQ=ref('');
   const rType=ref('energy'),rAmt=ref(100),rNote=ref(''),rShow=ref(false);
@@ -1286,6 +1318,95 @@ createApp({setup(){
   const fmtDate=(ts)=>{if(!ts)return'';const d=new Date(ts);return d.toLocaleDateString('zh-TW')+' '+d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});};
   const fmtTs=(ts)=>{if(!ts)return'';const d=new Date(ts);return(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
   const gname=(uid)=>profiles.value.find(p=>p.id===uid)?.name||uid;
+  const normalizeEmail=(v)=>String(v||'').trim().toLowerCase();
+  const csvCell=(v)=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csvPreviewCell=(v)=>String(v??'').replace(/\r?\n/g,' ');
+  const downloadRowsAsCsv=(rows,filename)=>{
+    const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url;
+    a.download=filename;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  const exportStamp=()=>{
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+  };
+  const openServerUidPicker=()=>serverUidFileInput.value?.click();
+  const onServerUidFileChange=async(e)=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    uidMappingMissing.value=[];
+    uidExportPreviewRows.value=[];
+    if(!window.XLSX){toast('Excel 解析套件尚未載入，請重新整理後再試','err');return;}
+    try{
+      const buffer=await file.arrayBuffer();
+      const wb=window.XLSX.read(buffer,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+      const map=new Map();
+      rows.forEach((row,idx)=>{
+        const email=normalizeEmail(row[0]);
+        const serverNo=String(row[1]??'').trim();
+        const gameUid=String(row[2]??'').trim();
+        if(!email||email.includes('信箱')||!email.includes('@'))return;
+        if(!serverNo||!gameUid)return;
+        map.set(email,{serverNo,gameUid,row:idx+1});
+      });
+      serverUidMap.value=map;
+      serverUidFileName.value=file.name;
+      serverUidMappedCount.value=map.size;
+      toast(`已讀取 ${map.size} 筆伺服器 UID 對照`);
+    }catch(err){
+      console.error(err);
+      serverUidMap.value=new Map();
+      serverUidFileName.value='';
+      serverUidMappedCount.value=0;
+      toast('讀取伺服器UID.xlsx 失敗，請確認檔案格式','err');
+    }finally{
+      e.target.value='';
+    }
+  };
+  const buildOriginGiftRows=()=>{
+    uidMappingMissing.value=[];
+    uidExportPreviewRows.value=[];
+    if(!exchanges.value.length){toast('沒有記錄可匯出');return null;}
+    if(!serverUidMap.value.size){toast('請先選擇伺服器UID.xlsx','err');return null;}
+    const giftTitle='來自《感恩小島》的贈禮';
+    const giftMsg='有個人默默記得你的好，把這份心意化成起源之力送給你。在傳說戰場上繼續發光吧！';
+    const rows=[];
+    const missing=[];
+    exchanges.value.forEach(ex=>{
+      const email=normalizeEmail(ex.email);
+      const matched=serverUidMap.value.get(email);
+      if(!matched){
+        missing.push({id:ex.id,name:ex.name,email:ex.email,amount:ex.amount});
+        return;
+      }
+      rows.push([1,2,matched.serverNo,matched.gameUid,giftTitle,giftMsg,4,11018048,Number(ex.amount)||0,0,200200200]);
+    });
+    uidMappingMissing.value=missing;
+    uidExportPreviewRows.value=rows.slice(0,3);
+    if(missing.length){
+      toast(`有 ${missing.length} 筆信箱找不到伺服器編號或 UID`,'err');
+      return null;
+    }
+    return rows;
+  };
+  const previewOriginGiftCSV=()=>{
+    const rows=buildOriginGiftRows();
+    if(rows)toast(`已產生 ${rows.length} 筆發獎格式預覽`);
+  };
+  const exportOriginGiftCSV=()=>{
+    const rows=buildOriginGiftRows();
+    if(!rows)return;
+    downloadRowsAsCsv(rows,`origin_power_gift_${exportStamp()}.csv`);
+    toast(`已匯出 ${rows.length} 筆發獎 CSV`);
+  };
 
   const confirmClearExchanges=()=>{ showClearExchangeModal.value=true; };
   const doClearExchanges=async()=>{
@@ -1299,9 +1420,7 @@ createApp({setup(){
   const exportExchangesCSV=()=>{
     if(!exchanges.value.length){toast('沒有記錄可匯出');return;}
     const rows=[['ID','姓名','信箱','起源之力','備註','時間'],...exchanges.value.map(e=>[e.id,e.name,e.email,e.amount,e.note||'',fmtDate(e.timestamp)])];
-    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-    const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='origin_power_exchanges.csv';a.click();
+    downloadRowsAsCsv(rows,'origin_power_exchanges.csv');
   };
   const toggleU=(uid)=>{const i=selUsers.value.indexOf(uid);if(i>=0)selUsers.value.splice(i,1);else selUsers.value.push(uid);};
 
@@ -1440,6 +1559,8 @@ createApp({setup(){
     deletedPools,showTrashModal,openTrash,restorePool,daysLeft,
     openDeleteUser,confirmDeleteUser,
     exchanges,showClearExchangeModal,confirmClearExchanges,doClearExchanges,exportExchangesCSV,fmtTs,
+    serverUidFileInput,serverUidFileName,serverUidMappedCount,uidMappingMissing,uidExportPreviewRows,
+    openServerUidPicker,onServerUidFileChange,previewOriginGiftCSV,exportOriginGiftCSV,csvPreviewCell,
   };
 }}).mount('#app');
 </script>
